@@ -30,7 +30,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.login);
+        setContentView(R.layout.login); //login 레이아웃 연결
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -68,7 +68,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 //Toast.makeText(LoginActivity.this,"mAuth.onComplete 함수",Toast.LENGTH_SHORT).show();
-                if(!task.isSuccessful()){
+                if(!task.isSuccessful()){ //예외처리
                     try{
                         throw task.getException();
                     }catch (FirebaseApiNotAvailableException e){
@@ -81,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this,"Excetion",Toast.LENGTH_SHORT).show();
                     }
                 }else{
-                    currentUser = mAuth.getCurrentUser();
+                    currentUser = mAuth.getCurrentUser(); //성공시
                     //Toast.makeText(LoginActivity.this,"로그인"+"/"+currentUser.getEmail()+"/"+currentUser.getUid(),Toast.LENGTH_SHORT).show();
                     Toast.makeText(LoginActivity.this,"로그인 완료",Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(LoginActivity.this,MainActivity.class));
