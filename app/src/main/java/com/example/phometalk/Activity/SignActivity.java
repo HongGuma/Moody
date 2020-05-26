@@ -20,11 +20,16 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class SignActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth; //이메일,비밀번호 로그인 모듈 변수
     private FirebaseUser currentUser; //현재 로그인된 유저 정보 담는 변수
+    private FirebaseDatabase database;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,7 +58,8 @@ public class SignActivity extends AppCompatActivity {
         });
     }
 
-    public void signStart(String email, final String name,String password){
+    public void signStart(String email,final String name,String password){
+
 
         mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
@@ -67,18 +73,26 @@ public class SignActivity extends AppCompatActivity {
                     }catch (FirebaseAuthInvalidCredentialsException e){
                         Toast.makeText(SignActivity.this,"이메일형식에 맞지 않습니다.",Toast.LENGTH_SHORT).show();
                     }catch (FirebaseAuthUserCollisionException e){
-                        Toast.makeText(SignActivity.this,"이미 가입한 이메일 입니다.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SignActivity.this,"가입된 이메일 입니다.",Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
                         Toast.makeText(SignActivity.this,"다시 확인해주세요.",Toast.LENGTH_SHORT).show();
                     }
                 }else{
-
                     currentUser = mAuth.getCurrentUser();
 
-                    Toast.makeText(SignActivity.this,"가입 완료. 로그인 해주세요. :)",Toast.LENGTH_SHORT).show();
+                    database = FirebaseDatabase.getInstance();
+                    DatabaseReference myRef = database.getReference("userInfo").child(currentUser.getUid());
 
+                    HashMap<String, String> users = new HashMap<String, String>();
+                    users.put("email",currentUser.getEmail());
+                    users.put("name",name);
+                    users.put("state","기본상태메세지");
+
+                    myRef.setValue(users);
+
+                    Toast.makeText(SignActivity.this,"가입 완료. 로그인 해주세요. :)",Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(SignActivity.this, LoginActivity.class));
-                    finish();
+
                 }
             }
         });

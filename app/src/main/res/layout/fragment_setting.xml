@@ -35,6 +35,7 @@
             android:hint="상태메세지"/>
     </com.google.android.material.textfield.TextInputLayout>
     <Button
+        android:id="@+id/set_button"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

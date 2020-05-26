@@ -27,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth; //이메일 비밀번호 로그인 모듈 변수
     private FirebaseUser currentUser; //현재 로그인 된 유저 정보를 담을 변수
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,19 +79,21 @@ public class LoginActivity extends AppCompatActivity {
                     }catch (FirebaseNetworkException e){
                         Toast.makeText(LoginActivity.this,"Firebase NetworkException",Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
-                        Toast.makeText(LoginActivity.this,"Excetion",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this,"비밀번호가 틀렸습니다.",Toast.LENGTH_SHORT).show();
                     }
                 }else{
                     currentUser = mAuth.getCurrentUser(); //성공시
-                    //Toast.makeText(LoginActivity.this,"로그인"+"/"+currentUser.getEmail()+"/"+currentUser.getUid(),Toast.LENGTH_SHORT).show();
-                    Toast.makeText(LoginActivity.this,"로그인 완료",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this,"로그인"+"/"+currentUser.getEmail(),Toast.LENGTH_LONG).show();
+                    //Toast.makeText(LoginActivity.this,"로그인 완료",Toast.LENGTH_SHORT).show();
+
                     startActivity(new Intent(LoginActivity.this,MainActivity.class));
                     finish();
                 }
             }
         });
     }
-    /*
+
+/*
     //자동 로그인
     @Override
     protected void onStart() {

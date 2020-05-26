@@ -4,40 +4,44 @@ import android.graphics.drawable.Drawable;
 
 public class UserItems {
 
-    private String userId;
-    private String userName;
-    private String userState;
-    private String userPhoto;
+    //private static String email;
+    //private static String name;
+    private String email;
+    private String name;
+    private String state;
+    //private String photo;
 
-    public String getUserId(){
-        return userId;
+    public UserItems(){}
+
+    public String getEmail(){
+        return email;
     }
 
-    public void setUserId(){
-        this.userId =userId;
+    public void setEmail(String email){
+        this.email = this.email;
     }
 
-    public String getUserName(){
-        return userName;
+    public String getName(){
+        return name;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setName(String userName) {
+        this.name = name;
     }
 
-    public String getUserState() {
-        return userState;
+    public String getState() {
+        return state;
     }
 
-    public void setUserState(String userState) {
-        this.userState = userState;
+    public void setState(String userState) {
+        this.state = userState;
+    }
+/*
+    public String getPhoto() {
+        return photo;
     }
 
-    public String getUserPhoto() {
-        return userPhoto;
-    }
-
-    public void setUserPhoto(String userPhoto) {
-        this.userPhoto = userPhoto;
-    }
+    public void setPhoto(String userPhoto) {
+        this.photo = userPhoto;
+    }*/
 }
