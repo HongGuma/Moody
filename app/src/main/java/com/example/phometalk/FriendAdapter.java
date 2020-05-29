@@ -32,7 +32,6 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
             super(view);
 
             uName=view.findViewById(R.id.friend_name);
-            uState=view.findViewById(R.id.friend_state);
             //uEmail=view.findViewById(R.id.friend_email);
             //uPhoto=itemView.findViewById(R.id.friend_image);
         }
@@ -61,7 +60,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
 
         //holder.uPhoto.setId(item.getUserPhoto());
         holder.uName.setText(item.getName());
-        holder.uState.setText(item.getState());
+        //holder.uState.setText(item.getState());
 
     }
 

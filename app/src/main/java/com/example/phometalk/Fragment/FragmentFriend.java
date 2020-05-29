@@ -1,11 +1,13 @@
 package com.example.phometalk.Fragment;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.phometalk.Activity.AddFriendActivity;
 import com.example.phometalk.FriendAdapter;
 import com.example.phometalk.Items.UserItems;
 import com.example.phometalk.R;
@@ -69,6 +72,14 @@ public class FragmentFriend extends Fragment {
         Log.d(TAG,"onCreateView");
         View view = inflater.inflate(R.layout.fragment_friend,container,false);
 
+        Button addBtn = (Button)view.findViewById(R.id.friend_add_btn);
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(),AddFriendActivity.class));
+            }
+        });
+        
         fRecyclerView = (RecyclerView)view.findViewById(R.id.friend_recyclerView);
 
         fRecyclerView.setHasFixedSize(true);
@@ -80,16 +91,7 @@ public class FragmentFriend extends Fragment {
         return view;
     }
 
-    public void addItem(String name, String state, String email){
-        UserItems uitem = new UserItems();
 
-        //uitem.setPhoto(photo);
-        uitem.setName(name);
-        uitem.setState(state);
-        uitem.setEmail(email);
-
-        uList.add(uitem);
-    }
 
     public void FriendListDisplay(){
 

@@ -12,7 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.phometalk.FindPW.FindActivity;
 import com.example.phometalk.R;
+import com.example.phometalk.SignActivity.SignActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApiNotAvailableException;
@@ -39,6 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         final EditText loginPW = (EditText)findViewById(R.id.login_pw);
         Button loginBtn = (Button)findViewById(R.id.login_loginBtn);
         Button signBtn = (Button)findViewById(R.id.login_signBtn);
+        Button findBtn = (Button)findViewById(R.id.login_findBtn);
 
         //로그인 버튼 눌렀을때
         loginBtn.setOnClickListener(new View.OnClickListener() {
@@ -56,8 +59,17 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(LoginActivity.this,"회원가입 버튼 클릭",Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(LoginActivity.this,SignActivity.class));
-                finish();
+                startActivity(new Intent(LoginActivity.this, SignActivity.class));
+
+            }
+        });
+
+        //찾기 버튼 눌렀을때
+        findBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(LoginActivity.this,"비밀번호 찾기 버튼 클릭",Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(LoginActivity.this, FindActivity.class));
             }
         });
 
@@ -83,7 +95,6 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 }else{
                     currentUser = mAuth.getCurrentUser(); //성공시
-                    Toast.makeText(LoginActivity.this,"로그인"+"/"+currentUser.getEmail(),Toast.LENGTH_LONG).show();
                     //Toast.makeText(LoginActivity.this,"로그인 완료",Toast.LENGTH_SHORT).show();
 
                     startActivity(new Intent(LoginActivity.this,MainActivity.class));
@@ -93,8 +104,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-/*
+
     //자동 로그인
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -104,5 +116,5 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this,MainActivity.class));
             finish();
         }
-    }*/
+    }
 }

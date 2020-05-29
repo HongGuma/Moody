@@ -4,12 +4,10 @@ import android.graphics.drawable.Drawable;
 
 public class UserItems {
 
-    //private static String email;
-    //private static String name;
     private String email;
     private String name;
-    private String state;
-    //private String photo;
+    private String password;
+    private String birth;
 
     public UserItems(){}
 
@@ -29,19 +27,19 @@ public class UserItems {
         this.name = name;
     }
 
-    public String getState() {
-        return state;
+    public String getPassword() {
+        return password;
     }
 
-    public void setState(String userState) {
-        this.state = userState;
-    }
-/*
-    public String getPhoto() {
-        return photo;
+    public void setPassword(String userState) {
+        this.password = userState;
     }
 
-    public void setPhoto(String userPhoto) {
-        this.photo = userPhoto;
-    }*/
+    public String getBirth() {
+        return birth;
+    }
+
+    public void setBirth(String userPhoto) {
+        this.birth = userPhoto;
+    }
 }
