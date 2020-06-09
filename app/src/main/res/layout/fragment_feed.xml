@@ -36,6 +36,12 @@
             android:layout_weight="1"
             android:text="검색" />
 
+        <Button
+            android:id="@+id/firebase_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="firebase" />
     </LinearLayout>
 
     <LinearLayout
@@ -48,6 +54,8 @@
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="#D5D5D5"
+            android:layout_marginHorizontal="5dp"
             android:text="공용" />
 
         <Button
@@ -55,13 +63,17 @@
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="#D5D5D5"
+            android:layout_marginHorizontal="5dp"
             android:text="개인" />
 
         <Button
             android:id="@+id/feed_tag_btn"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
+            android:background="#D5D5D5"
             android:text="#" />
 
         <Button
@@ -69,13 +81,17 @@
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="#D5D5D5"
+            android:layout_marginHorizontal="5dp"
             android:text="즐겨찾기" />
     </LinearLayout>
 
     <Spinner
         android:id="@+id/feed_sortmode_spinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:entries="@array/selmode"
+        android:textAlignment="textEnd"/>
 
 
     <androidx.recyclerview.widget.RecyclerView

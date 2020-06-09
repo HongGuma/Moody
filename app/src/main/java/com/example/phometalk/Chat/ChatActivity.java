@@ -200,28 +200,41 @@ public class ChatActivity extends Activity {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         final StorageReference storageRef = storage.getReference();
 
-        storageRef.child(path).putFile(uri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+        final StorageReference riversRef = storageRef.child(path);
+        UploadTask uploadTask = riversRef.putFile(uri);
+        Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
             @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                //사진 업로드 성공하면 url 가져오기
-                String url = task.getResult().getUploadSessionUri().toString();
-                Log.d(TAG, "onComplete: url="+url);
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
 
-                //DB에 저장
-                DatabaseReference ref = database.getReference("Message").child(roomid);
-                HashMap<String, String> member = new HashMap<String, String>();
-                member.put("uID", currentUser.getUid()); //보낸사람 id
-                member.put("userName", uInfo.get(2)); //보낸 사람 이름
-                member.put("msg", url); //url
-                member.put("timestamp", writeTime); //작성 시간
-                member.put("msgType","1"); //메세지 타입
-                ref.push().setValue(member); //DB에 저장
+                // Continue with the task to get the download URL
+                return riversRef.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    imageUrl = downloadUri.toString();
+                    //DB에 저장
+                    DatabaseReference ref = database.getReference("Message").child(roomid);
+                    HashMap<String, String> member = new HashMap<String, String>();
+                    member.put("uID", currentUser.getUid()); //보낸사람 id
+                    member.put("userName", uInfo.get(2)); //보낸 사람 이름
+                    member.put("msg", imageUrl); //url
+                    member.put("timestamp", writeTime); //작성 시간
+                    member.put("msgType","1"); //메세지 타입
+                    ref.push().setValue(member); //DB에 저장
+                    //Glide.with(UpLoadImageToFirebase.this).load(imageUrl).into(upload_image);
+                }
             }
         });
 
 
-
     }
+
 
     public void UsersInfo() {
         //현재 로그인한 유저 정보 가져오기
