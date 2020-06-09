@@ -14,7 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.phometalk.FindPW.FindActivity;
 import com.example.phometalk.R;
-import com.example.phometalk.SignActivity.SignActivity;
+import com.example.phometalk.Sign.SignActivity;
+import com.example.phometalk.Sign.SignPwActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApiNotAvailableException;
@@ -76,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public void loginStart(String email, String password){
+    public void loginStart(final String email, String password){
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -87,17 +88,20 @@ public class LoginActivity extends AppCompatActivity {
                     }catch (FirebaseApiNotAvailableException e){
                         Toast.makeText(LoginActivity.this,"등록되지 않은 이메일 입니다.", Toast.LENGTH_SHORT).show();
                     }catch (FirebaseAuthInvalidCredentialsException e){
-                        Toast.makeText(LoginActivity.this,"이메일을 입력해주세요.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this,"이메일/비밀번호가 틀렸습니다.",Toast.LENGTH_SHORT).show();
                     }catch (FirebaseNetworkException e){
                         Toast.makeText(LoginActivity.this,"Firebase NetworkException",Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
-                        Toast.makeText(LoginActivity.this,"비밀번호가 틀렸습니다.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this,"다시확인해주세요.",Toast.LENGTH_SHORT).show();
                     }
                 }else{
                     currentUser = mAuth.getCurrentUser(); //성공시
                     //Toast.makeText(LoginActivity.this,"로그인 완료",Toast.LENGTH_SHORT).show();
 
-                    startActivity(new Intent(LoginActivity.this,MainActivity.class));
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    intent.putExtra("email",email);
+                    startActivity(intent);
+
                     finish();
                 }
             }
@@ -117,4 +121,7 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         }
     }
+
+
+
 }

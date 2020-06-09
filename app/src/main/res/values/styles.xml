@@ -3,10 +3,16 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">#5CA3DF</item>
+        <item name="colorPrimaryDark">#A1CBDC</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="title">moo:D</item>
+
+        <item name="android:actionOverflowButtonStyle">@style/AppTheme.OverFlow</item>
+    </style>
+    
+    <style name="AppTheme.OverFlow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">#000000</item>
     </style>
 
 </resources>

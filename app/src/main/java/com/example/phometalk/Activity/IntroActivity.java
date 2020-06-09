@@ -33,7 +33,7 @@ public class IntroActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume(); //handler에 예약 걸기
-        handler.postDelayed(run,2000); //2초뒤에 Runnable() 객체 실행
+        handler.postDelayed(run,1000); //1초뒤에 Runnable() 객체 실행
     }
 
     @Override

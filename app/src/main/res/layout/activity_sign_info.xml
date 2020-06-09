@@ -16,7 +16,7 @@
             android:id="@+id/sign_info_backBtn"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/back"
+            android:background="@drawable/ic_arrow_back_black_24dp"
             android:layout_margin="10dp"/>
         <TextView
             android:layout_width="wrap_content"

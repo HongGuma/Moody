@@ -11,10 +11,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.example.phometalk.Fragment.FragmentChatting;
-import com.example.phometalk.Fragment.FragmentFeed;
-import com.example.phometalk.Fragment.FragmentFriend;
-import com.example.phometalk.Fragment.FragmentSetting;
+import com.example.phometalk.Chat.FragmentChatting;
+import com.example.phometalk.Feed.FragmentFeed;
+import com.example.phometalk.Friend.FragmentFriend;
+import com.example.phometalk.Setting.FragmentSetting;
 import com.example.phometalk.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,7 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String TAG = "MainActivity";
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
 
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.content,FragmentChatting.newInstance()).commit();
+        fragmentTransaction.add(R.id.content,FragmentFeed.newInstance()).commit();
     }
 
     //로그인 상태면 currentUser에 현재 유저 정보가 담김, 아니면 로그인 화면으로 이동
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
     }
+
+
 }
 
 

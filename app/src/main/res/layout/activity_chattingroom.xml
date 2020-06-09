@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,9 +12,10 @@
             android:id="@+id/chatRoom_backBtn"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/back"
+            android:background="@drawable/ic_arrow_back_black_24dp"
             android:stateListAnimator="@null"/>
         <TextView
+            android:id="@+id/chatRoom_users"
             android:text="상대방 이름"
             android:textSize="20dp"
             android:layout_width="wrap_content"
@@ -21,7 +23,7 @@
             android:gravity="center"
             android:layout_weight="1"/>
         <Button
-            android:id="@+id/calendar_btn"
+            android:id="@+id/chatRoom_calendarBtn"
             android:layout_width="60dp"
             android:layout_height="50dp"
             android:text="달력"
@@ -31,33 +33,36 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:orientation="vertical">
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chatRoom_recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
         <Button
-            android:id="@+id/picture_btn"
+            android:id="@+id/chatRoom_galleryBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:background="@drawable/signs"
             android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"/>
+            android:layout_marginRight="5dp"
+            android:background="@drawable/ic_collections_black_24dp" />
         <Button
-            android:id="@+id/auto_picture"
+            android:id="@+id/chatRoom_autoBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="10dp"
-            android:background="@drawable/signs"/>
+            android:background="@drawable/ic_add_box_black_24dp"/>
         <EditText
-            android:id="@+id/send_chat"
+            android:id="@+id/chatRoom_text"
             android:layout_marginRight="10dp"
             android:layout_width="match_parent"
             android:layout_height="40dp"
@@ -65,10 +70,10 @@
             android:background="@drawable/border"/>
         <Button
             android:layout_marginRight="10dp"
-            android:id="@+id/send_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@android:drawable/ic_menu_send"
+            android:id="@+id/chatRoom_sendBtn"
+            android:layout_width="35dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ic_send_black_24dp"
             android:stateListAnimator="@null"/>
         
     </LinearLayout>

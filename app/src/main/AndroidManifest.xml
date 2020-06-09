@@ -19,11 +19,23 @@
         </activity>
         <activity android:name=".Activity.MainActivity"/>
         <activity android:name=".Activity.LoginActivity" />
-        <activity android:name=".SignActivity.SignActivity"/>
-        <activity android:name=".SignActivity.SignPwActivity"/>
-        <activity android:name=".SignActivity.SignAddInfoActivity"/>
+        <activity android:name=".Sign.SignActivity"/>
+        <activity android:name=".Sign.SignPwActivity"/>
+        <activity android:name=".Sign.SignAddInfoActivity"/>
         <activity android:name=".FindPW.FindActivity"/>
-        <activity android:name=".Activity.AddFriendActivity"/>
+        <activity android:name=".Friend.AddFriendActivity"/>
+        <activity android:name=".Friend.UserPageActivity"/>
+        <activity android:name=".Chat.ChatActivity"/>
+        <activity android:name=".Chat.UserSelectActivity"/>
+        <activity android:name=".Feed.SearchPhotoActivity"/>
+        <activity android:name=".Feed.UploadPhotoActivity"/>
+        <activity android:name=".Setting.add_block_message"/>
+        <activity android:name=".Setting.block_message"/>
+        <activity android:name=".Setting.blocked_user"/>
+        <activity android:name=".Setting.change_password"/>
+        <activity android:name=".Setting.del_block_message"/>
+        <activity android:name=".Setting.edit_block_message"/>
+        <activity android:name=".Setting.app_info"/>
 
     </application>
 
