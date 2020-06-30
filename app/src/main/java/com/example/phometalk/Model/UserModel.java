@@ -8,6 +8,7 @@ public class UserModel {
     private String birth;
     private String uID;
     private Boolean check;
+    private String profile;
 
     public UserModel(){}
 
@@ -57,5 +58,13 @@ public class UserModel {
 
     public Boolean getCheck() {
         return check;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public String getProfile() {
+        return profile;
     }
 }

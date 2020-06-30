@@ -9,10 +9,13 @@ import android.widget.ImageView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.phometalk.R;
+import com.example.phometalk.Activity.IntroActivity;
+import com.example.phometalk.Feed.FeedAdapter;
+import com.example.phometalk.Feed.FragmentFeed;
 import com.example.phometalk.R;
 
 import java.util.ArrayList;
@@ -20,9 +23,11 @@ import java.util.ArrayList;
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
     Context context;
     ArrayList<Image> imageArrayList;
-    public ImageAdapter(Context context, ArrayList<Image> videos){
+    int mode=1;
+    public ImageAdapter(Context context, ArrayList<Image> videos, int mode){
         this.context =context;
         this.imageArrayList =videos;
+        this.mode=mode;
     }
     @NonNull
     @Override
@@ -32,26 +37,53 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-        Image item = imageArrayList.get(position);
+        int size;
+        if(mode==1)
+            size=imageArrayList.size()-position-1;
+        else
+            size=position;
+        final Image item = imageArrayList.get(size);
         holder.tag.setText("#"+item.getType());
         Glide.with(context).load(item.getUrl()).into(holder.photo);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onItemClickListener!=null){
-                    onItemClickListener.onItemClick(position);
-                }
-            }
-        });
+
+        if (IntroActivity.dbHelper.searchItem(item.getUrl())) {
+            holder.star.setBackgroundResource(R.drawable.feed_heart);
+        } else {
+            holder.star.setBackgroundResource(R.drawable.feed_full_heart);
+        }
         holder.star.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 if(holder.star.isChecked()){
-                    holder.star.setBackgroundResource(R.drawable.full_star);
+                    holder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                    IntroActivity.dbHelper.pblInsert(item.getUrl(),item.getType());
                 }
                 else{
-                    holder.star.setBackgroundResource(R.drawable.empty_star);
+                    holder.star.setBackgroundResource(R.drawable.feed_heart);
+                    IntroActivity.dbHelper.pblDelete(item.getUrl());
                 }
+            }
+        });
+
+        holder.tag.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                String tagtext=holder.tag.getText().toString();
+                tagtext=tagtext.substring(1);
+                ArrayList<Image> tagItems=new ArrayList<>();
+                for(int i=0;i<imageArrayList.size();i++) {
+                    Image entity = new Image();
+
+                    if(tagtext.equals(imageArrayList.get(i).getType())) {
+                        entity.setUrl(imageArrayList.get(i).getUrl());
+                        entity.setType(imageArrayList.get(i).getType());
+                        tagItems.add(entity);
+                    }
+                }
+
+                ImageAdapter myAdapter = new ImageAdapter(context,tagItems,1);
+                FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context,2));
+                FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
             }
         });
     }
@@ -71,13 +103,5 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             photo = itemView.findViewById(R.id.tag_photo);
             star=itemView.findViewById(R.id.star_btn);
         }
-    }
-    interface OnItemClickListener{
-        void onItemClick(int position);
-    }
-    OnItemClickListener onItemClickListener;
-
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
-        this.onItemClickListener = onItemClickListener;
     }
 }

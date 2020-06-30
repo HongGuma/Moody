@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activity.MainActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#ffffff">
 
     <FrameLayout
         android:id="@+id/content"
@@ -16,8 +17,12 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/windowBackground"
+        android:layout_height="77dp"
+        android:background="@drawable/bottom_bar"
+        app:elevation="50dp"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconSize="16dp"
+
         app:menu="@menu/main_menu">
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>

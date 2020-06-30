@@ -1,48 +1,61 @@
 package com.example.phometalk.Sign;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.phometalk.Activity.LoginActivity;
+import com.example.phometalk.Model.UserModel;
 import com.example.phometalk.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class SignActivity extends AppCompatActivity {
     private static final String TAG = "SignActivity";
-    private FirebaseAuth mAuth; //이메일,비밀번호 로그인 모듈 변수
-    private FirebaseUser currentUser; //현재 로그인된 유저 정보 담는 변수
-    private FirebaseDatabase database;
-
+    private FirebaseDatabase database= FirebaseDatabase.getInstance();
+    private Boolean check = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign);
 
-        mAuth = FirebaseAuth.getInstance();
-
         final EditText signEmail = (EditText)findViewById(R.id.sign_input_email);
         final Button nextBtn = (Button)findViewById(R.id.sign_nextBtn);
         final Button backBtn = (Button)findViewById(R.id.sign_backBtn);
 
+        nextBtn.setVisibility(View.VISIBLE);
         nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 String email  = signEmail.getText().toString();
 
-                //email값 전달
-                Intent intent = new Intent(getApplicationContext(),SignPwActivity.class);
-                intent.putExtra("semail",email);
-                startActivity(intent);
+                if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                    Toast toast =Toast.makeText(SignActivity.this,"이메일 형식이 아닙니다.",Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL,Gravity.CENTER,0);
+                    toast.show();
+                }else {
+                    EmailCheck(email);
+                }
+
+
             }
         });
 
@@ -54,6 +67,48 @@ public class SignActivity extends AppCompatActivity {
         });
 
     }
+
+    //키보드 내리기
+    public boolean onTouchEvent(MotionEvent event) {
+        EditText email = (EditText)findViewById(R.id.sign_input_email);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(email.getWindowToken(), 0);
+        return true;
+    }
+
+    public void EmailCheck(final String inEmail){
+        database.getReference("userInfo").orderByChild("email").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserModel um;
+                for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                    um=dataSnapshot1.getValue(UserModel.class);
+                    if(um.getEmail().equals(inEmail)){
+                        check=false;
+                        break;
+                    }else{
+                        check=true;
+                    }
+                }
+                if(check==false) {
+                    Toast toast = Toast.makeText(SignActivity.this, "중복된 이메일입니다.", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL, Gravity.CENTER, 0);
+                    toast.show();
+                }else{
+                    Intent intent = new Intent(getApplicationContext(), SignPwActivity.class);
+                    intent.putExtra("semail", inEmail);
+                    startActivity(intent);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 
 
 }

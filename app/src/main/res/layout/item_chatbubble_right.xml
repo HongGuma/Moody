@@ -3,7 +3,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorWhite">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,7 +13,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/tvChat"
-        android:background="@drawable/chat_bubble_right"
+        android:background="@drawable/chat_bubble"
         android:padding="12dp"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"

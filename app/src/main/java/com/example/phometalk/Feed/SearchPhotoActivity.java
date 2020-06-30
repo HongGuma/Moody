@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.phometalk.Activity.MainActivity;
 import com.example.phometalk.Feed.FragmentFeed;
 import com.example.phometalk.R;
 
@@ -24,7 +25,8 @@ public class SearchPhotoActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), FragmentFeed.class);
+                Intent intent = new Intent(SearchPhotoActivity.this, MainActivity.class);
+                intent.putExtra("fragment","feed");
                 startActivity(intent);
             }
         });

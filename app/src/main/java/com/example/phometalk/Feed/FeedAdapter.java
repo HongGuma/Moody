@@ -1,17 +1,20 @@
 package com.example.phometalk.Feed;
 
-import android.os.Bundle;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ToggleButton;
+
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.phometalk.R;
-import com.example.phometalk.Feed.FragmentFeed;
+import com.bumptech.glide.Glide;
+import com.example.phometalk.Activity.IntroActivity;
 import com.example.phometalk.Model.FeedItems;
+import com.example.phometalk.R;
 
 import java.util.ArrayList;
 
@@ -21,7 +24,6 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         ImageView image;
         Button tag;
         ToggleButton star;
-
         MyViewHolder(View view){
             super(view);
             image = view.findViewById(R.id.tag_photo);
@@ -29,8 +31,12 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
             star=view.findViewById(R.id.star_btn);
         }
     }
-
+    Context context;
     private ArrayList<FeedItems> feedDataArrayList;
+    public FeedAdapter(Context context, ArrayList<FeedItems> feedDataArrayList){
+        this.context=context;
+        this.feedDataArrayList = feedDataArrayList;
+    }
     public FeedAdapter(ArrayList<FeedItems> feedDataArrayList){
         this.feedDataArrayList = feedDataArrayList;
     }
@@ -49,25 +55,44 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
 
         //이미지 출력
-        myViewHolder.image.setImageBitmap(feedDataArrayList.get(position).getImage());
-        myViewHolder.tag.setText("#" + feedDataArrayList.get(position).getTag());
-        if (feedDataArrayList.get(position).getStar() == 0) {
-            myViewHolder.star.setBackgroundResource(R.drawable.empty_star);
-        } else {
-            myViewHolder.star.setBackgroundResource(R.drawable.full_star);
+        if(feedDataArrayList.get(position).getUrl()==null) {
+            myViewHolder.image.setImageBitmap(feedDataArrayList.get(position).getImage());
+        }
+        else{
+            Glide.with(context).load(feedDataArrayList.get(position).getUrl()).into(myViewHolder.image);
         }
 
-        //즐겨찾기 추가
+        myViewHolder.tag.setText("#" + feedDataArrayList.get(position).getTag());
+        if (feedDataArrayList.get(position).getStar() == 1) {
+            myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
+        }
+        else if(!IntroActivity.dbHelper.searchItem(feedDataArrayList.get(position).getUrl())){
+            myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
+        }
+        else {
+            myViewHolder.star.setBackgroundResource(R.drawable.feed_heart);
+        }
+
+        //즐겨찾기 추가 및 해제
         myViewHolder.star.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 if(myViewHolder.star.isChecked()){
-                    myViewHolder.star.setBackgroundResource(R.drawable.full_star);
-                    FragmentFeed.dbHelper.setStar(1, position+1);
+                    myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                    if(feedDataArrayList.get(position).getUrl()==null) {
+                        IntroActivity.dbHelper.setStar(1, feedDataArrayList.get(position).getId());
+                    }
+                    else{
+                        IntroActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag());
+                    }
                 }
                 else{
-                    myViewHolder.star.setBackgroundResource(R.drawable.empty_star);
-                    FragmentFeed.dbHelper.setStar(0, position+1);
+                    myViewHolder.star.setBackgroundResource(R.drawable.feed_heart);
+                    if(feedDataArrayList.get(position).getUrl()==null) {
+                        IntroActivity.dbHelper.setStar(0,feedDataArrayList.get(position).getId());
+                    }
+                    else
+                        IntroActivity.dbHelper.pblDelete(feedDataArrayList.get(position).getUrl());
                 }
             }
         });
@@ -78,10 +103,25 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
             public void onClick(View view){
                 String tagtext=myViewHolder.tag.getText().toString();
                 tagtext=tagtext.substring(1);
+                int chk=0;
+                ArrayList<FeedItems> tagItems= IntroActivity.dbHelper.getTagItems(tagtext);
+                for(int i=0;i<feedDataArrayList.size();i++){
+                    if(feedDataArrayList.get(i).getUrl()!=null)
+                        chk=1;
+                }
+                if(chk==1) {
+                    for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
+                        FeedItems entity = new FeedItems();
 
-                ArrayList<FeedItems> tagItems= FragmentFeed.dbHelper.getTagItems(tagtext);
-                FeedAdapter myAdapter = new FeedAdapter(tagItems);
-
+                        if (tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
+                            entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                            entity.setTag(IntroActivity.publicItems.get(i).getType());
+                            tagItems.add(entity);
+                        }
+                    }
+                }
+                FeedAdapter myAdapter = new FeedAdapter(context,tagItems);
+                FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context,2));
                 FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
             }
         });

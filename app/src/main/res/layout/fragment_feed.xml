@@ -5,85 +5,66 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"  >
+    android:orientation="vertical"
+    android:background="@color/colorWhite">
 
     <LinearLayout
+        android:id="@+id/layout1"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="133dp"
+        android:background="@drawable/roundcorner"
+        android:elevation="50dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:outlineSpotShadowColor="@color/cardview_dark_background">
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="287dp"
-            android:layout_height="wrap_content"
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="18dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="15.04dp"
             android:layout_weight="1"
-            android:text="피드"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/feed_upload_btn"
-            android:layout_width="wrap_content"
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="262dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="Feed"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#707070"
+                android:textSize="13dp" />
+
+            <Button
+                android:id="@+id/feed_search_btn"
+                android:layout_width="15.04dp"
+                android:layout_height="15.04dp"
+                android:layout_gravity="center"
+                android:background="@drawable/feed_search" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <Space
+            android:layout_width="399dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="등록" />
+            android:layout_weight="1" />
 
-        <Button
-            android:id="@+id/feed_search_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="검색" />
-
-        <Button
-            android:id="@+id/firebase_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="firebase" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/feed_public_btn"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="#D5D5D5"
-            android:layout_marginHorizontal="5dp"
-            android:text="공용" />
-
-        <Button
-            android:id="@+id/feed_private_btn"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="#D5D5D5"
-            android:layout_marginHorizontal="5dp"
-            android:text="개인" />
-
-        <Button
-            android:id="@+id/feed_tag_btn"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="5dp"
-            android:layout_weight="1"
-            android:background="#D5D5D5"
-            android:text="#" />
-
-        <Button
-            android:id="@+id/feed_mark_btn"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="#D5D5D5"
-            android:layout_marginHorizontal="5dp"
-            android:text="즐겨찾기" />
     </LinearLayout>
 
     <Spinner
@@ -91,16 +72,99 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:entries="@array/selmode"
-        android:textAlignment="textEnd"/>
+        android:textAlignment="textEnd" />
 
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/feed_recyclerview"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/layout"
+                android:layout_width="55dp"
+                android:layout_height="283dp"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/feed_public_btn"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/feed_btn"
+                    android:rotation="270"
+                    android:stateListAnimator="@null"
+                    android:text="Public"
+                    android:textAllCaps="false"
+                    android:textColor="#707070"
+                    android:textSize="12dp" />
+
+                <Button
+                    android:id="@+id/feed_private_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/feed_btn"
+                    android:rotation="270"
+                    android:stateListAnimator="@null"
+                    android:text="Personal"
+                    android:textAllCaps="false"
+                    android:textColor="#707070"
+                    android:textSize="12dp" />
+
+                <Button
+                    android:id="@+id/feed_tag_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/feed_btn"
+                    android:rotation="270"
+                    android:stateListAnimator="@null"
+                    android:text="Tag"
+                    android:textAllCaps="false"
+                    android:textColor="#707070"
+                    android:textSize="12dp" />
+
+                <Button
+                    android:id="@+id/feed_mark_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/feed_btn"
+                    android:rotation="270"
+                    android:stateListAnimator="@null"
+                    android:text="Favorites"
+                    android:textAllCaps="false"
+                    android:textColor="#707070"
+                    android:textSize="12dp" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/feed_recyclerview"
+                android:layout_width="357dp"
+                android:layout_height="599dp"></androidx.recyclerview.widget.RecyclerView>
+
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/feed_upload_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="30dp"
+            android:backgroundTint="#BC96FA"
+            android:src="@drawable/friend_plus"
+            app:backgroundTintMode="src_in"
+            app:borderWidth="0dp"
+            app:fabSize="normal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
 
 
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

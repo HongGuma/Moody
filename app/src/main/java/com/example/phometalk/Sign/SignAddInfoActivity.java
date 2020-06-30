@@ -1,9 +1,13 @@
 package com.example.phometalk.Sign;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -24,7 +28,6 @@ import java.util.HashMap;
 public class SignAddInfoActivity extends Activity {
     private static final String TAG = "SignActivity";
     private FirebaseAuth mAuth; //이메일,비밀번호 로그인 모듈 변수
-    private FirebaseUser currentUser; //현재 로그인된 유저 정보 담는 변수
     private FirebaseDatabase database;
 
     @Override
@@ -32,7 +35,7 @@ public class SignAddInfoActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_info);
         mAuth = FirebaseAuth.getInstance(); //이메일 비밀번호 로그인 모듈 변수
-        currentUser = mAuth.getCurrentUser();
+
 
         final EditText userName = (EditText)findViewById(R.id.sign_input_name);
         final EditText userBirth = (EditText)findViewById(R.id.sign_input_birth);
@@ -58,13 +61,11 @@ public class SignAddInfoActivity extends Activity {
                 final String email = intentData.getExtras().getString("email");
                 final String password = intentData.getExtras().getString("pw");
 
-
-
                 database = FirebaseDatabase.getInstance();
-                final DatabaseReference myRef = database.getReference("userInfo").child(currentUser.getUid());
+                final DatabaseReference myRef = database.getReference("userInfo").child(mAuth.getCurrentUser().getUid());
 
                 HashMap<String, String> users = new HashMap<String, String>();
-                users.put("uID",currentUser.getUid());
+                users.put("uID",mAuth.getCurrentUser().getUid());
                 users.put("email",email);
                 users.put("password",password);
                 users.put("name",name);
@@ -74,11 +75,10 @@ public class SignAddInfoActivity extends Activity {
                     //database에 값 전달이 성공되면
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(SignAddInfoActivity.this,"가입 완료. 로그인 해주세요",Toast.LENGTH_SHORT).show();
-                        //Intent intent = new Intent(SignAddInfoActivity.this, LoginActivity.class);
-                        //intent.putExtra("userName",name);
+                        Toast toast = Toast.makeText(SignAddInfoActivity.this,"가입 완료. 로그인 해주세요",Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_HORIZONTAL, Gravity.CENTER, 0);
+                        toast.show();
                         startActivity(new Intent(SignAddInfoActivity.this, LoginActivity.class));
-
                         finish();
                     }
                 });
@@ -89,6 +89,12 @@ public class SignAddInfoActivity extends Activity {
         });
     }
 
-
+    //키보드 내리기
+    public boolean onTouchEvent(MotionEvent event) {
+        EditText email = (EditText)findViewById(R.id.sign_input_name);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(email.getWindowToken(), 0);
+        return true;
+    }
 
 }

@@ -1,12 +1,16 @@
 package com.example.phometalk.Model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ChatModel {
     //채팅 정보
     private String userName; //유저 이름
     private String msg; //메세지 내용
     private String uID; //유저 아이디
-    private String timestamp; //작성 시간
+    private Object timestamp; //작성 시간
     private String msgType; //메세지 타입
+    private Map<String,Object> readUsers = new HashMap<String,Object>(); //읽었는지 안읽었는지
 
 
     public void setUserName(String userName) {
@@ -25,11 +29,11 @@ public class ChatModel {
         return msg;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(Object timestamp) {
         this.timestamp = timestamp;
     }
 
-    public String getTimestamp() {
+    public Object getTimestamp() {
         return timestamp;
     }
 
@@ -47,5 +51,13 @@ public class ChatModel {
 
     public String getMsgType() {
         return msgType;
+    }
+
+    public void setReadUsers(Map<String, Object> readUsers) {
+        this.readUsers = readUsers;
+    }
+
+    public Map<String, Object> getReadUsers() {
+        return readUsers;
     }
 }

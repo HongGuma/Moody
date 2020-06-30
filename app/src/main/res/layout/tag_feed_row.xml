@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:layout_margin="5dp"
-    android:orientation="horizontal"
-    card_view:cardCornerRadius="5dp"
-    card_view:cardUseCompatPadding="true">
-
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:gravity="center_vertical">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/colorWhite">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,114 +16,31 @@
             <Button
                 android:id="@+id/seltag_btn"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginLeft="30dp"
+                android:background="#00ff0000"
+                android:text="#기쁨"
+                android:textColor="#707070"
                 android:textAlignment="textStart"
-                android:text="#기쁨" />
+                android:textSize="13dp" />
 
-            <LinearLayout
+            <ImageView
+                android:id="@+id/imageView5"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="193dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/tag_photo"
-                        android:layout_width="144dp"
-                        android:layout_height="100dp"
-                        tools:srcCompat="@tools:sample/avatars" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="47dp"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/tag_btn"
-                            android:layout_width="34dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="#태그"
-                            android:textAlignment="textStart" />
-
-                        <View
-                            android:id="@+id/divider6"
-                            android:layout_width="54dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="?android:attr/listDivider" />
-
-                        <ImageButton
-                            android:id="@+id/star_btn"
-                            android:layout_width="2dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="#FFFFFF"
-                            card_view:srcCompat="@android:drawable/btn_star_big_off" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="232dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/tag_photo2"
-                        android:layout_width="144dp"
-                        android:layout_height="98dp"
-                        android:layout_weight="1"
-                        tools:srcCompat="@tools:sample/avatars" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="47dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/tag_btn2"
-                            android:layout_width="24dp"
-                            android:layout_height="35dp"
-                            android:layout_weight="1"
-                            android:background="#DAD5D5"
-                            android:text="#태그"
-                            android:textAlignment="textStart" />
-
-                        <View
-                            android:id="@+id/divider8"
-                            android:layout_width="96dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="?android:attr/listDivider" />
-
-                        <ImageButton
-                            android:id="@+id/star_btn2"
-                            android:layout_width="3dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="#FFFFFF"
-                            card_view:srcCompat="@android:drawable/btn_star_big_on" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                app:srcCompat="@drawable/feed_bar" />
 
 
-            </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/tag_recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="171dp" />
+
         </LinearLayout>
 
 
-    </RelativeLayout>
 
-
-</androidx.cardview.widget.CardView>
+</LinearLayout>

@@ -7,7 +7,8 @@ public class ChatRoomModel {
     private String roomID; //채팅방 id
     private HashMap<String,Boolean> users = new HashMap<String,Boolean>(); //사용자 id
     private String lastMsg; //마지막 메세지
-    private String lastTime; //마지막 시간
+    private Object lastTime; //마지막 시간
+    private String roomName; //채팅방 이름 (현재는 상대방 이름)
 
     public void setUsers(HashMap<String, Boolean> users) {
         this.users = users;
@@ -25,11 +26,11 @@ public class ChatRoomModel {
         return roomID;
     }
 
-    public void setLastTime(String lastTime) {
+    public void setLastTime(Object lastTime) {
         this.lastTime = lastTime;
     }
 
-    public String getLastTime() {
+    public Object getLastTime() {
         return lastTime;
     }
 
@@ -41,5 +42,11 @@ public class ChatRoomModel {
         return lastMsg;
     }
 
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
 
+    public String getRoomName() {
+        return roomName;
+    }
 }

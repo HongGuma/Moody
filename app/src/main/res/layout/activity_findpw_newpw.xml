@@ -54,7 +54,7 @@
             android:id="@+id/findpw_newPw"
             android:layout_width="320dp"
             android:layout_height="50dp"
-            android:background="@drawable/border"/>
+            android:background="@drawable/chat_send_icon"/>
     </LinearLayout>
 
 
@@ -82,7 +82,7 @@
             android:layout_marginTop="10dp"
             android:layout_width="320dp"
             android:layout_height="50dp"
-            android:background="@drawable/border" />
+            android:background="@drawable/chat_send_icon" />
     </LinearLayout>
 
     <Button

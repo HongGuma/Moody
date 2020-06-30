@@ -3,20 +3,20 @@
 
     <item
         android:id="@+id/menu_friend"
-        android:icon="@drawable/ic_person_black_24dp"
+        android:icon="@drawable/options"
         android:title="친구목록"
         />
     <item
         android:id="@+id/menu_chatting"
-        android:icon="@drawable/ic_chat_black_24dp"
+        android:icon="@drawable/comment"
         android:title="채팅"/>
     <item
         android:id="@+id/menu_feed"
-        android:icon="@drawable/ic_insert_photo_black_24dp"
+        android:icon="@drawable/feed"
         android:title="피드"/>
     <item
         android:id="@+id/menu_setting"
-        android:icon="@drawable/ic_settings_black_24dp"
+        android:icon="@drawable/user"
         android:title="설정"/>
 
 </menu>

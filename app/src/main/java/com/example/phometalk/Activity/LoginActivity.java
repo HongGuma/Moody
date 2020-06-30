@@ -1,9 +1,13 @@
 package com.example.phometalk.Activity;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -15,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.phometalk.FindPW.FindActivity;
 import com.example.phometalk.R;
 import com.example.phometalk.Sign.SignActivity;
-import com.example.phometalk.Sign.SignPwActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApiNotAvailableException;
@@ -59,7 +62,7 @@ public class LoginActivity extends AppCompatActivity {
         signBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(LoginActivity.this,"회원가입 버튼 클릭",Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LoginActivity.this,"회원가입 버튼 클릭",Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(LoginActivity.this, SignActivity.class));
 
             }
@@ -69,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
         findBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(LoginActivity.this,"비밀번호 찾기 버튼 클릭",Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LoginActivity.this,"비밀번호 찾기 버튼 클릭",Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(LoginActivity.this, FindActivity.class));
             }
         });
@@ -86,13 +89,21 @@ public class LoginActivity extends AppCompatActivity {
                     try{
                         throw task.getException();
                     }catch (FirebaseApiNotAvailableException e){
-                        Toast.makeText(LoginActivity.this,"등록되지 않은 이메일 입니다.", Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(LoginActivity.this,"등록되지 않은 이메일 입니다.", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_HORIZONTAL,Gravity.CENTER,0);
+                        toast.show();
                     }catch (FirebaseAuthInvalidCredentialsException e){
-                        Toast.makeText(LoginActivity.this,"이메일/비밀번호가 틀렸습니다.",Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(LoginActivity.this,"이메일/비밀번호가 틀렸습니다.",Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_HORIZONTAL,Gravity.CENTER,0);
+                        toast.show();
                     }catch (FirebaseNetworkException e){
-                        Toast.makeText(LoginActivity.this,"Firebase NetworkException",Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(LoginActivity.this,"Firebase NetworkException",Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_HORIZONTAL,Gravity.CENTER,0);
+                        toast.show();
                     }catch (Exception e){
-                        Toast.makeText(LoginActivity.this,"다시확인해주세요.",Toast.LENGTH_SHORT).show();
+                        Toast toast = Toast.makeText(LoginActivity.this,"다시확인해주세요.",Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER_HORIZONTAL,Gravity.CENTER,0);
+                        toast.show();
                     }
                 }else{
                     currentUser = mAuth.getCurrentUser(); //성공시
@@ -114,6 +125,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
 
@@ -122,6 +134,16 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+
+
+
+    //키보드 내리기
+    public boolean onTouchEvent(MotionEvent event) {
+        EditText email = (EditText)findViewById(R.id.login_email);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(email.getWindowToken(), 0);
+        return true;
+    }
 
 
 }

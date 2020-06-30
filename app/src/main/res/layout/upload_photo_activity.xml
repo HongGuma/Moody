@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#ffffff">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -16,83 +17,110 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
+            android:id="@+id/Layout1"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="121dp"
+            android:background="@drawable/roundcorner"
+            android:elevation="50dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:outlineSpotShadowColor="@color/cardview_dark_background"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <ImageButton
+
+            <Button
                 android:id="@+id/upload_back_btn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_margin="10dp"
-                android:background="@drawable/ic_arrow_back_black_24dp" />
-
+                android:layout_width="14.15dp"
+                android:layout_height="10.85dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="15dp"
+                android:background="@drawable/chat_back"
+                android:stateListAnimator="@null" />
 
             <TextView
-                android:id="@+id/uploadlbl"
-                android:layout_width="match_parent"
+                android:id="@+id/upload_lbl"
+                android:layout_width="262dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_weight="1"
-                android:text="사진 등록"
+                android:text="Upload photo"
                 android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#707070"
+                android:textSize="13dp" />
+
+            <Button
+                android:id="@+id/upload_okBtn"
+                android:layout_width="2dp"
+                android:layout_height="35dp"
+                android:layout_weight="1"
+                android:background="@drawable/friend_plus" />
+
+            <Space
+                android:layout_width="15dp"
+                android:layout_height="wrap_content"/>
+
         </LinearLayout>
 
-        <View
-            android:id="@+id/divider7"
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:background="?android:attr/listDivider" />
-
-        <TextView
-            android:id="@+id/textView9"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="사진"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-        <EditText
-            android:id="@+id/tag_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="104dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="50dp">
 
-            <ImageView
-                android:id="@+id/upload_image"
-                android:layout_width="190dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:src="@drawable/gallery" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="104dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/upload_sel_btn"
-                android:layout_width="53dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="사진선택" />
+                <Space
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
 
+                <ImageView
+                    android:id="@+id/upload_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/gallery" />
+
+                <Space
+                    android:layout_width="29dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/upload_sel_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginRight="70dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/friend_chat"
+                    android:text="Select photo"
+                    android:textAllCaps="false"
+                    android:textColor="#9F9F9F" />
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/tag_field"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:ems="10"
+                android:layout_marginTop="30dp"
+                android:layout_gravity="center"
+                android:inputType="textPersonName"
+                android:textSize="13dp"
+                android:textColor="#9F9F9F"
+                android:background="@drawable/chat_message_bar"/>
         </LinearLayout>
 
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/upload_okBtn"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="30dp"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="30dp"
-        android:text="등록"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
