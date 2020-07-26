@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:text="time"
         android:layout_marginLeft="8dp"
-        android:layout_marginBottom="3dp"
+        android:layout_marginBottom="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/ivChat" />
 

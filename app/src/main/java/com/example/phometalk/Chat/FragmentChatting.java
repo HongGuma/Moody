@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,6 +52,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class FragmentChatting extends Fragment {
@@ -62,6 +64,7 @@ public class FragmentChatting extends Fragment {
     private RecyclerView crRecyclerView;
     private ChatRoomListAdapter crAdapter;
     private ArrayList<ChatRoomModel> cList = new ArrayList<ChatRoomModel>();
+    private Map<String,Object> users = new HashMap<>();
 
     private String uid;
     private String roomID;
@@ -76,7 +79,6 @@ public class FragmentChatting extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance(); //db초기화
         ChatListDisplay();
-
     }
 
     @Nullable
@@ -153,9 +155,8 @@ public class FragmentChatting extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 cList.clear();
-                ChatRoomModel room;
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    room = dataSnapshot1.getValue(ChatRoomModel.class);
+                    ChatRoomModel room = dataSnapshot1.getValue(ChatRoomModel.class);
                     Iterator<String> iter = room.getUsers().keySet().iterator();
                     //users에서 상대방 id 찾는다.
                     while (iter.hasNext()) {
@@ -173,6 +174,8 @@ public class FragmentChatting extends Fragment {
 
     }
 
+
+
     //=======================================================================================================================
 
     class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapter.ViewHolder> {
@@ -181,10 +184,11 @@ public class FragmentChatting extends Fragment {
         private ArrayList<ChatRoomModel> chatRoomList; //전체 데이터
         private ArrayList<ChatRoomModel> filterList; //검색된 데이터
 
-        private ArrayList<String> recID = new ArrayList<String>(); //상대방 id
-        private ArrayList<String> recName = new ArrayList<String>();//상대방 이름
-        private ArrayList<String> recProfile = new ArrayList<String>();//상대방 프로필
-        private ArrayList<String> rID = new ArrayList<String>(); //채팅방 id
+        private ArrayList<String> user = new ArrayList<>(); //상대방 id
+        private ArrayList<String> roomID = new ArrayList<String>(); //채팅방 id
+        private ArrayList<String> profiles = new ArrayList<>();// 프로필
+        private Map<Integer,String> names = new HashMap<>();//상대방 이름
+        private Map<Integer,String> recID = new HashMap<>();//상대방 id
 
         SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
 
@@ -192,107 +196,159 @@ public class FragmentChatting extends Fragment {
         public ChatRoomListAdapter(ArrayList<ChatRoomModel> list) {
             this.chatRoomList = list;
             this.filterList = list;
+
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             ImageView userImage;
-            TextView username;
+            ImageView userImage1;
+            ImageView userImage2;
+            ImageView userImage3;
+            ImageView userImage4;
+            TextView roomName;
             TextView lastMsg;
             TextView time;
-            ConstraintLayout itemLayout;
+            LinearLayout itemLayout;
+            TextView msgCount;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 userImage = (ImageView) itemView.findViewById(R.id.chat_image);
-                username = (TextView) itemView.findViewById(R.id.chat_user);
+                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image1);
+                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image2);
+                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image3);
+                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image4);
+                roomName = (TextView) itemView.findViewById(R.id.chat_room_name);
                 lastMsg = (TextView) itemView.findViewById(R.id.chat_lastMsg);
                 time = (TextView) itemView.findViewById(R.id.chat_time);
-                itemLayout = (ConstraintLayout) itemView.findViewById(R.id.chat_item_layout);
+                itemLayout = (LinearLayout) itemView.findViewById(R.id.chatList_layout);
+                msgCount = (TextView) itemView.findViewById(R.id.msg_count);
             }
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if(filterList.get(position).getUsers().size()>2){ //그룹채팅
+                return 2;
+            }
+            return 1; //아니면 1:1 채팅
         }
 
         @NonNull
         @Override
         public ChatRoomListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chatlist, parent, false);
+            View view;
+
+            if(viewType == 1){
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chatlist, parent, false);
+            }else{
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_group_chatlist, parent, false);
+            }
 
             ViewHolder vh = new ViewHolder(view);
-
             return vh;
         }
 
-        @Override
-        public int getItemViewType(int position) {
 
-            return super.getItemViewType(position);
-        }
 
         @Override
         public void onBindViewHolder(@NonNull final ChatRoomListAdapter.ViewHolder holder, final int position) {
-            rID.add(filterList.get(position).getRoomID());//
-            String rec = null;
+            roomID.add(filterList.get(position).getRoomID());
 
-            //채팅방에 있는 유저 체크
-            for (String user : filterList.get(position).getUsers().keySet()) {
-                if (!user.equals(uid)) {
-                    rec = user;
-                    recID.add(rec);//
-                }
+
+            user.clear();
+            for(String id: filterList.get(position).getUsers().keySet()){
+                if(!id.equals(currentUser.getUid()))
+                    user.add(id);
             }
 
-            //상대방 정보
-            database.getReference("userInfo").child(rec).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    UserModel um = dataSnapshot.getValue(UserModel.class);
-                    if (!um.getProfile().equals(""))
-                        Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
-                    holder.username.setText(um.getName());
-                    recName.add(um.getName());//
-                    recProfile.add(um.getProfile());
 
-                }
+            for(int i=0; i<filterList.get(position).getUsers().size()-1; i++){
+                database.getReference("userInfo").child(user.get(i)).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        UserModel um = dataSnapshot.getValue(UserModel.class);
+                        holder.roomName.setText(um.getName());
+                        names.put(position,um.getName());
+                        recID.put(position,um.getName());
+                        if(filterList.get(position).getUsers().size()==2){ //개인채팅방
+                            //if(!um.getProfile().equals("")) {
+                                Glide.with(holder.userImage.getContext())
+                                        .load(um.getProfile())
+                                        .apply(new RequestOptions().circleCrop())
+                                        .error(R.drawable.friend_profile)
+                                        .into(holder.userImage);
+                            //}
+                        }else{ //단체 채팅방
+                            if(!um.getProfile().equals("")) {
+                                profiles.add(position,um.getProfile());
+                                Glide.with(holder.userImage1.getContext())
+                                        .load(um.getProfile())
+                                        .apply(new RequestOptions().circleCrop())
+                                        .error(R.drawable.friend_profile)
+                                        .into(holder.userImage1);
+                            }
+                        }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                }
-            });
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError){}
+                });
 
-            //채팅방 정보 꺼내서 출력
-            database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            }
+
+            database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     ChatRoomModel crm = dataSnapshot.getValue(ChatRoomModel.class);
-                    holder.lastMsg.setText(crm.getLastMsg()); //마지막 메시지
-
-                    //시간 포멧
+                    //시간 포맷
                     long unixTime = (long) crm.getLastTime();
                     Date date = new Date(unixTime);
                     writeTimeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
                     String time = writeTimeFormat.format(date);
-                    //마지막 시간출력
+                    //시간 출력
                     holder.time.setText(time);
+                    //마지막 메시지
+                    holder.lastMsg.setText(crm.getLastMsg());
+                    //채팅방 이름(단톡방만)
+                    if(!crm.getRoomName().equals("")){
+                        holder.roomName.setText(crm.getRoomName());
+                        names.remove(position);
+                        names.put(position,crm.getRoomName());
+                    }
+
                 }
 
                 @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                }
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
             });
 
+            MessageCount(position,holder.msgCount,filterList.get(position).getRoomID());
 
             holder.itemLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), ChatActivity.class);
-                    intent.putExtra("recName", filterList.get(position).getRoomName());
-                    intent.putExtra("receiver", recID.get(position));
-                    intent.putExtra("roomid", rID.get(position));
-                    intent.putExtra("recProfile", recProfile.get(position));
-                    intent.putExtra("check", "1");
+                    Intent intent = new Intent(getContext(), ChatActivity.class);
+                    intent.putExtra("roomid", roomID.get(position));
+                    if(filterList.get(position).getUsers().size()>2) {
+                        //단체 채팅방
+                        intent.putExtra("name",names.get(position)); //채팅방 이름 전달
+                        intent.putExtra("check", "2");
+                        startActivity(intent);
+                    }else {
+                        //개인 채팅방
+                        intent.putExtra("name",names.get(position)); //이름 전달
+                        intent.putExtra("receiver",recID.get(position)); //id 전달
+                        Log.d(TAG, "onClick: recID="+recID.get(position));
+                        intent.putExtra("check", "1");
+                        startActivity(intent);
+                    }
 
-                    startActivity(intent);
+
                 }
             });
+
+
 
 
         }
@@ -331,6 +387,37 @@ public class FragmentChatting extends Fragment {
                     notifyDataSetChanged();
                 }
             };
+        }
+
+        public void MessageCount(int position, final TextView msgCount, String rID){
+            database.getReference("Message").child(rID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    int count = 0;
+                    for(DataSnapshot dataSnapshot1: dataSnapshot.getChildren()){
+                        ChatModel cm = dataSnapshot1.getValue(ChatModel.class);
+                        for(String user:cm.getReadUsers().keySet()){
+                            if(!user.equals(currentUser.getUid())){
+                                count++;
+                            }else{
+                                count--;
+                            }
+
+                        }
+
+                    }
+                    if(count >0){
+                        msgCount.setVisibility(View.VISIBLE);
+                        msgCount.setText(String.valueOf(count));
+                    }else{
+                        msgCount.setVisibility(View.INVISIBLE);
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
+            });
         }
 
     }

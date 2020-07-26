@@ -133,7 +133,8 @@ public class FragmentFriend extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel um = dataSnapshot.getValue(UserModel.class);
                 name.setText(um.getName());
-                Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
+                if(!um.getProfile().equals(""))
+                    Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
             }
 
             @Override
@@ -269,7 +270,7 @@ public class FragmentFriend extends Fragment {
                     ChatRoomModel croom = null;
                     for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                         croom = dataSnapshot1.getValue(ChatRoomModel.class); // 사용자가 속한 채팅방 정보만 담김
-                        if(croom.getUsers().size() <= 2){ //1:1 채팅방인 경우만 찾는다.
+                        if(croom.getUsers().size() == 2){ //1:1 채팅방인 경우만 찾는다.
                             Iterator<String> iter = croom.getUsers().keySet().iterator();
                             //users에서 상대방 id 찾는다.
                             while (iter.hasNext()) {
@@ -292,6 +293,7 @@ public class FragmentFriend extends Fragment {
                     if (check == true) {
                         //Toast.makeText(UserPageActivity.this,"채팅방 존재함",Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(getActivity(), ChatActivity.class);
+
                         intent.putExtra("roomid", roomid);
                         intent.putExtra("receiver", rec);
                         intent.putExtra("recName", name);
@@ -329,6 +331,7 @@ public class FragmentFriend extends Fragment {
                                 intent.putExtra("roomid", roomkey);
                                 intent.putExtra("receiver", rec);
                                 intent.putExtra("recName", name);
+                                intent.putExtra("check",1);
                                 startActivity(intent);
 
                             }

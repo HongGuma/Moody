@@ -29,6 +29,7 @@ import com.example.phometalk.Activity.MainActivity;
 import com.example.phometalk.Model.ChatModel;
 import com.example.phometalk.Model.FeedItems;
 
+import com.example.phometalk.Model.UserModel;
 import com.example.phometalk.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -69,26 +70,27 @@ public class AutoChatActivity extends Activity {
     private FirebaseUser currentUser;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-    //private ListView cListView
-    public static RecyclerView cRecyclerView;
-    public static RecyclerView tRecyclerView;
-    private ChatAdapter cAdapter;
+    public RecyclerView tRecyclerView;//태그 리사이클러뷰
+    public static RecyclerView chatRecyclerView;//채팅 내용 리사이클러뷰
+    private PersonalAdapter pAdapter; //1:1 채팅 어뎁터
+    private GroupAdapter gAdapter;//단체 채팅 어뎁터
 
     private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
 
-    public static ArrayList<String> uInfo = new ArrayList<String>();
     private String receiver;
     private String uid;
-    private String roomid;
-    private String receiverName;
-    private String receiverProfile;
+    public static String uName; //사용자 이름
+    public static String roomid; //채팅방 id
+    private String chatRoomName; //상단에 채팅방 이름
+    private String check;
+
     private String imageUrl;
     private int GET_GALLERY_IMAGE=200;
     public static String sText;
 
     //작성 시간
-    SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
-    //String writeTime = writeTimeFormat.format(Calendar.getInstance().getTime());
+    SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+    String date = dateFormat1.format(Calendar.getInstance().getTime());
     //사진 파일 이름
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
     String datetime = dateFormat.format(Calendar.getInstance().getTime());
@@ -101,27 +103,31 @@ public class AutoChatActivity extends Activity {
         mAuth = FirebaseAuth.getInstance();//현재 로그인 정보
         currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();//현재 사용자 id
-        receiver = getIntent().getStringExtra("receiver"); //상대방 id
-        receiverName = getIntent().getStringExtra("recName"); //상대방 이름
-        receiverProfile = getIntent().getStringExtra("recProfile");//상대방 프로필
-        roomid=getIntent().getStringExtra("roomid");
-        mAuth = FirebaseAuth.getInstance();
+        UsersInfo();//현재 사용자 정보 가져오는 함수
 
-        UsersInfo(); //유저 정보 가져오기
+        roomid = getIntent().getStringExtra("roomid");//채팅방 id
 
+        TextView recUser = (TextView) findViewById(R.id.chatRoom_users);//채팅방 상단
+        final EditText sendText = (EditText) findViewById(R.id.chatRoom_text); //메세지 입력창
+        recUser.setText(chatRoomName);//채팅방 상단 이름 설정
 
-        TextView recUser = (TextView) findViewById(R.id.chatRoom_users);//채팅방 상단에 유저 이름
-        recUser.setText(receiverName);
+        chatRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView); //리사이클러뷰
+        chatRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정e
 
-        final EditText sendText = (EditText) findViewById(R.id.chatRoom_text);  //메세지 입력창
+        check = getIntent().getStringExtra("check");
 
-        cRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView); //리사이클러뷰
-        cRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정
+        if(check.equals("1")){//1:1 채팅
+            receiver = getIntent().getStringExtra("receiver"); //상대방 id
+            pAdapter = new PersonalAdapter(receiver,roomid,chatModels);
+            chatRecyclerView.setAdapter(pAdapter);
+            chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
 
-        cAdapter = new ChatAdapter(chatModels);//리사이클러뷰 어뎁터
-        cRecyclerView.setAdapter(cAdapter);
+        }else{//단체 채팅
+            gAdapter = new GroupAdapter(roomid,chatModels);
+            chatRecyclerView.setAdapter(gAdapter);
+            chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
 
-        //cRecyclerView.scrollToPosition(cAdapter.getItemCount());
+        }
 
         //버튼 선언
         Button backBtn = (Button) findViewById(R.id.chatRoom_backBtn);
@@ -172,13 +178,12 @@ public class AutoChatActivity extends Activity {
                     DatabaseReference ref = database.getReference("Message").child(roomid);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
-                    member.put("userName", uInfo.get(2)); //보낸 사람 이름
+                    member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", sText);
                     member.put("timestamp", ServerValue.TIMESTAMP);
                     member.put("msgType", "0");
-                    cRecyclerView.scrollToPosition(cAdapter.getItemCount() - 1);
                     sendText.setText(null);
-                    ref.push().setValue(member);
+                    ref.child(date).push().setValue(member);
 
                     HashMap<String, Object> chatroom = new HashMap<String, Object>();
                     chatroom.put("lastMsg",sText);
@@ -247,11 +252,11 @@ public class AutoChatActivity extends Activity {
                     DatabaseReference ref = database.getReference("Message").child(roomid);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
-                    member.put("userName", uInfo.get(2)); //보낸 사람 이름
+                    member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", imageUrl); //url
                     member.put("timestamp", ServerValue.TIMESTAMP); //작성 시간
                     member.put("msgType","1"); //메세지 타입
-                    ref.push().setValue(member); //DB에 저장
+                    ref.child(date).push().setValue(member); //DB에 저장
 
                     HashMap<String, Object> chatroom = new HashMap<String, Object>();
                     chatroom.put("lastMsg","사진");
@@ -267,12 +272,11 @@ public class AutoChatActivity extends Activity {
 
     public void UsersInfo() {
         //현재 로그인한 유저 정보 가져오기
-        database.getReference().child("userInfo").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+        database.getReference("userInfo").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                    uInfo.add((String)dataSnapshot1.getValue());
-                }
+                UserModel um = dataSnapshot.getValue(UserModel.class);
+                uName = um.getName();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
@@ -282,158 +286,6 @@ public class AutoChatActivity extends Activity {
 
 
     //==================================================================================================================//
-
-    public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
-        private static final String TAG = "ChatAdapter";
-
-        private ArrayList<ChatModel> chatModel;
-
-        //생성자에서 데이터 리스트 객체를 전달받음
-        public ChatAdapter(ArrayList<ChatModel> list){
-            chatModel=list;
-
-            //하위 이벤트 수신
-            ChildEventListener childEventListener = new ChildEventListener() {
-                //새로운 항목이 추가될때마다 다시 트리거 된다.
-
-
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                    //Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
-
-                    // A new comment has been added, add it to the displayed list
-                    ChatModel c = dataSnapshot.getValue(ChatModel.class);
-                    String commentKey = dataSnapshot.getKey();
-                    String uName = c.getUserName();
-                    String meg = c.getMsg();
-                    Object timestamp = c.getTimestamp();
-                    String type = c.getMsgType();
-                    chatModels.add(c);
-                    cAdapter.notifyDataSetChanged();
-
-                    cRecyclerView.scrollToPosition(cAdapter.getItemCount()-1);
-                    String a = Integer.toString(cAdapter.getItemCount());
-                }
-
-                //하위 노드가 수정될때마다 다시 트리거
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {  }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {  }
-
-                //항목 순서가 변경될때마다 다시 트리거
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {  }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {  }
-            };
-            DatabaseReference myRef = database.getReference("Message").child(roomid);
-            myRef.addChildEventListener(childEventListener);
-
-        }
-
-        //아이템 뷰를 저장하는 뷰홀더 클래스
-        public class ViewHolder extends RecyclerView.ViewHolder{
-            public ImageView userImage;
-            public TextView userName;
-            public TextView textView;
-            public TextView timestamp;
-            public ImageView sendPhoto;
-
-            ViewHolder(View view){
-                super(view);
-                userImage = (ImageView)view.findViewById(R.id.user_image);
-                userName = (TextView)view.findViewById(R.id.user_name);
-                textView = (TextView)view.findViewById(R.id.tvChat);
-                timestamp = (TextView)view.findViewById(R.id.timestamp);
-                sendPhoto = (ImageView)view.findViewById(R.id.ivChat);
-
-            }
-
-        }
-
-        //상대방이 보낸 메세지인지 구분
-        @Override
-        public int getItemViewType(int position) {
-            mAuth = FirebaseAuth.getInstance();
-            currentUser = mAuth.getCurrentUser();
-            if(chatModel.get(position).getUID().equals(currentUser.getUid())){
-                switch (chatModel.get(position).getMsgType()){
-                    case "0": return 1; //내가 보낸 텍스트
-                    case "1": return 2; //내가 보낸 사진
-                    default: return 1; //예외는 그냥 텍스트
-                }
-            }else {
-                switch (chatModel.get(position).getMsgType()){
-                    case "0": return 3; //상대방이 보낸 텍스트
-                    case "1": return 4; //상대방이 보낸 사진
-                    default: return 3; // 예외는 텍스트로
-                }
-            }
-
-        }
-
-        //아이템 뷰를 위한 뷰홀더 객체를 생성하여 리턴
-        @NonNull
-        @Override
-        public ChatAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view;
-            if(viewType == 1){
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chatbubble_right,parent,false);
-            }else if(viewType ==2){
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_photo_right,parent,false);
-            }else if(viewType == 4){
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_photo_left,parent,false);
-            }else{
-                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chatbubble_left,parent,false);
-            }
-
-            ChatAdapter.ViewHolder vh = new ChatAdapter.ViewHolder(view);
-
-            cRecyclerView.scrollToPosition(cAdapter.getItemCount()-1);
-            String a = Integer.toString(cAdapter.getItemCount());
-            Log.d(TAG, "onClick"+a);
-
-
-            return vh;
-
-        }
-
-
-        //position에 해당하는 데이터를 뷰홀더의 아이템뷰에 표시.
-        @Override
-        public void onBindViewHolder(@NonNull ChatAdapter.ViewHolder holder, int position) {
-            long unixTime = (long) chatModel.get(position).getTimestamp();
-            Date date = new Date(unixTime);
-            writeTimeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-            String time = writeTimeFormat.format(date);
-            holder.timestamp.setText(time);
-
-
-            if(chatModel.get(position).getMsgType().equals("0")){
-                holder.textView.setText(chatModel.get(position).getMsg());
-            }else{
-                Glide.with(holder.sendPhoto.getContext()).load(chatModel.get(position).getMsg()).into(holder.sendPhoto);
-            }
-
-
-            //내 uid가 아니면 다른 뷰가 오기 때문에
-            if(!chatModel.get(position).getUID().equals(currentUser.getUid())){
-                holder.userName.setText(chatModel.get(position).getUserName());
-            }
-
-
-        }
-
-        //개수만큼 아이템 생성
-        @Override
-        public int getItemCount() {
-            return chatModel.size();
-        }
-
-    }
 
     //키보드 내리기
     public boolean onTouchEvent(MotionEvent event) {

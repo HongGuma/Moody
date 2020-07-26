@@ -214,4 +214,10 @@ public class ProfilePageActivity extends AppCompatActivity {
         });
     }
 
+    //뒤로 가기 버튼 클릭시
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }

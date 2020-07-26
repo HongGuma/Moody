@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.phometalk.Activity.MainActivity;
 import com.example.phometalk.R;
 
 public class change_password  extends AppCompatActivity {
@@ -22,8 +23,10 @@ public class change_password  extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), FragmentSetting.class);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.putExtra("fragment", "setting");
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -33,8 +36,10 @@ public class change_password  extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(),"비밀번호가 변경되었어요", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(getApplicationContext(), FragmentSetting.class);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.putExtra("fragment", "setting");
                 startActivity(intent);
+                finish();
             }
         });
     }

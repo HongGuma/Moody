@@ -1,5 +1,6 @@
 package com.example.phometalk.Chat;
 
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,11 +9,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.phometalk.Model.ChatModel;
+import com.example.phometalk.Model.ChatRoomModel;
+import com.example.phometalk.Model.UserModel;
 import com.example.phometalk.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,29 +25,64 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHolder> {
     private static final String TAG = "PersonalAdapter";
 
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-    private ArrayList<ChatModel> chatModel;
+    private ArrayList<ChatModel> chatModel = new ArrayList<>();
+    private String roomID;
+    private String recID;
+
+    SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+    String wDate = dateFormat1.format(Calendar.getInstance().getTime());
 
     SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
 
     //생성자에서 데이터 리스트 객체를 전달받음
-    public PersonalAdapter(ArrayList<ChatModel> list){
-        chatModel=list;
+    public PersonalAdapter(String receiver,String roomid,ArrayList<ChatModel> list){
+        this.recID=receiver;
+        this.roomID=roomid;
+        this.chatModel = list;
+        /*
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                ChatModel chat = dataSnapshot.getValue(ChatModel.class);
 
-        //하위 이벤트 수신 (대화 내용 불러옴)
+                String commentKey = dataSnapshot.getKey();
 
+                Map<String,Object> read = new HashMap<>();
+                read.put(currentUser.getUid(),true);
+                database.getReference("Message").child(roomID).child(commentKey).child("readUsers").updateChildren(read);
+
+                chatModel.add(chat);
+                notifyDataSetChanged();
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        };
+        database.getReference("Message").child(roomID).addChildEventListener(childEventListener);
+
+         */
 
     }
 
@@ -54,6 +93,8 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
         public TextView textView;
         public TextView timestamp;
         public ImageView sendPhoto;
+        public TextView timeLien;
+        public TextView readNum;
 
         ViewHolder(View view){
             super(view);
@@ -62,6 +103,8 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
             textView = (TextView)view.findViewById(R.id.tvChat);
             timestamp = (TextView)view.findViewById(R.id.timestamp);
             sendPhoto = (ImageView)view.findViewById(R.id.ivChat);
+            timeLien = (TextView)view.findViewById(R.id.chat_time_line);
+            readNum = (TextView)view.findViewById(R.id.read_number);
 
         }
 
@@ -70,8 +113,6 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     //상대방이 보낸 메세지인지 구분
     @Override
     public int getItemViewType(int position) {
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
         if(chatModel.get(position).getUID().equals(currentUser.getUid())){
             switch (chatModel.get(position).getMsgType()){
                 case "0": return 1; //내가 보낸 텍스트
@@ -85,7 +126,6 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
                 default: return 3; // 예외는 텍스트로
             }
         }
-
     }
 
     //아이템 뷰를 위한 뷰홀더 객체를 생성하여 리턴
@@ -105,10 +145,6 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
         PersonalAdapter.ViewHolder vh = new PersonalAdapter.ViewHolder(view);
 
-       // cRecyclerView.scrollToPosition(cAdapter.getItemCount()-1);
-        //String a = Integer.toString(cAdapter.getItemCount());
-
-
         return vh;
 
     }
@@ -116,7 +152,7 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
     //position에 해당하는 데이터를 뷰홀더의 아이템뷰에 표시.
     @Override
-    public void onBindViewHolder(@NonNull PersonalAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final PersonalAdapter.ViewHolder holder, final int position) {
         //시간 포맷
         long unixTime = (long) chatModel.get(position).getTimestamp();
         Date date = new Date(unixTime);
@@ -131,20 +167,30 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
             Glide.with(holder.sendPhoto.getContext()).load(chatModel.get(position).getMsg()).into(holder.sendPhoto);
         }
 
-/*
+        ReaderCounter(position,holder.readNum); //읽음표시
+
         //내 uid가 아니면 다른 뷰가 오기 때문에
         if(!chatModel.get(position).getUID().equals(currentUser.getUid())){
-            holder.userName.setText(chatModel.get(position).getUserName());
-            if(!receiverProfile.equals("")){//프로필 사진이 있으면
-                Glide.with(holder.userImage.getContext())
-                        .load(receiverProfile)
-                        .apply(new RequestOptions().circleCrop())
-                        .into(holder.userImage);
-            }
+            holder.userName.setText(chatModel.get(position).getUserName());// 상대방 이름
+            database.getReference("userInfo").child(chatModel.get(position).getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    UserModel um = dataSnapshot.getValue(UserModel.class);
+                    if(!um.getProfile().equals("")){//프로필 사진이 있으면
+                        Glide.with(holder.userImage.getContext())
+                                .load(um.getProfile())
+                                .apply(new RequestOptions().circleCrop())
+                                .error(R.drawable.user)
+                                .into(holder.userImage);
+                    }
+                }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
+            });
         }
 
- */
+
 
     }
 
@@ -152,6 +198,27 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     @Override
     public int getItemCount() {
         return chatModel.size();
+    }
+
+    public void ReaderCounter(final int position, final TextView readNumber){
+
+        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ChatRoomModel cm = dataSnapshot.getValue(ChatRoomModel.class);
+                int count = cm.getUsers().size()-chatModel.get(position).getReadUsers().size();
+                Log.d(TAG, "onDataChange: count="+count);
+                if(count>0){
+                    readNumber.setVisibility(View.VISIBLE);
+                    readNumber.setText(String.valueOf(count));
+                }else{
+                    readNumber.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
     }
 
 }

@@ -36,7 +36,7 @@
             android:gravity="center"
             android:text="상대방 이름"
             android:textSize="13dp"
-            android:maxLength="10"/>
+            android:maxLength="120"/>
 
         <Button
             android:id="@+id/chatRoom_calendarBtn"

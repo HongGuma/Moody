@@ -95,6 +95,7 @@ public class SignPwActivity extends Activity {
                     signUp.put("password",password);
                     signUp.put("name","알수없음");
                     signUp.put("birth","입력안함");
+                    signUp.put("profile","");
                     database.getReference("userInfo").child(mAuth.getCurrentUser().getUid()).setValue(signUp);
 
                     Toast toast = Toast.makeText(SignPwActivity.this, "회원 생성 성공!", Toast.LENGTH_SHORT);

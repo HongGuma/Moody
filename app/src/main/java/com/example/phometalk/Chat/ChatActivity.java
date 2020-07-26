@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
@@ -32,6 +33,7 @@ import com.example.phometalk.Activity.IntroActivity;
 import com.example.phometalk.Activity.MainActivity;
 import com.example.phometalk.Model.ChatModel;
 
+import com.example.phometalk.Model.ChatRoomModel;
 import com.example.phometalk.Model.UserModel;
 import com.example.phometalk.R;
 import com.google.android.gms.tasks.Continuation;
@@ -68,6 +70,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
@@ -82,20 +85,18 @@ public class ChatActivity extends Activity {
     private FirebaseUser currentUser;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-    //private ListView cListView
+
     public static RecyclerView chatRecyclerView;//채팅 내용 리사이클러뷰
     private PersonalAdapter pAdapter; //1:1 채팅 어뎁터
     private GroupAdapter gAdapter;//단체 채팅 어뎁터
 
     private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
-    private ArrayList<UserModel> member = new ArrayList<>();
 
-    private String receiver; //상대방 id
-    private String uid; //사용자 id
+    private String receiver;
+    private String uid;
     public static String uName; //사용자 이름
     public static String roomid; //채팅방 id
-    private String receiverName;// 상대방 이름
-    private String receiverProfile;//상대방 프로필 사진
+    private String chatRoomName; //상단에 채팅방 이름
     private String check;
 
     private String imageUrl; //보낸 사진 url
@@ -104,9 +105,10 @@ public class ChatActivity extends Activity {
     private String auto_text;
     public static String emotion;
     public static String sText;
-    //작성 시간
 
-    //String writeTime = writeTimeFormat.format(Calendar.getInstance().getTime());
+    //작성 시간
+    SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+    String date = dateFormat1.format(Calendar.getInstance().getTime());
     //사진 파일 이름
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
     String datetime = dateFormat.format(Calendar.getInstance().getTime());
@@ -119,46 +121,34 @@ public class ChatActivity extends Activity {
         mAuth = FirebaseAuth.getInstance();//현재 로그인 정보
         currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();//현재 사용자 id
+        UserInfo();//현재 사용자 정보 가져오는 함수
 
-        UserInfo();
+        roomid = getIntent().getStringExtra("roomid");//채팅방 id
+        chatRoomName = getIntent().getStringExtra("name"); //채팅방 상단 이름 받아옴
 
-        TextView recUser = (TextView) findViewById(R.id.chatRoom_users);//채팅방 상단에 유저 이름
-        final EditText sendText = (EditText) findViewById(R.id.chatRoom_text);  //메세지 입력창
+        TextView recUser = (TextView) findViewById(R.id.chatRoom_users);//채팅방 상단
+        final EditText sendText = (EditText) findViewById(R.id.chatRoom_text); //메세지 입력창
+        recUser.setText(chatRoomName);//채팅방 상단 이름 설정
+
+        chatRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView); //리사이클러뷰
+        chatRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정e
 
         check = getIntent().getStringExtra("check");
-
-        if(check.equals("1")){//1:1 채팅방
+        ChatDisplay(check);
+        if(check.equals("1")){//1:1 채팅
             receiver = getIntent().getStringExtra("receiver"); //상대방 id
-            receiverName = getIntent().getStringExtra("recName"); //상대방 이름
-            receiverProfile = getIntent().getStringExtra("recProfile");//상대방 프로필
-            roomid = getIntent().getStringExtra("roomid");//채팅방 id
-
-            recUser.setText(receiverName);//상대방 이름으로 교체
-
-            chatRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView); //리사이클러뷰
-            chatRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정
-            pAdapter = new PersonalAdapter(chatModels);//리사이클러뷰 어뎁터
+            pAdapter = new PersonalAdapter(receiver,roomid,chatModels);
             chatRecyclerView.setAdapter(pAdapter);
+            chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
 
-        }else if(check.equals("2")){//단체 채팅방
-            ArrayList<String> receivers = getIntent().getStringArrayListExtra("receivers"); //상대방 id
-            ArrayList<String> recNames = getIntent().getStringArrayListExtra("recNames");//상대방 이름
-            ArrayList<String> recImages = getIntent().getStringArrayListExtra("profiles");//상대방 사진
-
-            String names = "";
-            for(int i=0; i<recNames.size();i++){
-                names += recNames.get(i)+", ";
-            }
-
-            recUser.setText(names);//사용자들 이름으로 교체
-
-            chatRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView); //리사이클러뷰
-            chatRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정
-            gAdapter = new GroupAdapter(receivers);//리사이클러뷰 어뎁터 사용자 아이디를 넘겨준다.
+        }else{//단체 채팅
+            gAdapter = new GroupAdapter(roomid,chatModels);
             chatRecyclerView.setAdapter(gAdapter);
+            chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
+
         }
 
-        //cRecyclerView.scrollToPosition(cAdapter.getItemCount());
+        //
 
         //버튼 선언
         Button backBtn = (Button) findViewById(R.id.chatRoom_backBtn);
@@ -167,7 +157,7 @@ public class ChatActivity extends Activity {
         Button galleryBtn = (Button) findViewById(R.id.chatRoom_galleryBtn);
         Button autoBtn = (Button) findViewById(R.id.chatRoom_autoBtn);
 
-        //cRecyclerView.scrollToPosition(cAdapter.getItemCount()-1);
+
 
         //뒤로가기
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -188,22 +178,24 @@ public class ChatActivity extends Activity {
                 sText = sendText.getText().toString();
                 if (!(sText.equals(""))) {
                     DatabaseReference ref = database.getReference("Message").child(roomid);
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
                     member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", sText);
                     member.put("timestamp", ServerValue.TIMESTAMP);
                     member.put("msgType", "0");
-                    //cRecyclerView.scrollToPosition(cAdapter.getItemCount() - 1);
+                    member.put("readUsers",read);
                     sendText.setText(null);
                     ref.push().setValue(member);
 
+                    chatRecyclerView.scrollToPosition(chatModels.size()-1);
                     auto_text = sText;
 
                     HashMap<String, Object> chatroom = new HashMap<String, Object>();
                     chatroom.put("lastMsg",sText);//마지막 메시지
                     chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
-                    chatroom.put("roomName",receiverName);//상대방 이름
                     database.getReference("ChatRoom").child(roomid).updateChildren(chatroom);
                 }
             }
@@ -225,47 +217,49 @@ public class ChatActivity extends Activity {
         autoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AutoImage(sendText);
+                sText=sendText.getText().toString();
+                AutoImage(sendText,sText);
             }
 
         });
 
+    }
+
+    //채팅내용 불러오기
+    public void ChatDisplay(final String check){
+
         ChildEventListener childEventListener = new ChildEventListener() {
-            //새로운 항목이 추가될때마다 다시 트리거 된다.
-
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                //Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
-                // A new comment has been added, add it to the displayed list
-                ChatModel c = dataSnapshot.getValue(ChatModel.class);
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                ChatModel chat = dataSnapshot.getValue(ChatModel.class);
                 String commentKey = dataSnapshot.getKey();
-                String uName = c.getUserName();
-                String meg = c.getMsg();
-                Object timestamp = c.getTimestamp();
-                String type = c.getMsgType();
-                chatModels.add(c);
-                pAdapter.notifyDataSetChanged();
 
-                chatRecyclerView.scrollToPosition(pAdapter.getItemCount()-1);
-                String a = Integer.toString(pAdapter.getItemCount());
+                //읽었는지
+                Map<String,Object> read = new HashMap<>();
+                read.put(currentUser.getUid(),true);
+                database.getReference("Message").child(roomid).child(commentKey).child("readUsers").updateChildren(read);
+
+                chatModels.add(chat);
+
+                if (check.equals("1")) {
+                    pAdapter.notifyDataSetChanged();
+
+                } else {
+                    gAdapter.notifyDataSetChanged();
+                }
+                chatRecyclerView.scrollToPosition(chatModels.size()-1);
             }
-
-            //하위 노드가 수정될때마다 다시 트리거
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {  }
-
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {  }
-
-            //항목 순서가 변경될때마다 다시 트리거
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
             @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {  }
-
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
             @Override
-            public void onCancelled(DatabaseError databaseError) {  }
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
         };
-        DatabaseReference myRef = database.getReference("Message").child(roomid);
-        myRef.addChildEventListener(childEventListener);
+        database.getReference("Message").child(roomid).addChildEventListener(childEventListener);
+
     }
 
 
@@ -307,18 +301,20 @@ public class ChatActivity extends Activity {
                     imageUrl = downloadUri.toString();
                     //DB에 저장
                     DatabaseReference ref = database.getReference("Message").child(roomid);
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
                     member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", imageUrl); //url
                     member.put("timestamp",ServerValue.TIMESTAMP); //작성 시간
                     member.put("msgType","1"); //메세지 타입
+                    member.put("readUsers",read);
                     ref.push().setValue(member); //DB에 저장
 
                     HashMap<String, Object> chatroom = new HashMap<String, Object>();
                     chatroom.put("lastMsg","사진"); //사진일때
                     chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
-                    chatroom.put("roomName",receiverName);//상대방 이름
                     database.getReference("ChatRoom").child(roomid).updateChildren(chatroom);
                 }
             }
@@ -340,21 +336,32 @@ public class ChatActivity extends Activity {
         });
     }
 
-
-
     //===================================================================================================================
+
+    //뒤로 가기 버튼 클릭시
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Map<String,Object> read = new HashMap<>();
+        read.put(uid,false);
+        //database.getReference("Message").child(roomid).removeEventListener();
+
+        finish();
+    }
 
     //키보드 내리기
     public boolean onTouchEvent(MotionEvent event) {
-        EditText email = (EditText)findViewById(R.id.chatRoom_text);
+        EditText sendText = (EditText)findViewById(R.id.chatRoom_text);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(email.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(sendText.getWindowToken(), 0);
         return true;
     }
 
     //자동이미지 추천
-    public void AutoImage(TextView sendText){
-        sText=sendText.getText().toString();
+    public void AutoImage(TextView sendText,String sText){
+        auto_text = sText;
+
         if(IntroActivity.word_set==null){
             IntroActivity.word_set=Word();
         }
@@ -460,10 +467,10 @@ public class ChatActivity extends Activity {
 
 
             Intent intent = new Intent(ChatActivity.this,AutoChatActivity.class);
-            intent.putExtra("recName",receiverName);
+            intent.putExtra("recName",chatRoomName);//채팅방 이름
             intent.putExtra("receiver",receiver);
             intent.putExtra("roomid",roomid);
-            intent.putExtra("recProfile",receiverProfile);
+            intent.putExtra("check",check);
 
             startActivity(intent);
         }

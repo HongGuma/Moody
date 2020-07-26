@@ -53,6 +53,7 @@ public class UserSelectActivity extends Activity {
     private ChatRoomModel room = new ChatRoomModel();
 
     private String uid;
+    private String myName;
     private ArrayList<String> rec = new ArrayList<>();
     private ArrayList<String> name = new ArrayList<>();
     private ArrayList<String> recImage = new ArrayList<>();
@@ -94,6 +95,7 @@ public class UserSelectActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Select();
+                String roomNames = "";
 
                 //채팅방 id 생성
                 Map<String, Object> map = new HashMap<String,Object>();
@@ -109,10 +111,22 @@ public class UserSelectActivity extends Activity {
                 room.setUsers(users);
 
                 //DB에 roomID와 유저 목록 생성
-                Map<String,Object> objectMap = new HashMap<String, Object>();
+                final Map<String,Object> objectMap = new HashMap<String, Object>();
                 objectMap.put("roomID",roomkey);
                 objectMap.put("users",users);
                 objectMap.put("lastTime", ServerValue.TIMESTAMP);//새채팅방 생성 시간
+                //채팅방 이름
+                if(rec.size()>1){
+                    //단체
+                    for(int i = 0; i<name.size(); i++)
+                        roomNames += name.get(i)+", ";
+                    roomNames += myName;
+                    objectMap.put("roomName",roomNames+" ("+(rec.size()+1)+")");
+                }else{
+                    //개인
+                    objectMap.put("roomName","");
+                }
+                objectMap.put("lastMsg","");
 
                 //DB에 저장
                 database.getReference().child("ChatRoom").child(roomkey).setValue(objectMap).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -121,10 +135,11 @@ public class UserSelectActivity extends Activity {
                         //Toast.makeText(UserSelectActivity.this, "채팅방 생성",Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
-                        intent.putExtra("roomid",roomkey);
                         if(rec.size()<2){
+                            //개인채팅방
+                            intent.putExtra("roomid",roomkey);
                             intent.putExtra("receiver", rec.get(0));
-                            intent.putExtra("recName", name.get(0));
+                            intent.putExtra("name", name.get(0));
                             intent.putExtra("recProfile",recImage.get(0));
                             intent.putExtra("check","1");
 
@@ -132,9 +147,20 @@ public class UserSelectActivity extends Activity {
                             finish();
 
                         }else{
-                            intent.putExtra("receivers",rec);
-                            intent.putExtra("recNames",name);
-                            intent.putExtra("profiles",recImage);
+                            //단체 채팅방
+                            String roomNames ="";
+                            for(int i = 0; i<name.size(); i++){
+                                roomNames += name.get(i)+", ";
+                                if(i>2){
+                                    roomNames += "... ";
+                                    break;
+                                }
+                            }
+
+                            roomNames += myName;
+
+                            intent.putExtra("roomid",roomkey);
+                            intent.putExtra("name",roomNames+" ("+(rec.size()+1)+")");
                             intent.putExtra("check","2");
 
                             startActivity(intent);
@@ -179,8 +205,8 @@ public class UserSelectActivity extends Activity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
 
-        //유저정보 가져오기
-        database.getReference().child("userInfo").orderByChild("name").addListenerForSingleValueEvent(new ValueEventListener() {
+        //친구 정보 가져오기
+        database.getReference("userInfo").orderByChild("name").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 userModels.clear();
@@ -194,6 +220,17 @@ public class UserSelectActivity extends Activity {
                     }
                 }
                 uAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+        database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserModel um = dataSnapshot.getValue(UserModel.class);
+                myName = um.getName();
             }
 
             @Override
