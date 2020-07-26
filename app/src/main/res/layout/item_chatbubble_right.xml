@@ -33,7 +33,7 @@
             android:id="@+id/tvChat"
             android:background="@drawable/chat_bubble"
             android:padding="12dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="3dp"
             android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
             android:layout_marginBottom="10dp"/>

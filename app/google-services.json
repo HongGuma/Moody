@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:986202047160:android:18100dd4c042432f8caa4d",
         "android_client_info": {
-          "package_name": "com.example.phometalk"
+          "package_name": "com.example.Moody"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "986202047160-9sfemgt1hho5arqt7e1tjjnt77no9llq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.phometalk",
+            "package_name": "com.example.Moody",
             "certificate_hash": "6413975699e72a723a6a14cd5c7e9fba69a0e6b8"
           }
         },

@@ -63,6 +63,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
         <Button
+            android:id="@+id/QR_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:paddingLeft="20sp"
+            android:text="QR코드"
+            android:textAlignment="textStart" />
+        <Button
             android:id="@+id/block_message_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -19,12 +19,13 @@
         <Space
             android:layout_width="20dp"
             android:layout_height="wrap_content"/>
+
         <Button
             android:id="@+id/sign_backBtn"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_margin="10dp"
+            android:layout_width="5dp"
+            android:layout_height="13dp"
             android:layout_gravity="center"
+            android:layout_margin="10dp"
             android:background="@drawable/sign_back" />
 
         <Space
