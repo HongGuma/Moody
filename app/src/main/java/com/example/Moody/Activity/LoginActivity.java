@@ -121,7 +121,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
     //자동 로그인
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -133,6 +132,8 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         }
     }
+
+
 
 
 

@@ -196,6 +196,8 @@ public class FragmentFriend extends Fragment {
 
         }
 
+
+
         //아이템 뷰를 저장하는 뷰홀더 클래스
         public class ViewHolder extends RecyclerView.ViewHolder {
             public ImageView photo;

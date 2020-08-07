@@ -68,6 +68,7 @@ public class SignAddInfoActivity extends Activity {
                 users.put("password",password);
                 users.put("name",name);
                 users.put("birth",birth);
+                users.put("profile","");
 
                 myRef.setValue(users).addOnSuccessListener(new OnSuccessListener<Void>() {
                     //database에 값 전달이 성공되면

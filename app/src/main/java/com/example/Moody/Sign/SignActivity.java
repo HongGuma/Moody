@@ -3,6 +3,7 @@ package com.example.Moody.Sign;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -50,6 +51,7 @@ public class SignActivity extends AppCompatActivity {
                     toast.show();
                 }else {
                     EmailCheck(email);
+                    //Toast.makeText(SignActivity.this,"next버튼",Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -94,7 +96,9 @@ public class SignActivity extends AppCompatActivity {
                 }else{
                     Intent intent = new Intent(getApplicationContext(), SignPwActivity.class);
                     intent.putExtra("semail", inEmail);
+                    Log.d(TAG, "onDataChange: email="+inEmail);
                     startActivity(intent);
+                    finish();
                 }
 
             }

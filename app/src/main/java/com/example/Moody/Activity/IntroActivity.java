@@ -90,6 +90,13 @@ public class IntroActivity extends AppCompatActivity {
         handler.removeCallbacks(run); //예약취소
     }
 
+    //뒤로가기 버튼 누를시
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
     private HashMap<Integer, String> Word() {
 
         HashMap<Integer, String> word_set = new HashMap<Integer, String>();

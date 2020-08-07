@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.Moody.Activity.IntroActivity;
 import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.Model.ChatModel;
+import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.FeedItems;
 
 import com.example.Moody.Model.UserModel;
@@ -70,6 +71,7 @@ public class AutoChatActivity extends Activity {
     private GroupAdapter gAdapter;//단체 채팅 어뎁터
 
     private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
+    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<>();
 
     private String receiver;
     private String uid;
@@ -135,7 +137,6 @@ public class AutoChatActivity extends Activity {
         sendText.setText(sText);
 
         tRecyclerView=(RecyclerView)findViewById(R.id.tag_recyclerview);
-        //cRecyclerView.scrollToPosition(cAdapter.getItemCount()-1);
         String emotion=ChatActivity.emotion;
         ArrayList<FeedItems> tagItems = new ArrayList<>();
         for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
@@ -156,9 +157,7 @@ public class AutoChatActivity extends Activity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AutoChatActivity.this, MainActivity.class);
-                intent.putExtra("fragment","chat");
-                startActivity(intent);
+                finish();
 
             }
         });
@@ -171,18 +170,23 @@ public class AutoChatActivity extends Activity {
                 sText = sendText.getText().toString();
                 if (!(sText.equals(""))) {
                     DatabaseReference ref = database.getReference("Message").child(roomid);
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
                     member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", sText);
                     member.put("timestamp", ServerValue.TIMESTAMP);
                     member.put("msgType", "0");
+                    member.put("readUsers",read);
                     sendText.setText(null);
-                    ref.child(date).push().setValue(member);
+                    ref.push().setValue(member);
+
+                    chatRecyclerView.scrollToPosition(chatModels.size()-1);
 
                     HashMap<String, Object> chatroom = new HashMap<String, Object>();
-                    chatroom.put("lastMsg",sText);
-                    chatroom.put("lastTime", ServerValue.TIMESTAMP);
+                    chatroom.put("lastMsg",sText);//마지막 메시지
+                    chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
                     database.getReference("ChatRoom").child(roomid).updateChildren(chatroom);
                 }
                 finish();
@@ -242,6 +246,17 @@ public class AutoChatActivity extends Activity {
         };
         database.getReference("Message").child(roomid).addChildEventListener(childEventListener);
 
+        database.getReference("ChatRoom").child(roomid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ChatRoomModel chatRoomModel = dataSnapshot.getValue(ChatRoomModel.class);
+                chatRoomModels.add(chatRoomModel);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
     }
 
     @Override
@@ -280,17 +295,20 @@ public class AutoChatActivity extends Activity {
                     imageUrl = downloadUri.toString();
                     //DB에 저장
                     DatabaseReference ref = database.getReference("Message").child(roomid);
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
                     member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", imageUrl); //url
-                    member.put("timestamp", ServerValue.TIMESTAMP); //작성 시간
+                    member.put("timestamp",ServerValue.TIMESTAMP); //작성 시간
                     member.put("msgType","1"); //메세지 타입
-                    ref.child(date).push().setValue(member); //DB에 저장
+                    member.put("readUsers",read);
+                    ref.push().setValue(member); //DB에 저장
 
                     HashMap<String, Object> chatroom = new HashMap<String, Object>();
-                    chatroom.put("lastMsg","사진");
-                    chatroom.put("lastTime",ServerValue.TIMESTAMP);
+                    chatroom.put("lastMsg","사진"); //사진일때
+                    chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
                     database.getReference("ChatRoom").child(roomid).updateChildren(chatroom);
                 }
             }

@@ -146,12 +146,27 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             Glide.with(holder.sendPhoto.getContext()).load(chatModels.get(position).getMsg()).into(holder.sendPhoto);
         }
 
-        ReaderCounter(position,holder.readNum);//읽음 표시
+        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ChatRoomModel cm = dataSnapshot.getValue(ChatRoomModel.class);
+                int count = cm.getUsers().size()-chatModels.get(position).getReadUsers().size();
+                //Log.d(TAG, "onDataChange: count="+count);
+                if(count>0){
+                    holder.readNum.setVisibility(View.VISIBLE);
+                    holder.readNum.setText(String.valueOf(count));
+                }else{
+                    holder.readNum.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
 
         //상대방 이름, 프로필 출력
         if(!chatModels.get(position).getUID().equals(currentUser.getUid())){
             holder.userName.setText(chatModels.get(position).getUserName());//상대방 이름
-
             database.getReference("userInfo").child(chatModels.get(position).getUID()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -179,25 +194,5 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         return chatModels.size();
     }
 
-    public void ReaderCounter(final int position, final TextView readNumber){
-
-        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ChatRoomModel cm = dataSnapshot.getValue(ChatRoomModel.class);
-                int count = cm.getUsers().size()-chatModels.get(position).getReadUsers().size();
-                Log.d(TAG, "onDataChange: count="+count);
-                if(count>0){
-                    readNumber.setVisibility(View.VISIBLE);
-                    readNumber.setText(String.valueOf(count));
-                }else{
-                    readNumber.setVisibility(View.INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
-    }
 
 }

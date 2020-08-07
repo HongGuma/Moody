@@ -30,6 +30,7 @@ import com.example.Moody.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -241,7 +242,7 @@ public class FragmentChatting extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ChatRoomListAdapter.ViewHolder holder, final int position) {
-            roomID.add(filterList.get(position).getRoomID());
+            roomID.add(filterList.get(position).getRoomID()); //채팅방 id
 
 
             user.clear();
@@ -257,8 +258,9 @@ public class FragmentChatting extends Fragment {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         UserModel um = dataSnapshot.getValue(UserModel.class);
                         holder.roomName.setText(um.getName());
+                        Log.d(TAG, "onDataChange: position="+um.getName());
                         names.put(position,um.getName());
-                        recID.put(position,um.getName());
+                        recID.put(position,um.getUID());
                         if(filterList.get(position).getUsers().size()==2){ //개인채팅방
                             //if(!um.getProfile().equals("")) {
                                 Glide.with(holder.userImage.getContext())
@@ -310,8 +312,35 @@ public class FragmentChatting extends Fragment {
                 public void onCancelled(@NonNull DatabaseError databaseError) { }
             });
 
-            MessageCount(position,holder.msgCount,filterList.get(position).getRoomID());
+            //안읽은 메시지 개수
+            database.getReference("Message").child(filterList.get(position).getRoomID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    int count = 0;
+                    for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                        ChatModel cm = dataSnapshot1.getValue(ChatModel.class);
+                        for (String user : cm.getReadUsers().keySet()) {
+                            if (!user.equals(currentUser.getUid())) {
+                                count++;
+                            } else {
+                                count--;
+                            }
+                        }
+                    }
+                    if (count > 0) {
+                        holder.msgCount.setVisibility(View.VISIBLE);
+                        holder.msgCount.setText(String.valueOf(count));
+                    } else {
+                        holder.msgCount.setVisibility(View.INVISIBLE);
+                    }
 
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
+            });
+
+            //채팅방 클릭시
             holder.itemLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -326,7 +355,6 @@ public class FragmentChatting extends Fragment {
                         //개인 채팅방
                         intent.putExtra("name",names.get(position)); //이름 전달
                         intent.putExtra("receiver",recID.get(position)); //id 전달
-                        Log.d(TAG, "onClick: recID="+recID.get(position));
                         intent.putExtra("check", "1");
                         startActivity(intent);
                     }
@@ -334,8 +362,6 @@ public class FragmentChatting extends Fragment {
 
                 }
             });
-
-
 
 
         }
@@ -376,34 +402,7 @@ public class FragmentChatting extends Fragment {
             };
         }
 
-        public void MessageCount(int position, final TextView msgCount, String rID){
-            database.getReference("Message").child(rID).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    int count = 0;
-                    for(DataSnapshot dataSnapshot1: dataSnapshot.getChildren()){
-                        ChatModel cm = dataSnapshot1.getValue(ChatModel.class);
-                        for(String user:cm.getReadUsers().keySet()){
-                            if(!user.equals(currentUser.getUid())){
-                                count++;
-                            }else{
-                                count--;
-                            }
-                        }
-                    }
-                    if(count >0){
-                        msgCount.setVisibility(View.VISIBLE);
-                        msgCount.setText(String.valueOf(count));
-                    }else{
-                        msgCount.setVisibility(View.INVISIBLE);
-                    }
 
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) { }
-            });
-        }
 
     }
 

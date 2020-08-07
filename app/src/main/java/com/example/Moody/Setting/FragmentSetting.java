@@ -149,6 +149,7 @@ public class FragmentSetting extends Fragment {
                 UserModel user = dataSnapshot.getValue(UserModel.class);
                 myName.setText(user.getName());
                 myEmail.setText(user.getEmail());
+                email = user.getEmail();
                 if(!user.getProfile().equals(""))
                     Glide.with(getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(myImage);
             }

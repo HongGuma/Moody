@@ -60,4 +60,5 @@ public class ChatModel {
     public Map<String, Object> getReadUsers() {
         return readUsers;
     }
+
 }

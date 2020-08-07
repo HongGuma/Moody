@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.example.Moody.Model.FeedItems;
 import com.google.android.gms.tasks.Continuation;
@@ -19,9 +20,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -31,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
     private ArrayList<FeedItems> tagDataArrayList;
@@ -39,6 +44,8 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();//현재 로그인 정보
     private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private String uName;
+
     public TabImageAdapter(Context context,ArrayList<FeedItems> tagDataArrayList){
         this.context=context;
         this.tagDataArrayList = tagDataArrayList;
@@ -137,13 +144,21 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     imageUrl = downloadUri.toString();
                     //DB에 저장
                     DatabaseReference ref = database.getReference("Message").child(ChatActivity.roomid);
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
                     HashMap<String, Object> member = new HashMap<String, Object>();
                     member.put("uID", currentUser.getUid()); //보낸사람 id
-                    member.put("userName", ChatActivity.uName); //보낸 사람 이름
+                    member.put("userName", uName); //보낸 사람 이름
                     member.put("msg", imageUrl); //url
-                    member.put("timestamp", ServerValue.TIMESTAMP); //작성 시간
+                    member.put("timestamp",ServerValue.TIMESTAMP); //작성 시간
                     member.put("msgType","1"); //메세지 타입
+                    member.put("readUsers",read);
                     ref.push().setValue(member); //DB에 저장
+
+                    HashMap<String, Object> chatroom = new HashMap<String, Object>();
+                    chatroom.put("lastMsg","사진"); //사진일때
+                    chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
+                    database.getReference("ChatRoom").child(ChatActivity.roomid).updateChildren(chatroom);
                     //Glide.with(UpLoadImageToFirebase.this).load(imageUrl).into(upload_image);
                 }
             }
@@ -165,5 +180,18 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public int getItemCount() {
         return tagDataArrayList.size();
+    }
+
+    //사용자 정보 불러오기
+    public void UserInfo(){
+        database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserModel um = dataSnapshot.getValue(UserModel.class);
+                uName = um.getName();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
     }
 }

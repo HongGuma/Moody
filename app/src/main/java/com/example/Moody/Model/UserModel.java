@@ -9,6 +9,7 @@ public class UserModel {
     private String uID;
     private Boolean check;
     private String profile;
+    private String range;
 
     public UserModel(){}
 
@@ -66,5 +67,13 @@ public class UserModel {
 
     public String getProfile() {
         return profile;
+    }
+
+    public void setRange(String range) {
+        this.range = range;
+    }
+
+    public String getRange() {
+        return range;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.Moody.Chat;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -17,6 +19,7 @@ import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -26,6 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHolder> {
@@ -36,6 +41,7 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
     private ArrayList<ChatModel> chatModel = new ArrayList<>();
+    //private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<>();
     private String roomID;
     private String recID;
 
@@ -49,8 +55,6 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
         this.recID=receiver;
         this.roomID=roomid;
         this.chatModel = list;
-
-
     }
 
     //아이템 뷰를 저장하는 뷰홀더 클래스
@@ -134,10 +138,32 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
             Glide.with(holder.sendPhoto.getContext()).load(chatModel.get(position).getMsg()).into(holder.sendPhoto);
         }
 
-        ReaderCounter(position,holder.readNum); //읽음표시
+        ReadMessage(position,roomID,holder.readNum);
+
+        /*
+        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ChatRoomModel cm = dataSnapshot.getValue(ChatRoomModel.class);
+                int count = cm.getUsers().size()-chatModel.get(position).getReadUsers().size();
+                //Log.d(TAG, "onDataChange: count="+count);
+                if(count>0){
+                    holder.readNum.setVisibility(View.VISIBLE);
+                    holder.readNum.setText(String.valueOf(count));
+                }else{
+                    holder.readNum.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+         */
 
 
-        //내 uid가 아니면 다른 뷰가 오기 때문에
+
+        //내 uid가 아니면 다른 뷰가 오기 때문에 (상대방 뷰)
         if(!chatModel.get(position).getUID().equals(currentUser.getUid())){
             holder.userName.setText(chatModel.get(position).getUserName());// 상대방 이름
             database.getReference("userInfo").child(chatModel.get(position).getUID()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -168,19 +194,18 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
         return chatModel.size();
     }
 
-    public void ReaderCounter(final int position, final TextView readNumber){
-
-        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void ReadMessage(final int position,String id,final TextView readView){
+        database.getReference("ChatRoom").child(id).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ChatRoomModel cm = dataSnapshot.getValue(ChatRoomModel.class);
-                int count = cm.getUsers().size()-chatModel.get(position).getReadUsers().size();
+                Map<String,Object> u = (HashMap<String,Object>)dataSnapshot.getValue();
+                int count = u.size()-chatModel.get(position).getReadUsers().size();
                 //Log.d(TAG, "onDataChange: count="+count);
                 if(count>0){
-                    readNumber.setVisibility(View.VISIBLE);
-                    readNumber.setText(String.valueOf(count));
+                    readView.setVisibility(View.VISIBLE);
+                    readView.setText(String.valueOf(count));
                 }else{
-                    readNumber.setVisibility(View.INVISIBLE);
+                    readView.setVisibility(View.INVISIBLE);
                 }
             }
 
@@ -190,5 +215,4 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
 
     }
-
 }
