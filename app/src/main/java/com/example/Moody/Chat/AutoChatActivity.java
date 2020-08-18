@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.Model.ChatModel;
 import com.example.Moody.Model.ChatRoomModel;
@@ -127,8 +129,7 @@ public class AutoChatActivity extends Activity {
         }
 
         //버튼 선언
-        Button backBtn = (Button) findViewById(R.id.chatRoom_backBtn);
-        Button calendarBtn = (Button) findViewById(R.id.chatRoom_calendarBtn);
+        ImageView backBtn = (ImageView) findViewById(R.id.chatRoom_backBtn);
         Button sendBtn = (Button) findViewById(R.id.chatRoom_sendBtn);
         Button galleryBtn = (Button) findViewById(R.id.chatRoom_galleryBtn);
         final Button autoBtn = (Button) findViewById(R.id.chatRoom_autoBtn);
@@ -139,15 +140,15 @@ public class AutoChatActivity extends Activity {
         tRecyclerView=(RecyclerView)findViewById(R.id.tag_recyclerview);
         String emotion=ChatActivity.emotion;
         ArrayList<FeedItems> tagItems = new ArrayList<>();
-        for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
+        for (int i = 0; i < LoginActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
-            if (emotion.equals(IntroActivity.publicItems.get(i).getType())) {
-                entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
-                entity.setTag(IntroActivity.publicItems.get(i).getType());
+            if (emotion.equals(LoginActivity.publicItems.get(i).getType())) {
+                entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
+                entity.setTag(LoginActivity.publicItems.get(i).getType());
                 tagItems.add(entity);
             }
         }
-        tagItems.addAll(IntroActivity.dbHelper.getTagItems(emotion));
+        tagItems.addAll(LoginActivity.dbHelper.getTagItems(emotion));
         TabAdapter tAdapter = new TabAdapter(AutoChatActivity.this, tagItems);
         tRecyclerView.setHasFixedSize(true);
         tRecyclerView.setLayoutManager(new LinearLayoutManager(AutoChatActivity.this));

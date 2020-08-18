@@ -1,6 +1,5 @@
 package com.example.Moody.Chat;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,18 +7,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Model.ChatModel;
-import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -69,7 +65,7 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
         ViewHolder(View view){
             super(view);
-            userImage = (ImageView)view.findViewById(R.id.user_image);
+            userImage = (ImageView)view.findViewById(R.id.chat_image1);
             userName = (TextView)view.findViewById(R.id.user_name);
             textView = (TextView)view.findViewById(R.id.tvChat);
             timestamp = (TextView)view.findViewById(R.id.timestamp);
@@ -140,29 +136,6 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
         ReadMessage(position,roomID,holder.readNum);
 
-        /*
-        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ChatRoomModel cm = dataSnapshot.getValue(ChatRoomModel.class);
-                int count = cm.getUsers().size()-chatModel.get(position).getReadUsers().size();
-                //Log.d(TAG, "onDataChange: count="+count);
-                if(count>0){
-                    holder.readNum.setVisibility(View.VISIBLE);
-                    holder.readNum.setText(String.valueOf(count));
-                }else{
-                    holder.readNum.setVisibility(View.INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
-
-         */
-
-
-
         //내 uid가 아니면 다른 뷰가 오기 때문에 (상대방 뷰)
         if(!chatModel.get(position).getUID().equals(currentUser.getUid())){
             holder.userName.setText(chatModel.get(position).getUserName());// 상대방 이름
@@ -170,12 +143,15 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     UserModel um = dataSnapshot.getValue(UserModel.class);
-                    if(!um.getProfile().equals("")){//프로필 사진이 있으면
-                        Glide.with(holder.userImage.getContext())
-                                .load(um.getProfile())
-                                .apply(new RequestOptions().circleCrop())
-                                .error(R.drawable.user)
-                                .into(holder.userImage);
+                    if (um.getRange().equals("all")) {
+                        if (!um.getProfile().equals(""))
+                            Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+                    }
+                    else if (um.getRange().equals("friend")) {
+                        holder.userImage.setBackgroundResource(R.drawable.yj_profile_border);
+                        if (!um.getProfile().equals(""))
+                            Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+
                     }
                 }
 

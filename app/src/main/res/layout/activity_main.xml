@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.Moody.Activity.MainActivity"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="#ffffff">
 
     <FrameLayout

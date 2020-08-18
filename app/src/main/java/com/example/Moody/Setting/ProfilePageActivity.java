@@ -5,9 +5,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,6 +36,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ProfilePageActivity extends AppCompatActivity {
     private static final String TAG = "ProfilePageActivity";
@@ -73,6 +76,18 @@ public class ProfilePageActivity extends AppCompatActivity {
             }
         });
 
+        //프로필 범위
+        Spinner s = (Spinner)findViewById(R.id.rangeSpinner);
+        final Object[] range = new Object[1];
+        s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                range[0] = parent.getItemAtPosition(position);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         //저장하기 버튼
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,6 +95,16 @@ public class ProfilePageActivity extends AppCompatActivity {
                 String changeName = name.getText().toString();
                 String changeBirth = birth.getText().toString();
 
+                //프로필 범위 DB에 저장
+                Map<String, Object> taskMap = new HashMap<String, Object>();
+                if(range[0].equals("전체 공개")) {
+                    taskMap.put("range", "all");
+                    database.getReference("userInfo").child(currentUser.getUid()).updateChildren(taskMap);
+                }
+                else if(range[0].equals("친한 친구만 공개")) {
+                    taskMap.put("range", "friend");
+                    database.getReference("userInfo").child(currentUser.getUid()).updateChildren(taskMap);
+                }
                 //이름만 입력한 경우
                 if(changeName != null && changeBirth == null){
                     HashMap<String, Object> info = new HashMap<String, Object>();

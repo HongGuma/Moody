@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="selmode">
-        <item>최신순</item>
-        <item>등록순</item>
+        <item>Newest</item>
+        <item>Oldest</item>
     </string-array>
 
 

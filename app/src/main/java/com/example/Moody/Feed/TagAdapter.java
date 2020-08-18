@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.R;
 import com.example.Moody.Model.FeedItems;
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,7 +42,7 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
 
         MyViewHolder(View view){
             super(view);
-            image = view.findViewById(R.id.tag_photo);
+            image = view.findViewById(R.id.upload_image);
             tag = view.findViewById(R.id.tag_btn);
             star=view.findViewById(R.id.star_btn);
         }
@@ -62,11 +63,11 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
         String tagtext=myViewHolder.tag.getText().toString();
         tagtext=tagtext.substring(1);
 
-        for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
+        for(int i = 0; i< LoginActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
-            if(tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
-                entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
-                entity.setTag(IntroActivity.publicItems.get(i).getType());
+            if(tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
+                entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
+                entity.setTag(LoginActivity.publicItems.get(i).getType());
                 feedDataArrayList.add(entity);
             }
         }
@@ -80,7 +81,7 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
         if (feedDataArrayList.get(position).getStar() == 1) {
             myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
         }
-        else if(!IntroActivity.dbHelper.searchItem(feedDataArrayList.get(position).getUrl())){
+        else if(!LoginActivity.dbHelper.searchItem(feedDataArrayList.get(position).getUrl())){
             myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
         }
         else {
@@ -93,19 +94,19 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                 if(myViewHolder.star.isChecked()){
                     myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
                     if(feedDataArrayList.get(position).getUrl()==null) {
-                        IntroActivity.dbHelper.setStar(1, feedDataArrayList.get(position).getId());
+                        LoginActivity.dbHelper.setStar(1, feedDataArrayList.get(position).getId());
                     }
                     else{
-                        IntroActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag());
+                        LoginActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag());
                     }
                 }
                 else{
                     myViewHolder.star.setBackgroundResource(R.drawable.feed_heart);
                     if(feedDataArrayList.get(position).getUrl()==null) {
-                        IntroActivity.dbHelper.setStar(0,feedDataArrayList.get(position).getId());
+                        LoginActivity.dbHelper.setStar(0,feedDataArrayList.get(position).getId());
                     }
                     else
-                        IntroActivity.dbHelper.pblDelete(feedDataArrayList.get(position).getUrl());
+                        LoginActivity.dbHelper.pblDelete(feedDataArrayList.get(position).getUrl());
                 }
             }
         });
@@ -116,14 +117,14 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                 String tagtext=myViewHolder.tag.getText().toString();
                 tagtext=tagtext.substring(1);
 
-                ArrayList<FeedItems> tagItems= IntroActivity.dbHelper.getTagItems(tagtext);
+                ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tagtext);
 
-                for(int i=0;i<IntroActivity.publicItems.size();i++) {
+                for(int i=0;i<LoginActivity.publicItems.size();i++) {
                     FeedItems entity = new FeedItems();
 
-                    if(tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
-                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
-                        entity.setTag(IntroActivity.publicItems.get(i).getType());
+                    if(tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
+                        entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
+                        entity.setTag(LoginActivity.publicItems.get(i).getType());
                         tagItems.add(entity);
                     }
                 }

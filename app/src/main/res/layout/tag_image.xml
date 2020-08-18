@@ -1,74 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@color/colorWhite">
+    android:layout_width="170dp"
+    android:layout_height="198dp"
+    android:background="#ffffff"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="178dp"
-        android:layout_height="144dp"
-        android:background="@drawable/feed_box"
-        android:gravity="center"
-        android:orientation="vertical">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="MissingConstraints">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <Space
-                android:layout_width="16dp"
-                android:layout_height="wrap_content" />
+            android:layout_width="160dp"
+            android:layout_height="177dp"
+            android:layout_gravity="center"
+            android:background="@drawable/yj_feed_border"
+            android:elevation="5dp"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints">
 
             <ImageView
-                android:id="@+id/tag_photo"
-                android:layout_width="147dp"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-
+                android:id="@+id/upload_image"
+                android:layout_width="160dp"
+                android:layout_height="128dp"
+                android:layout_gravity="center"
                 tools:srcCompat="@tools:sample/avatars" />
 
-            <Space
-                android:layout_width="36dp"
-                android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/tag_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="20dp"
+                    android:background="#00ff0000"
+                    android:stateListAnimator="@null"
+                    android:text="#태그"
+                    android:textAlignment="textStart"
+                    android:textSize="10dp"
+                    android:textStyle="bold"
+                    tools:ignore="RtlCompat" />
+
+                <ToggleButton
+                    android:id="@+id/star_btn"
+                    android:layout_width="19dp"
+                    android:layout_height="17dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="17dp"
+                    android:background="@drawable/yj_heart"
+                    android:text="ToggleButton"
+                    android:textOff=" "
+                    android:textOn=" "
+                    android:visibility="visible" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+    </FrameLayout>
 
-            <Button
-                android:id="@+id/tag_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginLeft="30dp"
-                android:background="#00ff0000"
-                android:stateListAnimator="@null"
-                android:text="#태그"
-                android:textSize="10dp"
-                android:textAlignment="textStart" />
-
-            <ToggleButton
-                android:id="@+id/star_btn"
-                android:layout_width="19dp"
-                android:layout_height="17dp"
-                android:layout_marginLeft="10dp"
-                android:background="@drawable/feed_heart"
-                android:text="ToggleButton"
-                android:textOff=" "
-                android:textOn=" "
-                android:visibility="visible" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

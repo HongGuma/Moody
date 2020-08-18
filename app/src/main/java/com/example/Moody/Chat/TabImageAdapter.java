@@ -57,7 +57,7 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         MyViewHolder(View view){
             super(view);
-            image = view.findViewById(R.id.tag_photo);
+            image = view.findViewById(R.id.upload_image);
         }
     }
 

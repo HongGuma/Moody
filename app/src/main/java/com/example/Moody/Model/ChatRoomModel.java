@@ -11,6 +11,7 @@ public class ChatRoomModel {
     private Object lastTime; //마지막 시간
     private String roomName; //채팅방 이름
     private String msgCount; //안읽은 메시지 수
+    private Boolean check;
 
     public void setUsers(HashMap<String, Boolean> users) {
         this.users = users;
@@ -58,5 +59,13 @@ public class ChatRoomModel {
 
     public String getMsgCount() {
         return msgCount;
+    }
+
+    public void setCheck(Boolean check) {
+        this.check = check;
+    }
+
+    public Boolean getCheck() {
+        return check;
     }
 }

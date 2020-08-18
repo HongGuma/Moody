@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Model.FeedItems;
 import com.example.Moody.R;
 
@@ -46,49 +47,54 @@ public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
+        ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tag[position]);
 
-        myViewHolder.seltag.setText("#" + tag[position]);
-        myViewHolder.tag_recyclerview.setHasFixedSize(true);
-        myViewHolder.tag_recyclerview.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-
-        ArrayList<FeedItems> tagItems= IntroActivity.dbHelper.getTagItems(tag[position]);
-        for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
+        for(int i = 0; i< LoginActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
 
-            if(tag[position].equals(IntroActivity.publicItems.get(i).getType())) {
-                entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
-                entity.setTag(IntroActivity.publicItems.get(i).getType());
+            if(tag[position].equals(LoginActivity.publicItems.get(i).getType())) {
+                entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
+                entity.setTag(LoginActivity.publicItems.get(i).getType());
                 tagItems.add(entity);
             }
         }
-        final TagAdapter myAdapter = new TagAdapter(context,tagItems);
-        myViewHolder.tag_recyclerview.setAdapter(myAdapter);
+        if(tagItems.size()==0){
+            myViewHolder.seltag.setVisibility(View.GONE);
+            myViewHolder.tag_recyclerview.setVisibility(View.GONE);
+            myViewHolder.itemView.setVisibility(View.GONE);
+        }
+        else {
+            myViewHolder.seltag.setText("#" + tag[position]);
+            myViewHolder.tag_recyclerview.setHasFixedSize(true);
+            myViewHolder.tag_recyclerview.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
-        myViewHolder.seltag.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                String tagtext=myViewHolder.seltag.getText().toString();
-                tagtext=tagtext.substring(1);
+            final TagAdapter myAdapter = new TagAdapter(context, tagItems);
+            myViewHolder.tag_recyclerview.setAdapter(myAdapter);
 
-                ArrayList<FeedItems> tagItems= IntroActivity.dbHelper.getTagItems(tagtext);
-                for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
-                    FeedItems entity = new FeedItems();
+            myViewHolder.seltag.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String tagtext = myViewHolder.seltag.getText().toString();
+                    tagtext = tagtext.substring(1);
 
-                    if(tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
-                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
-                        entity.setTag(IntroActivity.publicItems.get(i).getType());
-                        tagItems.add(entity);
+                    ArrayList<FeedItems> tagItems = LoginActivity.dbHelper.getTagItems(tagtext);
+                    for (int i = 0; i < LoginActivity.publicItems.size(); i++) {
+                        FeedItems entity = new FeedItems();
+
+                        if (tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
+                            entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
+                            entity.setTag(LoginActivity.publicItems.get(i).getType());
+                            tagItems.add(entity);
+                        }
                     }
+                    FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context, 2));
+                    FeedAdapter myAdapter = new FeedAdapter(context, tagItems);
+
+                    FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
                 }
-                FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context,2));
-                FeedAdapter myAdapter = new FeedAdapter(context,tagItems);
-
-                FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
-            }
-        });
-
+            });
+        }
     }
 
     @Override

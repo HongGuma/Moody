@@ -4,16 +4,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,7 +52,6 @@ import java.util.Map;
 
 public class FragmentFriend extends Fragment {
     private static final String TAG = "FragmentFriend";
-
     public static FragmentFriend newInstance() {
         return new FragmentFriend();
     }
@@ -61,7 +65,7 @@ public class FragmentFriend extends Fragment {
 
     private ArrayList<UserModel> uList = new ArrayList<UserModel>();
     private ArrayList<String> fid = new ArrayList<String>();
-
+    private ImageView online_img;
 
     //제일 먼저 호출
     @Override
@@ -83,11 +87,16 @@ public class FragmentFriend extends Fragment {
 
         TextView myName = (TextView) view.findViewById(R.id.my_name);
         ImageView myImage = (ImageView) view.findViewById(R.id.my_image);
-        final EditText friendSearch = (EditText)view.findViewById(R.id.friend_search);
+        final EditText friendSearch = (EditText)view.findViewById(R.id.chat_room_search);
+
+        final Animation mAnim1 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.top_border_short_anim);
+        mAnim1.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
+        final Animation mAnim2 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.main_fade_out_anim);
+        mAnim2.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
 
         MyInfo(myName,myImage);
 
-        fRecyclerView = (RecyclerView)view.findViewById(R.id.friend_recyclerView);
+        fRecyclerView = (RecyclerView)view.findViewById(R.id.chat_list_recyclerView);
         fRecyclerView.setHasFixedSize(true);
         fRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
 
@@ -108,16 +117,34 @@ public class FragmentFriend extends Fragment {
             public void afterTextChanged(Editable s) { }
         });
 
-        FloatingActionButton addBtn = (FloatingActionButton)view.findViewById(R.id.friend_add_btn);
+
+        final FloatingActionButton addBtn = (FloatingActionButton)view.findViewById(R.id.friend_add_btn);
+        final LinearLayout top1 = (LinearLayout)view.findViewById(R.id.top1);
+        final LinearLayout layout1 = (LinearLayout)view.findViewById(R.id.layout1);
+        final LinearLayout layout2 = (LinearLayout)view.findViewById(R.id.layout2);
+
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(),AddFriendActivity.class));
+                //상단바 애니메이션
+                top1.startAnimation(mAnim1);
+
+                //fade-out
+                layout1.startAnimation(mAnim2);
+                layout2.startAnimation(mAnim2);
+                addBtn.startAnimation(mAnim2);
+
+                //딜레이
+                Handler delayHandler = new Handler();
+                delayHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(new Intent(getActivity(),AddFriendActivity.class));
+                        getActivity().overridePendingTransition(R.anim.fade_in_anim, R.anim.fade_out_anim);
+                    }
+                }, 200);
             }
         });
-        //ActionBar actionBar = ((MainActivity)getActivity()).getSupportActionBar();
-        //actionBar.setTitle("친구 목록");
-        //actionBar.setDisplayHomeAsUpEnabled(false);
 
         return view;
     }
@@ -128,10 +155,12 @@ public class FragmentFriend extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel um = dataSnapshot.getValue(UserModel.class);
                 name.setText(um.getName());
-                if(!um.getProfile().equals(""))
-                    Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
-            }
+                if(um.getRange().equals("friend"))
+                    image.setBackgroundResource(R.drawable.yj_profile_border);
+                if (!um.getProfile().equals(""))
+                        Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
 
+            }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
@@ -196,21 +225,24 @@ public class FragmentFriend extends Fragment {
 
         }
 
-
-
         //아이템 뷰를 저장하는 뷰홀더 클래스
         public class ViewHolder extends RecyclerView.ViewHolder {
             public ImageView photo;
             public TextView uName;
             public Button chatBtn;
-            public Button blockBtn;
+            public ToggleButton heartBtn;
 
             ViewHolder(final View view) {
                 super(view);
 
-                photo = view.findViewById(R.id.friend_image);
-                uName = view.findViewById(R.id.friend_name);
+                photo = view.findViewById(R.id.chat_image1);
+                uName = view.findViewById(R.id.user_sel_name);
                 chatBtn = view.findViewById(R.id.friend_chatBtn);
+                heartBtn = view.findViewById(R.id.heartBtn);
+
+                //online_img
+                online_img = view.findViewById(R.id.online_image);
+                online_img.setVisibility(View.INVISIBLE);
 
             }
 
@@ -218,18 +250,48 @@ public class FragmentFriend extends Fragment {
 
         //position에 해당하는 데이터를 뷰홀더의 아이템뷰에 표시.
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+        public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
             uid = currentUser.getUid();
 
-            if(!filterList.get(position).getProfile().equals("")){
-                //사용자 프로필
-                Glide.with(getContext())
-                        .load(filterList.get(position).getProfile())
-                        .apply(new RequestOptions().circleCrop())
-                        .into(holder.photo);
+            //친한 친구 프로필
+            if (filterList.get(position).getRange().equals("all")) {
+                if (!filterList.get(position).getProfile().equals(""))
+                    Glide.with(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
+            }
+            else if (filterList.get(position).getRange().equals("friend")) {
+                if (filterList.get(position).getLiked() != null) {
+                    for (String key : filterList.get(position).getLiked().keySet()) {
+                        if (key.equals(uid)) {
+                            holder.photo.setBackgroundResource(R.drawable.yj_profile_border);
+                            if (!filterList.get(position).getProfile().equals(""))
+                                Glide.with(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
+                        }
+                    }
+                }
             }
 
+
             holder.uName.setText(filterList.get(position).getName());//사용자 이름
+
+            //toggle button 유지
+            database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    UserModel um = dataSnapshot.getValue(UserModel.class);
+                    String friend = filterList.get(position).getUID();
+                    if(um.getLiked() != null) {
+                        for (String key : um.getLiked().keySet()) {
+                            if(key.equals(friend))
+                                holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
+            });
+
+
             holder.chatBtn.setOnClickListener(new View.OnClickListener() { //사용자 버튼 클릭시
                 @Override
                 public void onClick(View v) {
@@ -237,7 +299,51 @@ public class FragmentFriend extends Fragment {
                 }
             });
 
+            //친구 즐겨찾기 버튼 클릭
+            holder.heartBtn.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    if (holder.heartBtn.isChecked()) {
+                        holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
 
+                        String friend = filterList.get(position).getUID();
+
+                        Map<String, Object> likedMap = new HashMap<>();
+                        likedMap.put(friend, true);
+
+                        database.getReference("friend").child(currentUser.getUid()).child(friend).removeValue();
+                        database.getReference("friend").child(currentUser.getUid()).updateChildren(likedMap);
+                        database.getReference("userInfo").child(currentUser.getUid()).child("liked").updateChildren(likedMap);
+                    }
+                    else{
+                        holder.heartBtn.setBackgroundResource(R.drawable.feed_heart);
+
+                        String friend = filterList.get(position).getUID();
+
+                        Map<String, Object> likedMap = new HashMap<>();
+                        likedMap.put(friend, false);
+
+                        database.getReference("friend").child(currentUser.getUid()).child(friend).removeValue();
+                        database.getReference("friend").child(currentUser.getUid()).updateChildren(likedMap);
+                        database.getReference("userInfo").child(currentUser.getUid()).child("liked/"+friend).removeValue();
+
+
+                    }
+
+                }
+            });
+
+            //현재 사용자
+            Boolean connection = uData.get(position).getConnection();
+            System.out.println(connection);
+
+            if(connection!=null) {
+                if (connection == true) {
+                    System.out.println("connection");
+                    online_img.setVisibility(View.VISIBLE);
+                } else
+                    online_img.setVisibility(View.INVISIBLE);
+            }
         }
 
         //아이템 뷰를 위한 뷰홀더 객체를 생성하여 리턴

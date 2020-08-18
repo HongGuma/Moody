@@ -1,5 +1,7 @@
 package com.example.Moody.Model;
 
+import java.util.Map;
+
 public class UserModel {
     //사용자 정보
     private String email;
@@ -9,9 +11,12 @@ public class UserModel {
     private String uID;
     private Boolean check;
     private String profile;
+    private Map<String, Object> liked;
     private String range;
+    private Boolean connection;
 
-    public UserModel(){}
+    public UserModel() {
+    }
 
     public String getEmail() {
         return email;
@@ -69,11 +74,18 @@ public class UserModel {
         return profile;
     }
 
-    public void setRange(String range) {
-        this.range = range;
+    public Map<String, Object> getLiked() {
+        return liked;
     }
 
     public String getRange() {
         return range;
+    }
+    public void setConnection(Boolean connection) {
+        this.connection = connection;
+    }
+
+    public Boolean getConnection() {
+        return connection;
     }
 }

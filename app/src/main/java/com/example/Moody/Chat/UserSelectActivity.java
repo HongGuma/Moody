@@ -3,6 +3,7 @@ package com.example.Moody.Chat;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
@@ -59,7 +60,14 @@ public class UserSelectActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.user_select);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    |View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    |View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }
+
+        setContentView(R.layout.activity_chat_add);
 
         FriendListDisplay(); //친구목록 불러오기
 
@@ -74,7 +82,7 @@ public class UserSelectActivity extends Activity {
         uAdapter = new UserSelectAdapter(userModels);
         uRecyclerView.setAdapter(uAdapter);
 
-        Button okBtn = (Button)findViewById(R.id.sel_ok_btn);
+        LinearLayout okBtn = (LinearLayout) findViewById(R.id.sel_ok_btn);
         Button backBtn = (Button)findViewById(R.id.chat_add_backBtn);
 
         //뒤로 가기 버튼
@@ -252,7 +260,7 @@ public class UserSelectActivity extends Activity {
 
             ViewHolder(View view) {
                 super(view);
-                selImage = (ImageView)view.findViewById(R.id.user_sel_image);
+                selImage = (ImageView)view.findViewById(R.id.chat_image1);
                 selName = (TextView)view.findViewById(R.id.user_sel_name);
                 selBox = (CheckBox)view.findViewById(R.id.user_sel_checkbox);
             }
@@ -261,7 +269,7 @@ public class UserSelectActivity extends Activity {
         @NonNull
         @Override
         public UserSelectAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_select,parent,false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_add_user_select,parent,false);
 
             UserSelectAdapter.ViewHolder vh = new UserSelectAdapter.ViewHolder(view);
             return vh;

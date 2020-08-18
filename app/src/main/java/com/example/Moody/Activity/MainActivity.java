@@ -9,13 +9,17 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import com.example.Moody.Chat.FragmentChatting;
+import com.example.Moody.Feed.DBHelper;
 import com.example.Moody.Feed.FragmentFeed;
 import com.example.Moody.Friend.FragmentFriend;
 import com.example.Moody.Setting.FragmentSetting;
@@ -23,6 +27,12 @@ import com.example.Moody.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -67,9 +77,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        String file=mAuth.getUid()+".db";
+        LoginActivity.dbHelper = new DBHelper(MainActivity.this, file, null, 1);
+
+        //상태바 없애기
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_FULLSCREEN
+                    |View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }
+
+
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-        search_btn=(EditText) findViewById(R.id.friend_search);
+        search_btn=(EditText) findViewById(R.id.chat_room_search);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 
         //네비게이션 버튼 선언
         BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation_bar);
@@ -109,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //로그인 상태면 currentUser에 현재 유저 정보가 담김, 아니면 로그인 화면으로 이동
-    @Override
     protected void onStart() {
         super.onStart();
         currentUser = mAuth.getCurrentUser();
@@ -117,14 +141,52 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
         }
+        checkOnline(); //user connect 확인
     }
+
+    public void checkOnline(){
+        final String TAG = "MainActivity";
+        String userUid = currentUser.getUid();
+
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/UsersConnection/"+userUid);
+
+        final DatabaseReference myConnectionsRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/connection");
+        final DatabaseReference lastOnlineRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/lastOnline");
+
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+
+        connectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean connected = snapshot.getValue(Boolean.class);
+                if (connected) {
+                    Log.d(TAG, "connected");
+
+                    myConnectionsRef.setValue(true);
+                    myConnectionsRef.onDisconnect().setValue(false);
+                    lastOnlineRef.onDisconnect().setValue(ServerValue.TIMESTAMP);
+
+                } else {
+                    Log.d(TAG, "not connected");
+                    // 연결 단절 이벤트
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w(TAG, "Listener was cancelled");
+            }
+        });
+
+    }
+
     //키보드 내리기
-    public boolean onTouchEvent(MotionEvent event) {
-        EditText email = (EditText)findViewById(R.id.friend_search);
+    /*public boolean onTouchEvent(MotionEvent event) {
+        EditText email = (EditText)findViewById(R.id.chat_room_search);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(email.getWindowToken(), 0);
         return true;
-    }
+    }*/
     //뒤로가기 버튼
 
     @Override

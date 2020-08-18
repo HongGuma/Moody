@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -14,10 +15,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -110,7 +114,15 @@ public class ChatActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    |View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    |View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }
+
         setContentView(R.layout.activity_chattingroom);
+
         mAuth = FirebaseAuth.getInstance();//현재 로그인 정보
         currentUser = mAuth.getCurrentUser();
         uid = currentUser.getUid();//현재 사용자 id
@@ -141,8 +153,7 @@ public class ChatActivity extends Activity {
         }
 
         //버튼 선언
-        Button backBtn = (Button) findViewById(R.id.chatRoom_backBtn);
-        Button calendarBtn = (Button) findViewById(R.id.chatRoom_calendarBtn);
+        ImageView backBtn = (ImageView) findViewById(R.id.chatRoom_backBtn);
         Button sendBtn = (Button) findViewById(R.id.chatRoom_sendBtn);
         Button galleryBtn = (Button) findViewById(R.id.chatRoom_galleryBtn);
         Button autoBtn = (Button) findViewById(R.id.chatRoom_autoBtn);

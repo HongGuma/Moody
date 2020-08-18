@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Feed.FragmentFeed;
 import com.example.Moody.R;
 
@@ -42,24 +43,32 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         else
             size=position;
         final Image item = imageArrayList.get(size);
-        holder.tag.setText("#"+item.getType());
-        Glide.with(context).load(item.getUrl()).into(holder.photo);
+        if(position<3) {
+            holder.tag.setText("#" + item.getType());
+            Glide.with(context).load(item.getUrl()).into(holder.photo);
 
-        if (IntroActivity.dbHelper.searchItem(item.getUrl())) {
-            holder.star.setBackgroundResource(R.drawable.feed_heart);
-        } else {
-            holder.star.setBackgroundResource(R.drawable.feed_full_heart);
+            if (LoginActivity.dbHelper.searchItem(item.getUrl())) {
+                holder.star.setBackgroundResource(R.drawable.feed_heart);
+            } else {
+                holder.star.setBackgroundResource(R.drawable.feed_full_heart);
+            }
+        }
+        else{
+            holder.photo.setVisibility(View.GONE);
+            holder.star.setVisibility(View.GONE);
+            holder.tag.setVisibility(View.GONE);
+            holder.itemView.setVisibility(View.GONE);
         }
         holder.star.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 if(holder.star.isChecked()){
                     holder.star.setBackgroundResource(R.drawable.feed_full_heart);
-                    IntroActivity.dbHelper.pblInsert(item.getUrl(),item.getType());
+                    LoginActivity.dbHelper.pblInsert(item.getUrl(),item.getType());
                 }
                 else{
                     holder.star.setBackgroundResource(R.drawable.feed_heart);
-                    IntroActivity.dbHelper.pblDelete(item.getUrl());
+                    LoginActivity.dbHelper.pblDelete(item.getUrl());
                 }
             }
         });
@@ -89,7 +98,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return imageArrayList.size();
+        return 3;
     }
 
     class  ViewHolder extends RecyclerView.ViewHolder{
@@ -99,7 +108,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tag = itemView.findViewById(R.id.tag_btn);
-            photo = itemView.findViewById(R.id.tag_photo);
+            photo = itemView.findViewById(R.id.upload_image);
             star=itemView.findViewById(R.id.star_btn);
         }
     }

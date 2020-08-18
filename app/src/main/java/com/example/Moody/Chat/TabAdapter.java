@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.R;
 import com.example.Moody.Model.FeedItems;
 import com.google.firebase.auth.FirebaseAuth;
@@ -124,7 +125,7 @@ public class TabAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                 myViewHolder.personal_btn.setBackgroundColor(Color.parseColor("#00ff0000"));
                 myViewHolder.public_btn.setBackgroundColor(Color.parseColor("#00ff0000"));
                 ArrayList<FeedItems> tagItems=new ArrayList<>();
-                ArrayList<FeedItems> starItems= IntroActivity.dbHelper.getMarkItems(2);
+                ArrayList<FeedItems> starItems= LoginActivity.dbHelper.getMarkItems(2);
                 for(int i=0;i<starItems.size();i++){
                     for(int j=0;j<feedDataArrayList.size();j++){
                         FeedItems entity=new FeedItems();

@@ -1,5 +1,6 @@
 package com.example.Moody.Feed;
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.R;
 
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +46,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         setContentView(R.layout.upload_photo_activity);
 
         //뒤로가기 버튼
-        Button back_btn = (Button) findViewById(R.id.upload_back_btn);
+        ImageView back_btn = (ImageView) findViewById(R.id.upload_back_btn);
         back_btn.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -55,7 +58,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         });
 
         //사진 선택
-        Button sel_btn = (Button)findViewById(R.id.upload_sel_btn);
+        LinearLayout sel_btn = (LinearLayout)findViewById(R.id.upload_sel_btn);
         sel_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,7 +77,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 //String tag = tag_field.getText().toString();
                 try {
                     byte[]image=getByteArray();
-                    IntroActivity.dbHelper.insert(image, emotion);
+                    LoginActivity.dbHelper.insert(image, emotion);
                     System.out.println("URI:"+selectedImageUri);
 
                 } catch (IOException e) {
@@ -84,7 +87,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 Intent intent = new Intent(UploadPhotoActivity.this, MainActivity.class);
                 intent.putExtra("fragment","feed");
                 startActivity(intent);
-                IntroActivity.dbHelper.close();
+                LoginActivity.dbHelper.close();
             }
         });
     }
@@ -103,30 +106,36 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         float[][][][] bytes_img = new float[1][64][64][3];
 
         int k = 0;
-        for (int y = 0; y < 64; y++) {
-            for (int x = 0; x < 64; x++) {
+        for (int x = 0; x < 64; x++) {
+            for (int y = 0; y < 64; y++) {
                 int pixel = floatBitmap.getPixel(x, y);      // ARGB : ff4e2a2a
 
-                bytes_img[0][y][x][0] = ((pixel >> 16) & 0xff) / (float) 255;
-                bytes_img[0][y][x][1] = ((pixel >> 8) & 0xff) / (float) 255;
-                bytes_img[0][y][x][2] = ((pixel >> 0) & 0xff) / (float) 255;
+                bytes_img[0][y][x][0] = (Color.red(pixel)) / (float) 255;
+                bytes_img[0][y][x][1] = (Color.green(pixel)) / (float) 255;
+                bytes_img[0][y][x][2] = (Color.blue(pixel)) / (float) 255;
             }
         }
+        for(int a=0; a<64; a++) {
+            for (int i = 60; i <64; i++)
+                for (int j = 0; j < 3; j++)
+                    System.out.println(bytes_img[0][a][i][j]);
+            System.out.println("A");
+        }
+        Interpreter tf_lite = getTfliteInterpreter("image2_model.tflite");
 
-        Interpreter tf_lite = getTfliteInterpreter("image_model.tflite");
-
-        float[][] output = new float[1][3];
+        float[][] output = new float[1][6];
         tf_lite.run(bytes_img, output);
 
         Log.d("predict", Arrays.toString(output[0]));
 
         int maxIdx = 0;
         float maxProb = output[0][0];
-        for (int i = 1; i < 3; i++) {
+        for (int i = 1; i < 6; i++) {
             if (output[0][i] > maxProb) {
                 maxProb = output[0][i];
                 maxIdx = i;
             }
+            System.out.println(output[0][i]);
         }
         System.out.println(maxIdx);
         String emotion = null;
@@ -136,6 +145,12 @@ public class UploadPhotoActivity  extends AppCompatActivity {
             emotion = "happy";
         else if (maxIdx == 2)
             emotion = "sad";
+        else if (maxIdx == 3)
+            emotion = "disgust";
+        else if (maxIdx == 4)
+            emotion = "fear";
+        else if (maxIdx == 5)
+            emotion = "surprise";
 
         System.out.println(emotion);
         TextView tag_field = (TextView) findViewById(R.id.tag_field);

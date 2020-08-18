@@ -6,11 +6,19 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +26,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
@@ -50,18 +60,74 @@ public class AddFriendActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    |View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    |View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }
+
         setContentView(R.layout.activity_add_friend);
 
-        final EditText friendEmail = (EditText)findViewById(R.id.friend_add_input);
+        final EditText friendEmail = (EditText)findViewById(R.id.chat_room_search);
         final Button addBtn = (Button)findViewById(R.id.friend_add_btn);
         Button searchBtn = (Button)findViewById(R.id.friend_search_btn);
         Button scanBtn = (Button)findViewById(R.id.friend_scan_btn);
-        ImageView backBtn = (ImageView)findViewById(R.id.friend_add_backBtn);
+        ImageView backBtn = (ImageView)findViewById(R.id.chatRoom_backBtn);
+        final LinearLayout top1 = (LinearLayout)findViewById(R.id.top1);
+        final LinearLayout layout1 = (LinearLayout)findViewById(R.id.layout1);
+        final RelativeLayout layout2 = (RelativeLayout) findViewById(R.id.layout2);
+        final LinearLayout layout3 = (LinearLayout)findViewById(R.id.layout3);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            getWindow().getDecorView().setSystemUiVisibility( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        }
+        //애니메이션
+        final Animation mAnim1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.top_border_long_anim);
+        mAnim1.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
+        final Animation mAnim2 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.top_border_pause_anim);
+        mAnim2.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
+        final Animation mAnim3 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.main_fade_in_anim);
+        mAnim3.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
+        final Animation mAnim4 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.main_fade_pause_anim);
+        mAnim4.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
 
+        //상단바 애니메이션
+        top1.startAnimation(mAnim2);
+        //화면 투명하게 하기
+        layout1.startAnimation(mAnim4);
+        layout2.startAnimation(mAnim4);
+        layout3.startAnimation(mAnim4);
+
+        //딜레이
+        Handler delayHandler = new Handler();
+        delayHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                top1.startAnimation(mAnim1);
+                //fade-in
+                layout1.startAnimation(mAnim3);
+                layout2.startAnimation(mAnim3);
+                layout3.startAnimation(mAnim3);
+            }
+        }, 50);
+
+
+        //엔터키 클릭 시 이메일 검색
+        friendEmail.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if((event.getAction() == event.ACTION_DOWN) && (keyCode == event.KEYCODE_ENTER)){
+                    //키보드 내리기
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow( friendEmail.getWindowToken(), 0);
+
+                    String inEmail = friendEmail.getText().toString(); //이메일 입력받기
+                    UsersInfo(inEmail);
+
+                    return true;
+                }
+                return false;
+            }
+        });
+/*
         //이메일 검색
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,7 +135,7 @@ public class AddFriendActivity extends Activity {
                 String inEmail = friendEmail.getText().toString(); //이메일 입력받기
                 UsersInfo(inEmail);
             }
-        });
+        });*/
 
         //QR코드 스캔
         scanBtn.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +173,30 @@ public class AddFriendActivity extends Activity {
                     toast.setGravity(Gravity.CENTER_HORIZONTAL, Gravity.CENTER, 0);
                     toast.show();
                 }else{
-                    FriendCheck();
+                    //검색한 사용자 프로필 나타내기
+                    LinearLayout shadow_layout = (LinearLayout) findViewById(R.id.shadow_layout);
+                    ImageView friend_profile = (ImageView) findViewById(R.id.chat_image1);
+                    TextView friend_name = (TextView) findViewById(R.id.user_sel_name);
+                    Button add_btn = (Button) findViewById(R.id.friend_search_btn);
+
+                    shadow_layout.setBackgroundResource(R.drawable.yj_profile_shadow);
+                    friend_profile.setBackgroundResource(R.drawable.yj_profile_border_white);
+                    if((user.getProfile().equals("")) || (user.getRange()== "friend")) {
+                        System.out.println("prfofile");
+                        friend_profile.setImageResource(R.drawable.yj_profile);
+                    }
+                    else{
+                        Glide.with(friend_profile.getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(friend_profile);
+                    }
+                    friend_name.setText(user.getName());
+                    add_btn.setVisibility(View.VISIBLE);
+                    add_btn.setOnClickListener(new View.OnClickListener(){
+                        @Override
+                        public void onClick(View view)
+                        {
+                            FriendCheck();
+                        }
+                    });
                 }
             }
 
@@ -138,7 +227,7 @@ public class AddFriendActivity extends Activity {
                     finish();
                 }else{
                     HashMap<String,Object> friend = new HashMap<String, Object>();
-                    friend.put(fid,true);
+                    friend.put(fid,false);
                     database.getReference("friend").child(currentUser.getUid()).updateChildren(friend).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {

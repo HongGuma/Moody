@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class SignAddInfoActivity extends Activity {
     private static final String TAG = "SignActivity";
@@ -62,13 +63,14 @@ public class SignAddInfoActivity extends Activity {
                 database = FirebaseDatabase.getInstance();
                 final DatabaseReference myRef = database.getReference("userInfo").child(mAuth.getCurrentUser().getUid());
 
-                HashMap<String, String> users = new HashMap<String, String>();
+                HashMap<String, Object> users = new HashMap<String, Object>();
                 users.put("uID",mAuth.getCurrentUser().getUid());
                 users.put("email",email);
                 users.put("password",password);
                 users.put("name",name);
                 users.put("birth",birth);
                 users.put("profile","");
+                users.put("range","all");
 
                 myRef.setValue(users).addOnSuccessListener(new OnSuccessListener<Void>() {
                     //database에 값 전달이 성공되면
