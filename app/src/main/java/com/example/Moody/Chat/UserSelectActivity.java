@@ -74,6 +74,13 @@ public class UserSelectActivity extends Activity {
         database = FirebaseDatabase.getInstance();
         uid = currentUser.getUid();
 
+        ImageView myImageView = (ImageView)findViewById(R.id.my_image);
+        TextView myNameView = (TextView)findViewById(R.id.my_name);
+        LinearLayout okBtn = (LinearLayout) findViewById(R.id.sel_ok_btn);
+        Button backBtn = (Button)findViewById(R.id.chat_add_backBtn);
+
+        myInfo(myNameView,myImageView);//내정보 불러오기
+
         uRecyclerView = (RecyclerView)findViewById(R.id.sel_recyclerview);
         uRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정
         uRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -81,9 +88,6 @@ public class UserSelectActivity extends Activity {
         //리사이클러뷰 어뎁터
         uAdapter = new UserSelectAdapter(userModels);
         uRecyclerView.setAdapter(uAdapter);
-
-        LinearLayout okBtn = (LinearLayout) findViewById(R.id.sel_ok_btn);
-        Button backBtn = (Button)findViewById(R.id.chat_add_backBtn);
 
         //뒤로 가기 버튼
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -193,6 +197,28 @@ public class UserSelectActivity extends Activity {
 
     }
 
+    //내정보
+    public void myInfo(final TextView name, final ImageView image){
+        database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserModel um = dataSnapshot.getValue(UserModel.class);
+                name.setText(um.getName()); //채팅방 상단에 사용자 정보
+                if (um.getRange().equals("all")) {
+                    if (!um.getProfile().equals(""))
+                        Glide.with(image.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
+                }
+                else if (um.getRange().equals("friend")) {
+                    image.setBackgroundResource(R.drawable.yj_profile_border);
+                    if (!um.getProfile().equals(""))
+                        Glide.with(image.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+    }
 
     public void FriendListDisplay(){
         //친구목록에서 친구 id 가져오기

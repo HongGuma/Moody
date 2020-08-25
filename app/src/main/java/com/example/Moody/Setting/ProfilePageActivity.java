@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Activity.MainActivity;
+import com.example.Moody.Friend.FragmentFriend;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.android.gms.tasks.Continuation;
@@ -48,6 +49,8 @@ public class ProfilePageActivity extends AppCompatActivity {
     private int GET_GALLERY_IMAGE = 103;
     private String imageUrl;
 
+    Spinner s;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,15 +73,19 @@ public class ProfilePageActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ProfilePageActivity.this, MainActivity.class);
-                intent.putExtra("fragment", "setting");
+                if(FragmentFriend.state == 0)
+                    intent.putExtra("fragment", "friend");
+                if(FragmentFriend.state == 1)
+                    intent.putExtra("fragment", "setting");
                 startActivity(intent);
                 finish();
             }
         });
 
         //프로필 범위
-        Spinner s = (Spinner)findViewById(R.id.rangeSpinner);
+        s = (Spinner)findViewById(R.id.rangeSpinner);
         final Object[] range = new Object[1];
+
         s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -113,7 +120,10 @@ public class ProfilePageActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Intent intent = new Intent(ProfilePageActivity.this, MainActivity.class);
-                            intent.putExtra("fragment","setting");
+                            if(FragmentFriend.state == 0)
+                                intent.putExtra("fragment", "friend");
+                            if(FragmentFriend.state == 1)
+                                intent.putExtra("fragment", "setting");
                             startActivity(intent);
                             finish();
                         }
@@ -126,7 +136,10 @@ public class ProfilePageActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Intent intent = new Intent(ProfilePageActivity.this, MainActivity.class);
-                            intent.putExtra("fragment","setting");
+                            if(FragmentFriend.state == 0)
+                                intent.putExtra("fragment", "friend");
+                            if(FragmentFriend.state == 1)
+                                intent.putExtra("fragment", "setting");
                             startActivity(intent);
                             finish();
                         }
@@ -134,7 +147,10 @@ public class ProfilePageActivity extends AppCompatActivity {
                     //두개다 입력 안한경우
                 }else if(changeName == null && changeBirth == null){
                     Intent intent = new Intent(ProfilePageActivity.this, MainActivity.class);
-                    intent.putExtra("fragment","setting");
+                    if(FragmentFriend.state == 0)
+                        intent.putExtra("fragment", "friend");
+                    if(FragmentFriend.state == 1)
+                        intent.putExtra("fragment", "setting");
                     startActivity(intent);
                     finish();
                 }
@@ -147,7 +163,10 @@ public class ProfilePageActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Intent intent = new Intent(ProfilePageActivity.this, MainActivity.class);
-                            intent.putExtra("fragment","setting");
+                            if(FragmentFriend.state == 0)
+                                intent.putExtra("fragment", "friend");
+                            if(FragmentFriend.state == 1)
+                                intent.putExtra("fragment", "setting");
                             startActivity(intent);
                             finish();
                         }
@@ -228,6 +247,14 @@ public class ProfilePageActivity extends AppCompatActivity {
                     Glide.with(profile.getContext()).load(um.getProfile()).into(profile);
                 name.setText(um.getName());
                 birth.setText(um.getBirth());
+
+                String item = um.getRange();
+                if(item!=null) {
+                    if (item.equals("all"))
+                        s.setSelection(0);
+                    if (item.equals("friend"))
+                        s.setSelection(1);
+                }
             }
 
             @Override

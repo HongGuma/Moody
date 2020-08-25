@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,9 +31,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Chat.ChatActivity;
 import com.example.Moody.Model.ChatRoomModel;
+import com.example.Moody.Model.FriendModel;
 import com.example.Moody.Model.UserModel;
 //import com.example.phometalk.Model.FriendModel;
 import com.example.Moody.R;
+import com.example.Moody.Setting.ProfilePageActivity;
+import com.example.Moody.Setting.QR_code;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -60,11 +64,25 @@ public class FragmentFriend extends Fragment {
     private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
+    private String email;
+    static public int state;
+
     private RecyclerView fRecyclerView;
+    private RecyclerView oRecyclerView;
+    private RecyclerView lRecyclerView;
+
     private FriendAdapter fAdapter;
+    private FriendAdapter lAdapter;
+    private FriendAdapter oAdapter;
 
     private ArrayList<UserModel> uList = new ArrayList<UserModel>();
+    private ArrayList<UserModel> oList = new ArrayList<UserModel>();
+    private ArrayList<UserModel> lList = new ArrayList<UserModel>();
+
     private ArrayList<String> fid = new ArrayList<String>();
+    private ArrayList<String> oid = new ArrayList<String>();
+    private ArrayList<String> lid = new ArrayList<String>();
+
     private ImageView online_img;
 
     //제일 먼저 호출
@@ -85,6 +103,9 @@ public class FragmentFriend extends Fragment {
         Activity activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_friend,container,false);
 
+        Button profileBtn = (Button)view.findViewById(R.id.profile_edit_btn); //프로필 수정 버튼
+        Button qrBtn = (Button)view.findViewById(R.id.my_qr_btn); //QR 코드 스캔 버튼
+
         TextView myName = (TextView) view.findViewById(R.id.my_name);
         ImageView myImage = (ImageView) view.findViewById(R.id.my_image);
         final EditText friendSearch = (EditText)view.findViewById(R.id.chat_room_search);
@@ -100,8 +121,42 @@ public class FragmentFriend extends Fragment {
         fRecyclerView.setHasFixedSize(true);
         fRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
 
+        oRecyclerView = (RecyclerView)view.findViewById(R.id.online_list_recyclerView);
+        oRecyclerView.setHasFixedSize(true);
+        oRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
+
+        lRecyclerView = (RecyclerView)view.findViewById(R.id.liked_list_recyclerView);
+        lRecyclerView.setHasFixedSize(true);
+        lRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
+
         fAdapter = new FriendAdapter(getContext(), uList);
+        lAdapter = new FriendAdapter(getContext(), lList);
+        oAdapter = new FriendAdapter(getContext(), oList);
         fRecyclerView.setAdapter(fAdapter);
+        oRecyclerView.setAdapter(oAdapter);
+        lRecyclerView.setAdapter(lAdapter);
+
+        //프로필 수정
+        profileBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                state = 0;
+                startActivity(new Intent(getActivity(), ProfilePageActivity.class));
+            }
+        });
+
+        //QR코드
+        qrBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (TextUtils.isEmpty(email)){
+                    return;
+                }
+                Intent intent =  new Intent(getActivity(), QR_code.class);
+                intent.putExtra("email",email);
+                startActivity(intent);
+            }
+        });
 
         //검색
         friendSearch.addTextChangedListener(new TextWatcher() {
@@ -155,10 +210,11 @@ public class FragmentFriend extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel um = dataSnapshot.getValue(UserModel.class);
                 name.setText(um.getName());
+                email = um.getEmail();
                 if(um.getRange().equals("friend"))
                     image.setBackgroundResource(R.drawable.yj_profile_border);
                 if (!um.getProfile().equals(""))
-                        Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
+                    Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
 
             }
             @Override
@@ -174,6 +230,9 @@ public class FragmentFriend extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
                     fid.add(dataSnapshot1.getKey());
+
+                    if(dataSnapshot1.getValue().equals(true))
+                        lid.add(dataSnapshot1.getKey());
                 }
             }
             @Override
@@ -185,11 +244,21 @@ public class FragmentFriend extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 uList.clear();
+                oList.clear();
+                lList.clear();
                 for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
                     UserModel users = dataSnapshot1.getValue(UserModel.class);
+                    for(int i=0;i<lid.size();i++){
+                        if(users.getUID().equals(lid.get(i))){
+                            lList.add(users);
+                        }
+                    }
                     for(int i=0;i<fid.size();i++){
-                        if(users.getUID().equals(fid.get(i))){
+                        if(users.getUID().equals(fid.get(i))) {
                             uList.add(users);
+                            if (users.getConnection() != null)
+                                if (users.getConnection() == true)
+                                    oList.add(users);
                         }
                     }
                 }

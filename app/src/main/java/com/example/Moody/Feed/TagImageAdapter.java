@@ -13,8 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.Moody.Activity.IntroActivity;
 import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Model.FeedItems;
+import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {

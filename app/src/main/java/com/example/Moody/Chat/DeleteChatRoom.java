@@ -95,15 +95,10 @@ public class DeleteChatRoom extends Activity {
                     database.getReference("Message").child(roomID.get(i)).removeValue();//채팅내역 지우기
                 }
 
-
-
-                /*
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.putExtra("fragment", "chat");
                 startActivity(intent);
-
-                 */
-                //finish();
+                finish();
 
             }
         });
@@ -178,7 +173,6 @@ public class DeleteChatRoom extends Activity {
     }
 
     //=============================================================================================================================================================================
-
     public class DeleteAdapter extends RecyclerView.Adapter<DeleteAdapter.ViewHolder>{
         private static final String TAG = "DeleteAdapter";
         private ArrayList<ChatRoomModel> chatRoomModel = new ArrayList<>();
@@ -292,15 +286,17 @@ public class DeleteChatRoom extends Activity {
                                         .apply(new RequestOptions().circleCrop())
                                         .error(R.drawable.friend_profile)
                                         .into(holder.userImage1);
-                            }*/
+                            }
+
+                             */
                         }
 
                     }
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError){}
                 });
-
             }
+
 
             database.getReference("ChatRoom").child(chatRoomModel.get(position).getRoomID()).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -339,4 +335,5 @@ public class DeleteChatRoom extends Activity {
             return chatRoomModel.size();
         }
     }
+
 }

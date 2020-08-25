@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Activity.LoginActivity;
+import com.example.Moody.Friend.FragmentFriend;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -81,6 +82,7 @@ public class FragmentSetting extends Fragment {
         profileBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                FragmentFriend.state = 1;
                 startActivity(new Intent(getActivity(),ProfilePageActivity.class));
             }
         });

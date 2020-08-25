@@ -48,7 +48,7 @@
                 android:background="@drawable/yj_profile_edit_btn" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/my_qr_btn"
                 android:layout_width="16.11dp"
                 android:layout_height="16.11dp"
                 android:layout_gravity="center"
@@ -163,11 +163,24 @@
                 </RelativeLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/chat_list_recyclerView"
+                    android:id="@+id/online_list_recyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="530dp">
+                    android:layout_height="200dp">
 
                 </androidx.recyclerview.widget.RecyclerView>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/liked_list_recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp">
+
+                </androidx.recyclerview.widget.RecyclerView>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/chat_list_recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"></androidx.recyclerview.widget.RecyclerView>
+
 
             </LinearLayout>
         </ScrollView>

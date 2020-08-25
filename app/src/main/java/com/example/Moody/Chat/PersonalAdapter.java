@@ -177,6 +177,9 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
                 Map<String,Object> u = (HashMap<String,Object>)dataSnapshot.getValue();
                 int count = u.size()-chatModel.get(position).getReadUsers().size();
                 //Log.d(TAG, "onDataChange: count="+count);
+                /**
+                 * DB는 갱신이 되는데 뷰가 갱신이 빨리 안됨
+                 */
                 if(count>0){
                     readView.setVisibility(View.VISIBLE);
                     readView.setText(String.valueOf(count));
