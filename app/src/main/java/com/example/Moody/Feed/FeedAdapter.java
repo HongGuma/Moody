@@ -121,8 +121,10 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                     }
                 }
                 FeedAdapter myAdapter = new FeedAdapter(context,tagItems);
+                PageAdapter pAdapter = new PageAdapter(context, tagItems);
                 FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context,2));
                 FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
+                FragmentFeed.pageRecyclerView.setAdapter(pAdapter);
             }
         });
 

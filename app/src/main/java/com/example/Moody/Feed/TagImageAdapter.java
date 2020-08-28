@@ -13,15 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.Moody.Activity.IntroActivity;
 import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Model.FeedItems;
-import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
     Context context;
-    private String tag[]=new String[3];
+    private String tag[]=new String[6];
 
     public TagImageAdapter(Context context, String []tag) {
         this.context=context;
@@ -92,8 +90,10 @@ public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     }
                     FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context, 2));
                     FeedAdapter myAdapter = new FeedAdapter(context, tagItems);
-
+                    PageAdapter pAdapter = new PageAdapter(context, tagItems);
+                    FragmentFeed.pageRecyclerView.setVisibility(View.VISIBLE);
                     FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
+                    FragmentFeed.pageRecyclerView.setAdapter(pAdapter);
                 }
             });
         }

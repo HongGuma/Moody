@@ -37,6 +37,8 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         return new MyViewHolder(v);
     }
 
+    boolean click=true;
+
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
@@ -70,6 +72,15 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                         }
                     }
                 }
+//                if (click) {
+//                    myViewHolder.page.setTextColor(Color.parseColor("#EFEDF0"));
+//                    click = false;
+//                } else {
+//                    myViewHolder.page.setTextColor(Color.parseColor("#000000"));
+//                    click = true;
+//                }
+//                notifyDataSetChanged();
+
                 FeedAdapter myAdapter = new FeedAdapter(context,pageItems);
                 FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context,2));
                 FragmentFeed.feedRecyclerView.setAdapter(myAdapter);

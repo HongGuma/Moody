@@ -30,6 +30,7 @@ import org.tensorflow.lite.Interpreter;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
@@ -101,14 +102,40 @@ public class UploadPhotoActivity  extends AppCompatActivity {
     }
 
     public String getEmotion() throws IOException {
-        Bitmap floatBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
 
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+
+        Bitmap resized = null;
+
+        while (height > 64) {
+            resized = Bitmap.createScaledBitmap(bitmap, (width * 118) / height, 64, true);
+            height = resized.getHeight();
+            width = resized.getWidth();
+
+        }
+
+
+        /*byte[][][] pixel = new byte[64][64][3];
+        int count =0;
+        for(int i=0; i<64; i++)
+            for(int j=0; j<64; j++)
+                for(int k=0; k<3; k++) {
+                    pixel[i][j][k] = bytes[count];
+                    count++;
+                }*/
+
+        /*ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
+        bitmap.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
+
+        byte[] array = buffer.array();*/
         float[][][][] bytes_img = new float[1][64][64][3];
 
         int k = 0;
         for (int x = 0; x < 64; x++) {
             for (int y = 0; y < 64; y++) {
-                int pixel = floatBitmap.getPixel(x, y);      // ARGB : ff4e2a2a
+                int pixel = resized.getPixel(x, y);      // ARGB : ff4e2a2a
 
                 bytes_img[0][y][x][0] = (Color.red(pixel)) / (float) 255;
                 bytes_img[0][y][x][1] = (Color.green(pixel)) / (float) 255;
