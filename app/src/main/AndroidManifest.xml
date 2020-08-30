@@ -26,7 +26,7 @@
         <activity android:name="com.example.Moody.Friend.AddFriendActivity"/>
         <activity android:name="com.example.Moody.Chat.ChatActivity"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".Chat.DeleteChatRoom"/>
+        <activity android:name="com.example.Moody.Chat.ChangeRoomName"/>
         <activity android:name="com.example.Moody.Chat.UserSelectActivity"/>
         <activity android:name="com.example.Moody.Chat.AutoChatActivity"/>
         <activity android:name="com.example.Moody.Feed.SearchPhotoActivity"/>

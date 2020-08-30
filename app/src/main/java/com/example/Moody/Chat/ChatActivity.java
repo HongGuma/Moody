@@ -164,6 +164,9 @@ public class ChatActivity extends Activity {
             @Override
             public void onClick(View v) {
                 database.getReference("Message").child(roomid).removeEventListener(childEventListener);
+                Intent intent = new Intent(ChatActivity.this,MainActivity.class);
+                intent.putExtra("fragment","chat");
+                startActivity(intent);
                 finish();
             }
         });
@@ -469,6 +472,9 @@ public class ChatActivity extends Activity {
     public void onBackPressed() {
         super.onBackPressed();
         database.getReference("Message").child(roomid).removeEventListener(childEventListener);
+        Intent intent = new Intent(ChatActivity.this,MainActivity.class);
+        intent.putExtra("fragment","chat");
+        startActivity(intent);
         finish();
     }
 

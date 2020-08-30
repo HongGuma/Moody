@@ -65,6 +65,7 @@ public class FragmentFriend extends Fragment {
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
     private String email;
+    public String myName;
     static public int state;
 
     private RecyclerView fRecyclerView;
@@ -204,12 +205,18 @@ public class FragmentFriend extends Fragment {
         return view;
     }
 
+    /**
+     * 내정보 불러오기
+     * @param name
+     * @param image
+     */
     public void MyInfo(final TextView name, final ImageView image){
         database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel um = dataSnapshot.getValue(UserModel.class);
                 name.setText(um.getName());
+                myName = um.getName();
                 email = um.getEmail();
                 if(um.getRange().equals("friend"))
                     image.setBackgroundResource(R.drawable.yj_profile_border);
@@ -222,7 +229,9 @@ public class FragmentFriend extends Fragment {
         });
     }
 
-    //친구 리스트 불러오기
+    /**
+     * 친구 목록 불러오기
+     */
     public void FriendListDisplay(){
         //친구목록에서 친구 id 가져오기
         database.getReference("friend").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -484,9 +493,9 @@ public class FragmentFriend extends Fragment {
                         database.getReference().child("ChatRoom").updateChildren(map);
 
                         //현재 채팅방에 누가 있는지
-                        HashMap<String, Boolean> users = new HashMap<String, Boolean>();
-                        users.put(uid, true);
-                        users.put(rec, true);
+                        HashMap<String, Object> users = new HashMap<String, Object>();
+                        users.put(uid,name);
+                        users.put(rec,myName);
                         room.setUsers(users);
 
                         //DB에 roomID와 유저 목록 생성

@@ -55,6 +55,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 Intent intent = new Intent(UploadPhotoActivity.this, MainActivity.class);
                 intent.putExtra("fragment","feed");
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -226,6 +227,14 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(UploadPhotoActivity.this, MainActivity.class);
+        intent.putExtra("fragment","feed");
+        startActivity(intent);
     }
 }
 

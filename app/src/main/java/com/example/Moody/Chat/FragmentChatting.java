@@ -1,6 +1,8 @@
 package com.example.Moody.Chat;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -9,11 +11,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,8 +32,10 @@ import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.ChatModel;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -51,10 +58,10 @@ public class FragmentChatting extends Fragment {
     private RecyclerView crRecyclerView;
     private ChatRoomListAdapter crAdapter;
     private ArrayList<ChatRoomModel> cList = new ArrayList<ChatRoomModel>();
-    private Map<String,Object> users = new HashMap<>();
+    private ArrayList<String>roomID = new ArrayList<String>();
 
     private String uid;
-    private String roomID;
+    public String delchat = "off";
 
     public static FragmentChatting newInstance(){
         return new FragmentChatting();
@@ -74,24 +81,35 @@ public class FragmentChatting extends Fragment {
         Activity activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_chat_list,container,false);
 
+        /**
+         * 상단 사용자 프로필
+         **/
         TextView myName = (TextView)view.findViewById(R.id.my_name);
         ImageView myImage = (ImageView)view.findViewById(R.id.my_image);
         EditText chatSearch = (EditText)view.findViewById(R.id.chat_room_search);
         myInfo(myName,myImage); //내정보 가져오기
 
-        crRecyclerView = (RecyclerView)view.findViewById(R.id.chat_list_recyclerView);//리사이클러뷰
+        /**
+         * 리사이클러뷰
+         */
+        crRecyclerView = (RecyclerView)view.findViewById(R.id.chat_list_recyclerView);
         crRecyclerView.setHasFixedSize(true);//리사이클러뷰 크기 고정
-        //레이아웃 매니저
+        /**
+         * 레이아웃 매니저
+         */
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(inflater.getContext());
         crRecyclerView.setLayoutManager(mLayoutManager);
-
+        /**
+         * 어뎁터
+         */
         crAdapter = new ChatRoomListAdapter(cList);
         crRecyclerView.setAdapter(crAdapter);
 
-        LinearLayout newBtn = (LinearLayout) view.findViewById(R.id.chat_new_room);
-        LinearLayout delBtn = (LinearLayout) view.findViewById(R.id.chat_room_del);
+        final LinearLayout newBtn = (LinearLayout) view.findViewById(R.id.chat_new_room);
 
-        //새 채팅방 생성 버튼
+        /**
+         * 새 채팅방 생성
+         */
         newBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,17 +118,10 @@ public class FragmentChatting extends Fragment {
             }
         });
 
-        //채팅방 삭제 버튼
-        delBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(),DeleteChatRoom.class);
-                v.getContext().startActivity(intent);
-                //getActivity().finish();
-            }
-        });
 
-        //검색
+        /**
+         * 검색
+         */
         chatSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -124,9 +135,27 @@ public class FragmentChatting extends Fragment {
             public void afterTextChanged(Editable s) { }
         });
 
+
         return view;
     }
 
+    //채팅방 선택
+    public void Select(){
+
+        for(int i = 0;i<cList.size();i++){
+            Boolean check = cList.get(i).getCheck();
+            if(check != null){
+                roomID.add(cList.get(i).getRoomID());
+            }
+        }
+
+    }
+
+    /**
+     * DB에서 사용자 정보 불러오기
+     * @param name : 화면 상단의 텍스트뷰
+     * @param image : 화면 상단의 이미지뷰
+     */
     public void myInfo(final TextView name, final ImageView image){
         database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -149,15 +178,27 @@ public class FragmentChatting extends Fragment {
         });
     }
 
-
+    /**
+     * DB에서 채팅방 정보 불러오기
+     */
     public void ChatListDisplay() {
         uid = currentUser.getUid();
-        //현재 로그인한 유저가 속해있는 채팅방 정보 출력
-        database.getReference("ChatRoom").orderByChild("lastTime").addListenerForSingleValueEvent(new ValueEventListener() {
+        ChildEventListener childEventListener = new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                ChatRoomModel crm = snapshot.getValue(ChatRoomModel.class);
+                for(String user:crm.getUsers().keySet()){
+                    if(user.equals(uid))
+                        cList.add(0,crm);
+                }
+                crAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 cList.clear();
-                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                for (DataSnapshot dataSnapshot1 : snapshot.getChildren()) {
                     ChatRoomModel room = dataSnapshot1.getValue(ChatRoomModel.class);
                     Iterator<String> iter = room.getUsers().keySet().iterator();
                     //users에서 상대방 id 찾는다.
@@ -169,10 +210,14 @@ public class FragmentChatting extends Fragment {
                     }
                 }
                 crAdapter.notifyDataSetChanged();
+
             }
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {  }
-        });
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
+        };
+        database.getReference("ChatRoom").orderByChild("lastTime").addChildEventListener(childEventListener);
 
     }
 
@@ -180,17 +225,19 @@ public class FragmentChatting extends Fragment {
 
     //=======================================================================================================================
 
+    /**
+     * 채팅방 어뎁터
+     */
     class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapter.ViewHolder> {
         private static final String TAG = "ChatRoomListAdapter";
 
         private ArrayList<ChatRoomModel> chatRoomList; //전체 데이터
         private ArrayList<ChatRoomModel> filterList; //검색된 데이터
-
-        private ArrayList<String> user = new ArrayList<>(); //상대방 id
+        private ArrayList<String> user = new ArrayList<String>(); //상대방 id
         private ArrayList<String> roomID = new ArrayList<String>(); //채팅방 id
-        private ArrayList<String> profiles = new ArrayList<>();// 프로필
-        private Map<Integer,String> names = new HashMap<>();//상대방 이름
-        private Map<Integer,String> recID = new HashMap<>();//상대방 id
+        private Map<Integer,String> profiles = new HashMap<Integer,String>();// 프로필
+        private Map<Integer,String> names = new HashMap<Integer,String>();//상대방 이름
+        private Map<Integer,String> recID = new HashMap<Integer,String>();//상대방 id
 
         SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
 
@@ -252,29 +299,26 @@ public class FragmentChatting extends Fragment {
             return vh;
         }
 
-
-
         @Override
         public void onBindViewHolder(@NonNull final ChatRoomListAdapter.ViewHolder holder, final int position) {
             roomID.add(filterList.get(position).getRoomID()); //채팅방 id
 
-
+            //유저 정보만 추출
             user.clear();
             for(String id: filterList.get(position).getUsers().keySet()){
                 if(!id.equals(currentUser.getUid()))
                     user.add(id);
             }
 
-
+            //유저 수 대로 정보 출력
             for(int i=0; i<filterList.get(position).getUsers().size()-1; i++){
                 database.getReference("userInfo").child(user.get(i)).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         UserModel um = dataSnapshot.getValue(UserModel.class);
-                        holder.roomName.setText(um.getName());
-                        Log.d(TAG, "onDataChange: position="+um.getName());
-                        names.put(position,um.getName());
+                        //Log.d(TAG, "onDataChange: position="+um.getName());
                         recID.put(position,um.getUID());
+                        profiles.put(position,um.getProfile());
                         if(filterList.get(position).getUsers().size()==2){ //개인채팅방
                             if (um.getRange().equals("all")) {
                                 if (!um.getProfile().equals(""))
@@ -329,13 +373,9 @@ public class FragmentChatting extends Fragment {
                     holder.time.setText(time);
                     //마지막 메시지
                     holder.lastMsg.setText(crm.getLastMsg());
-                    //채팅방 이름(단톡방만)
-                    if(crm.getRoomName()!=null){
-                        holder.roomName.setText(crm.getRoomName());
-                        names.remove(position);
-                        names.put(position,crm.getRoomName());
-                    }
-
+                    //채팅방 이름
+                    holder.roomName.setText(crm.getUsers().get(uid).toString());
+                    names.put(position,crm.getUsers().get(uid).toString());
                 }
 
                 @Override
@@ -383,7 +423,7 @@ public class FragmentChatting extends Fragment {
                         startActivity(intent);
                     }else {
                         //개인 채팅방
-                        intent.putExtra("name",names.get(position)); //이름 전달
+                        intent.putExtra("name",names.get(position)); //채팅방 이름 전달
                         intent.putExtra("receiver",recID.get(position)); //id 전달
                         intent.putExtra("check", "1");
                         startActivity(intent);
@@ -393,7 +433,57 @@ public class FragmentChatting extends Fragment {
                 }
             });
 
+            /**
+             * 채팅방 길게 클릭시
+             */
+            holder.itemLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle(names.get(position));
 
+                    final String[] arr = {"채팅방 이름 변경","채팅방 삭제"};
+                    builder.setItems(arr, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String select = arr[which].toString();
+                            switch (which){
+                                case 0:
+                                    //Toast.makeText(getContext(),arr[which]+" 선택",Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getContext(),ChangeRoomName.class);
+                                    intent.putExtra("roomID",roomID.get(position));
+                                    startActivity(intent);
+                                    break;
+                                case 1:
+                                    RemoveItem(position);
+                                    //Toast.makeText(getContext(),arr[which]+" 선택",Toast.LENGTH_SHORT).show();
+                                    //notifyItemRemoved(position);
+                                    //notifyDataSetChanged();
+                                    //database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).removeValue();
+
+                            }
+                        }
+                    });
+                    builder.show();
+                    //notifyItemRemoved(position);
+                    //notifyItemRangeChanged(position,filterList.size());
+                    //notifyDataSetChanged();
+                    return true;
+                }
+            });
+
+        }
+
+        //채팅방 삭제
+        public void RemoveItem(int position){
+            //Log.d(TAG, "RemoveItem: cList="+cList.get(position).getCheck());
+            //if(cList.get(position).getCheck()==true){
+            //    filterList.remove(position);
+            //    notifyItemChanged(position,filterList.size());
+            //}
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position,filterList.size());
+            notifyDataSetChanged();
         }
 
         @Override
@@ -413,7 +503,7 @@ public class FragmentChatting extends Fragment {
                         ArrayList<ChatRoomModel> filtering = new ArrayList<>();
                         for (ChatRoomModel item : chatRoomList) {
                             //채팅방 이름으로 필터링
-                            if (item.getRoomName().toLowerCase().contains(charString.toLowerCase()))
+                            if (item.getUsers().get(uid).toString().toLowerCase().contains(charString.toLowerCase()))
                                 filtering.add(item); //전체 데이터 중에서 입력받은 데이터만 추가
                         }
                         filterList = filtering; //검색창에서 입력받은 아이템만 출력한다.

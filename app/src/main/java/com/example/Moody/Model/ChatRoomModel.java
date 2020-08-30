@@ -6,18 +6,18 @@ import java.util.Map;
 public class ChatRoomModel {
     //채팅방 정보
     private String roomID; //채팅방 id
-    private HashMap<String,Boolean> users = new HashMap<String,Boolean>(); //사용자 id
+    private HashMap<String,Object> users = new HashMap<String,Object>(); //사용자 id
     private String lastMsg; //마지막 메세지
     private Object lastTime; //마지막 시간
     private String roomName; //채팅방 이름
     private String msgCount; //안읽은 메시지 수
-    private Boolean check;
+    private Boolean check = false; //채팅방 선택 여부 DB에 저장 x
 
-    public void setUsers(HashMap<String, Boolean> users) {
+    public void setUsers(HashMap<String, Object> users) {
         this.users = users;
     }
 
-    public HashMap<String, Boolean> getUsers() {
+    public HashMap<String, Object> getUsers() {
         return users;
     }
 

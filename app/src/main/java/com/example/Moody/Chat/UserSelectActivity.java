@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
@@ -93,6 +94,9 @@ public class UserSelectActivity extends Activity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent(UserSelectActivity.this, MainActivity.class);
+                intent.putExtra("fragment","chat");
+                startActivity(intent);
                 finish();
             }
         });
@@ -111,28 +115,24 @@ public class UserSelectActivity extends Activity {
                 database.getReference().child("ChatRoom").updateChildren(map);
 
                 //현재 채팅방에 누가 있는지
-                HashMap<String,Boolean> users = new HashMap<String,Boolean>();
-                users.put(uid,true);
-                for(int i =0;i<rec.size();i++)
-                    users.put(rec.get(i),true);
-                room.setUsers(users);
+                HashMap<String,Object>users = new HashMap<String, Object>(); // {유저id,채팅방 이름}
+                if(rec.size()==1){ //개인 채팅방 일때
+                    users.put(uid,name.get(0));
+                    users.put(rec.get(0),myName);
+                }else{//단체 채팅방 일때
+                    for(int i = 0; i<name.size(); i++)
+                        roomNames += name.get(i)+", ";
+                    roomNames += myName;
+                    for(int i =0;i<rec.size();i++)
+                        users.put(rec.get(i),roomNames);
+                    users.put(uid,roomNames);
+                }
 
                 //DB에 roomID와 유저 목록 생성
                 final Map<String,Object> objectMap = new HashMap<String, Object>();
                 objectMap.put("roomID",roomkey);
                 objectMap.put("users",users);
                 objectMap.put("lastTime", ServerValue.TIMESTAMP);//새채팅방 생성 시간
-                //채팅방 이름
-                if(rec.size()>1){
-                    //단체
-                    for(int i = 0; i<name.size(); i++)
-                        roomNames += name.get(i)+", ";
-                    roomNames += myName;
-                    objectMap.put("roomName",roomNames+" ("+(rec.size()+1)+")");
-                }else{
-                    //개인
-                    objectMap.put("roomName","");
-                }
                 objectMap.put("lastMsg","");
 
                 //DB에 저장
@@ -163,9 +163,7 @@ public class UserSelectActivity extends Activity {
                                     break;
                                 }
                             }
-
                             roomNames += myName;
-
                             intent.putExtra("roomid",roomkey);
                             intent.putExtra("name",roomNames+" ("+(rec.size()+1)+")");
                             intent.putExtra("check","2");
@@ -255,6 +253,7 @@ public class UserSelectActivity extends Activity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
 
+        //내이름 가져오기
         database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -266,6 +265,15 @@ public class UserSelectActivity extends Activity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(UserSelectActivity.this,MainActivity.class);
+        intent.putExtra("fragment","chat");
+        startActivity(intent);
+        finish();
     }
 
     //==============================================================================================================//
