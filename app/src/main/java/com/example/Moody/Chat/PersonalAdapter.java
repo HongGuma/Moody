@@ -1,5 +1,6 @@
 package com.example.Moody.Chat;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Model.ChatModel;
+import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,7 +39,7 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
     private ArrayList<ChatModel> chatModel = new ArrayList<>();
-    //private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<>();
+    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<ChatRoomModel>();
     private String roomID;
     private String recID;
 
@@ -47,10 +49,11 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
 
     //생성자에서 데이터 리스트 객체를 전달받음
-    public PersonalAdapter(String receiver,String roomid,ArrayList<ChatModel> list){
+    public PersonalAdapter(String receiver,String roomid,ArrayList<ChatModel> list, ArrayList<ChatRoomModel> chatlist){
         this.recID=receiver;
         this.roomID=roomid;
         this.chatModel = list;
+        this.chatRoomModels = chatlist;
     }
 
     //아이템 뷰를 저장하는 뷰홀더 클래스
@@ -136,6 +139,7 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
         ReadMessage(position,roomID,holder.readNum);
 
+
         //내 uid가 아니면 다른 뷰가 오기 때문에 (상대방 뷰)
         if(!chatModel.get(position).getUID().equals(currentUser.getUid())){
             holder.userName.setText(chatModel.get(position).getUserName());// 상대방 이름
@@ -171,24 +175,14 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     }
 
     public void ReadMessage(final int position,String id,final TextView readView){
-        database.getReference("ChatRoom").child(id).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Map<String,Object> u = (HashMap<String,Object>)dataSnapshot.getValue();
-                int count = u.size()-chatModel.get(position).getReadUsers().size();
-                //Log.d(TAG, "onDataChange: count="+count);
-                if(count>0){
-                    readView.setVisibility(View.VISIBLE);
-                    readView.setText(String.valueOf(count));
-                }else{
-                    readView.setVisibility(View.INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
-
-
+        int count = chatRoomModels.get(0).getUsers().size()-chatModel.get(position).getReadUsers().size();
+        Log.d(TAG, "onDataChange: count="+count);
+        if(count>0){
+            readView.setVisibility(View.VISIBLE);
+            readView.setText(String.valueOf(count));
+        }else{
+            readView.setVisibility(View.INVISIBLE);
+        }
     }
+
 }

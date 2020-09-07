@@ -73,7 +73,7 @@ public class AutoChatActivity extends Activity {
     private GroupAdapter gAdapter;//단체 채팅 어뎁터
 
     private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
-    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<>();
+    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<ChatRoomModel>();
 
     private String receiver;
     private String uid;
@@ -81,6 +81,8 @@ public class AutoChatActivity extends Activity {
     public static String roomid; //채팅방 id
     private String chatRoomName; //상단에 채팅방 이름
     private String check;
+
+    private DatabaseReference reference;
 
     private String imageUrl;
     private int GET_GALLERY_IMAGE=200;
@@ -117,12 +119,12 @@ public class AutoChatActivity extends Activity {
         ChatDisplay(check);
         if(check.equals("1")){//1:1 채팅
             receiver = getIntent().getStringExtra("receiver"); //상대방 id
-            pAdapter = new PersonalAdapter(receiver,roomid,chatModels);
+            pAdapter = new PersonalAdapter(receiver,roomid,chatModels,chatRoomModels);
             chatRecyclerView.setAdapter(pAdapter);
             chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
 
         }else{//단체 채팅
-            gAdapter = new GroupAdapter(roomid,chatModels);
+            gAdapter = new GroupAdapter(roomid,chatModels,chatRoomModels);
             chatRecyclerView.setAdapter(gAdapter);
             chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
 
@@ -216,37 +218,6 @@ public class AutoChatActivity extends Activity {
 
     public void ChatDisplay(final String check){
 
-        ChildEventListener childEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                ChatModel chat = dataSnapshot.getValue(ChatModel.class);
-                String commentKey = dataSnapshot.getKey();
-
-                //읽었는지
-                Map<String,Object> read = new HashMap<>();
-                read.put(currentUser.getUid(),true);
-                database.getReference("Message").child(roomid).child(commentKey).child("readUsers").updateChildren(read);
-
-                chatModels.add(chat);
-
-                if (check.equals("1")) {
-                    pAdapter.notifyDataSetChanged();
-                } else {
-                    gAdapter.notifyDataSetChanged();
-                }
-                chatRecyclerView.scrollToPosition(chatModels.size()-1);
-            }
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        };
-        database.getReference("Message").child(roomid).addChildEventListener(childEventListener);
-
         database.getReference("ChatRoom").child(roomid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -258,6 +229,35 @@ public class AutoChatActivity extends Activity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
 
+        reference = database.getReference("Message").child(roomid);
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    ChatModel chat = dataSnapshot.getValue(ChatModel.class);
+                    String commentKey = dataSnapshot.getKey();
+
+                    //읽었는지
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
+                    database.getReference("Message").child(roomid).child(commentKey).child("readUsers").updateChildren(read);
+
+                    chatModels.add(chat);
+
+                    if (check.equals("1")) {
+                        pAdapter.notifyDataSetChanged();
+                    } else {
+                        gAdapter.notifyDataSetChanged();
+                    }
+                    chatRecyclerView.scrollToPosition(chatModels.size()-1);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override

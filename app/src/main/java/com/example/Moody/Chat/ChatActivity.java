@@ -63,6 +63,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.Reference;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -85,7 +86,7 @@ public class ChatActivity extends Activity {
     private GroupAdapter gAdapter;//단체 채팅 어뎁터
 
     private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
-    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<>();
+    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<ChatRoomModel>();
 
     private String receiver; //상대방 id
     private String uid; //사용자 id
@@ -102,6 +103,7 @@ public class ChatActivity extends Activity {
     public static String sText;
 
     ChildEventListener childEventListener;
+    DatabaseReference reference;
 
     //작성 시간
     SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -143,11 +145,11 @@ public class ChatActivity extends Activity {
         ChatDisplay(check);
         if(check.equals("1")){//1:1 채팅
             receiver = getIntent().getStringExtra("receiver"); //상대방 id
-            pAdapter = new PersonalAdapter(receiver,roomid,chatModels); //개인 채팅방 어뎁터
+            pAdapter = new PersonalAdapter(receiver,roomid,chatModels,chatRoomModels); //개인 채팅방 어뎁터
             chatRecyclerView.setAdapter(pAdapter);
 
         }else{//단체 채팅
-            gAdapter = new GroupAdapter(roomid,chatModels); //단체 채팅방 어뎁터
+            gAdapter = new GroupAdapter(roomid,chatModels,chatRoomModels); //단체 채팅방 어뎁터
             chatRecyclerView.setAdapter(gAdapter);
 
         }
@@ -163,7 +165,6 @@ public class ChatActivity extends Activity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                database.getReference("Message").child(roomid).removeEventListener(childEventListener);
                 Intent intent = new Intent(ChatActivity.this,MainActivity.class);
                 intent.putExtra("fragment","chat");
                 startActivity(intent);
@@ -297,7 +298,7 @@ public class ChatActivity extends Activity {
                         }
 
                         //레이아웃 지우기기
-                       runOnUiThread(new Runnable() {
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 layout.setVisibility(View.GONE);
@@ -355,37 +356,33 @@ public class ChatActivity extends Activity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
 
-        childEventListener = new ChildEventListener() {
+        database.getReference("Message").child(roomid).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                ChatModel chat = dataSnapshot.getValue(ChatModel.class);
-                String commentKey = dataSnapshot.getKey();
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                chatModels.clear();
+                for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    ChatModel chat = dataSnapshot.getValue(ChatModel.class);
+                    String commentKey = dataSnapshot.getKey();
 
-                //읽었는지
-                Map<String,Object> read = new HashMap<>();
-                read.put(currentUser.getUid(),true);
-                database.getReference("Message").child(roomid).child(commentKey).child("readUsers").updateChildren(read);
+                    //읽었는지
+                    Map<String,Object> read = new HashMap<>();
+                    read.put(currentUser.getUid(),true);
+                    database.getReference("Message").child(roomid).child(commentKey).child("readUsers").updateChildren(read);
 
-                chatModels.add(chat);
+                    chatModels.add(chat);
 
-                if (check.equals("1")) {
-                    pAdapter.notifyDataSetChanged();
-                } else {
-                    gAdapter.notifyDataSetChanged();
+                    if (check.equals("1")) {
+                        pAdapter.notifyDataSetChanged();
+                    } else {
+                        gAdapter.notifyDataSetChanged();
+                    }
+                    chatRecyclerView.scrollToPosition(chatModels.size()-1);
                 }
-                chatRecyclerView.scrollToPosition(chatModels.size()-1);
             }
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        };
-        database.getReference("Message").child(roomid).addChildEventListener(childEventListener);
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
+        });
 
     }
 
@@ -471,7 +468,7 @@ public class ChatActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        database.getReference("Message").child(roomid).removeEventListener(childEventListener);
+        //database.getReference("Message").child(roomid).removeEventListener(childEventListener);
         Intent intent = new Intent(ChatActivity.this,MainActivity.class);
         intent.putExtra("fragment","chat");
         startActivity(intent);
@@ -617,6 +614,8 @@ public class ChatActivity extends Activity {
                 if (output[0][i] > maxProb) {
                     maxProb = output[0][i];
                     maxIdx = i;
+                    System.out.println("확률: " + maxIdx + maxProb);
+
                 }
             }
             System.out.println(maxIdx);

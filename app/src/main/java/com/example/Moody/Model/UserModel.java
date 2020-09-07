@@ -14,6 +14,9 @@ public class UserModel {
     private Map<String, Object> liked;
     private String range;
     private Boolean connection;
+    //new
+    private Boolean ostate;
+    private Boolean lstate;
 
     public UserModel() {
     }
@@ -88,4 +91,10 @@ public class UserModel {
     public Boolean getConnection() {
         return connection;
     }
+
+    public Boolean getOstate() { return ostate; }
+    public void setOstate(Boolean ostate) { this.ostate = ostate; }
+
+    public Boolean getLstate() { return lstate; }
+    public void setLstate(Boolean lstate){ this.lstate = lstate; }
 }

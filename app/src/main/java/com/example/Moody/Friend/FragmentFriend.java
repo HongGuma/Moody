@@ -31,7 +31,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Chat.ChatActivity;
 import com.example.Moody.Model.ChatRoomModel;
-import com.example.Moody.Model.FriendModel;
 import com.example.Moody.Model.UserModel;
 //import com.example.phometalk.Model.FriendModel;
 import com.example.Moody.R;
@@ -41,13 +40,16 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,7 +86,11 @@ public class FragmentFriend extends Fragment {
     private ArrayList<String> oid = new ArrayList<String>();
     private ArrayList<String> lid = new ArrayList<String>();
 
-    private ImageView online_img;
+    private Boolean ostate;
+    private Boolean lstate;
+
+    private DatabaseReference myOstateRef;
+    private DatabaseReference myLstateRef;
 
     //제일 먼저 호출
     @Override
@@ -95,7 +101,13 @@ public class FragmentFriend extends Fragment {
         currentUser = mAuth.getCurrentUser();
         database = FirebaseDatabase.getInstance(); //db초기화
 
+        String userUid = currentUser.getUid();
+
+        myOstateRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/ostate");
+        myLstateRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/lstate");
+
         FriendListDisplay();
+
     }
 
     @Nullable
@@ -116,11 +128,11 @@ public class FragmentFriend extends Fragment {
         final Animation mAnim2 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.main_fade_out_anim);
         mAnim2.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
 
-        MyInfo(myName,myImage);
+        //new
+        Button onlineBtn = (Button)view.findViewById(R.id.online_toggle_btn);
+        Button likedBtn = (Button)view.findViewById(R.id.liked_toggle_btn);
 
-        fRecyclerView = (RecyclerView)view.findViewById(R.id.chat_list_recyclerView);
-        fRecyclerView.setHasFixedSize(true);
-        fRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
+        MyInfo(myName,myImage);
 
         oRecyclerView = (RecyclerView)view.findViewById(R.id.online_list_recyclerView);
         oRecyclerView.setHasFixedSize(true);
@@ -130,12 +142,20 @@ public class FragmentFriend extends Fragment {
         lRecyclerView.setHasFixedSize(true);
         lRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
 
-        fAdapter = new FriendAdapter(getContext(), uList);
-        lAdapter = new FriendAdapter(getContext(), lList);
+        fRecyclerView = (RecyclerView)view.findViewById(R.id.chat_list_recyclerView);
+        fRecyclerView.setHasFixedSize(true);
+        fRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
+
         oAdapter = new FriendAdapter(getContext(), oList);
-        fRecyclerView.setAdapter(fAdapter);
+        lAdapter = new FriendAdapter(getContext(), lList);
+        fAdapter = new FriendAdapter(getContext(), uList);
+
         oRecyclerView.setAdapter(oAdapter);
         lRecyclerView.setAdapter(lAdapter);
+        fRecyclerView.setAdapter(fAdapter);
+
+        oRecyclerView.setVisibility(View.GONE);
+        lRecyclerView.setVisibility(View.GONE);
 
         //프로필 수정
         profileBtn.setOnClickListener(new View.OnClickListener() {
@@ -173,6 +193,48 @@ public class FragmentFriend extends Fragment {
             public void afterTextChanged(Editable s) { }
         });
 
+        //현재 사용자 목록
+        onlineBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FriendListDisplay();
+                if (oList.size()==0){
+                    return;
+                }
+                if(!ostate) { //접혀있을 경우
+                    oRecyclerView.setVisibility(View.VISIBLE);
+                    myOstateRef.setValue(true);
+                    ostate=true;
+                }
+                else {
+                    oRecyclerView.setVisibility(View.GONE);
+                    myOstateRef.setValue(false);
+                    ostate=false;
+                }
+            }
+        });
+
+        //즐겨찾기 목록
+        likedBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                FriendListDisplay();
+                if (lList.size()==0){
+                    return;
+                }
+                if(!lstate) { //접혀있을 경우
+                    lRecyclerView.setVisibility(View.VISIBLE);
+                    myLstateRef.setValue(true);
+                    lstate=true;
+                }
+                else{
+                    lRecyclerView.setVisibility(View.GONE);
+                    myLstateRef.setValue(false);
+                    lstate=false;
+                }
+            }
+        });
 
         final FloatingActionButton addBtn = (FloatingActionButton)view.findViewById(R.id.friend_add_btn);
         final LinearLayout top1 = (LinearLayout)view.findViewById(R.id.top1);
@@ -215,9 +277,19 @@ public class FragmentFriend extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel um = dataSnapshot.getValue(UserModel.class);
+
                 name.setText(um.getName());
                 myName = um.getName();
                 email = um.getEmail();
+                ostate = um.getOstate();
+                lstate = um.getLstate();
+
+                if(ostate) oRecyclerView.setVisibility(View.VISIBLE);
+                else oRecyclerView.setVisibility(View.GONE);
+
+                if(lstate) lRecyclerView.setVisibility(View.VISIBLE);
+                else lRecyclerView.setVisibility(View.GONE);
+
                 if(um.getRange().equals("friend"))
                     image.setBackgroundResource(R.drawable.yj_profile_border);
                 if (!um.getProfile().equals(""))
@@ -237,6 +309,8 @@ public class FragmentFriend extends Fragment {
         database.getReference("friend").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                fid.clear();
+                lid.clear();
                 for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
                     fid.add(dataSnapshot1.getKey());
 
@@ -271,7 +345,11 @@ public class FragmentFriend extends Fragment {
                         }
                     }
                 }
+
+                lAdapter.notifyDataSetChanged();
+                oAdapter.notifyDataSetChanged();
                 fAdapter.notifyDataSetChanged();
+
             }
 
             @Override
@@ -289,6 +367,8 @@ public class FragmentFriend extends Fragment {
         private Context context;
         private ArrayList<UserModel> uData; //필터링 안된 리스트(전체 리스트)
         private ArrayList<UserModel> filterList; //필터링 된 리스트(검색창에 입력이 있음)
+
+        private ArrayList<String> ftemp = new ArrayList<String>();
 
         private String uid;
         private String roomid = null;
@@ -309,6 +389,7 @@ public class FragmentFriend extends Fragment {
             public TextView uName;
             public Button chatBtn;
             public ToggleButton heartBtn;
+            public ImageView online_img;
 
             ViewHolder(final View view) {
                 super(view);
@@ -320,7 +401,7 @@ public class FragmentFriend extends Fragment {
 
                 //online_img
                 online_img = view.findViewById(R.id.online_image);
-                online_img.setVisibility(View.INVISIBLE);
+                online_img.setVisibility(View.GONE);
 
             }
 
@@ -330,6 +411,8 @@ public class FragmentFriend extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
             uid = currentUser.getUid();
+
+            final String[] temp = {""};
 
             //친한 친구 프로필
             if (filterList.get(position).getRange().equals("all")) {
@@ -351,22 +434,48 @@ public class FragmentFriend extends Fragment {
 
             holder.uName.setText(filterList.get(position).getName());//사용자 이름
 
-            //toggle button 유지
-            database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            //liked 변경, 삭제 수신
+            database.getReference("userInfo").child(currentUser.getUid()).child("liked").addChildEventListener(new ChildEventListener() {
+
                 @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    UserModel um = dataSnapshot.getValue(UserModel.class);
-                    String friend = filterList.get(position).getUID();
-                    if(um.getLiked() != null) {
-                        for (String key : um.getLiked().keySet()) {
-                            if(key.equals(friend))
-                                holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
-                        }
+                public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                    try {
+                        String friend = filterList.get(position).getUID();
+//                        System.out.println("friend: " + friend);
+
+                        if (snapshot.getKey().equals(friend))
+                            holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
+
+                    }catch (IndexOutOfBoundsException e){
+                        System.out.println(e);
                     }
                 }
 
                 @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) { }
+                public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
+
+                @Override
+                public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+                    String key = snapshot.getKey();
+//                    System.out.println("position" + position);
+
+                    try {
+                        String friend = filterList.get(position).getUID();
+
+                        if (key.equals(friend))
+                            holder.heartBtn.setBackgroundResource(R.drawable.yj_heart);
+
+                    }catch (IndexOutOfBoundsException e){
+                        System.out.println(e);
+                    }
+                }
+
+                @Override
+                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) { }
             });
 
 
@@ -385,6 +494,7 @@ public class FragmentFriend extends Fragment {
                         holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
 
                         String friend = filterList.get(position).getUID();
+                        temp[0] = friend;
 
                         Map<String, Object> likedMap = new HashMap<>();
                         likedMap.put(friend, true);
@@ -392,9 +502,13 @@ public class FragmentFriend extends Fragment {
                         database.getReference("friend").child(currentUser.getUid()).child(friend).removeValue();
                         database.getReference("friend").child(currentUser.getUid()).updateChildren(likedMap);
                         database.getReference("userInfo").child(currentUser.getUid()).child("liked").updateChildren(likedMap);
+
+                        //new
+                        FriendListDisplay();
+
                     }
                     else{
-                        holder.heartBtn.setBackgroundResource(R.drawable.feed_heart);
+                        holder.heartBtn.setBackgroundResource(R.drawable.yj_heart);
 
                         String friend = filterList.get(position).getUID();
 
@@ -405,6 +519,8 @@ public class FragmentFriend extends Fragment {
                         database.getReference("friend").child(currentUser.getUid()).updateChildren(likedMap);
                         database.getReference("userInfo").child(currentUser.getUid()).child("liked/"+friend).removeValue();
 
+                        //new
+                        FriendListDisplay();
 
                     }
 
@@ -418,10 +534,11 @@ public class FragmentFriend extends Fragment {
             if(connection!=null) {
                 if (connection == true) {
                     System.out.println("connection");
-                    online_img.setVisibility(View.VISIBLE);
+                    holder.online_img.setVisibility(View.VISIBLE);
                 } else
-                    online_img.setVisibility(View.INVISIBLE);
+                    holder.online_img.setVisibility(View.GONE);
             }
+
         }
 
         //아이템 뷰를 위한 뷰홀더 객체를 생성하여 리턴

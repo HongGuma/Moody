@@ -1,5 +1,6 @@
 package com.example.Moody.Chat;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,10 +38,8 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-    private ArrayList<ChatModel> chatModels = new ArrayList<>();
-    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<>();
-    private ArrayList<UserModel> userModels = new ArrayList<>();
-    private ArrayList<String> user = new ArrayList<>(); //상대방 id
+    private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
+    private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<ChatRoomModel>();
     private String roomID;
 
     SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -49,22 +48,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
 
     //생성자에서 데이터 리스트 객체를 전달받음
-    public GroupAdapter(String id,ArrayList<ChatModel>list){
+    public GroupAdapter(String id,ArrayList<ChatModel>list,ArrayList<ChatRoomModel>chatList){
         this.roomID=id;
         this.chatModels = list;
-
-
-        //채팅방 id로 상대방 정보 가져오기
-        database.getReference("ChatRoom").child(roomID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ChatRoomModel crm = dataSnapshot.getValue(ChatRoomModel.class);
-                chatRoomModels.add(crm);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
-
+        this.chatRoomModels = chatList;
 
     }
 
@@ -185,25 +172,14 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     }
 
     public void ReadMessage(final int position,String id,final TextView readView){
-        database.getReference("ChatRoom").child(id).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Map<String,Object> u = (HashMap<String,Object>)dataSnapshot.getValue();
-                int count = u.size()-chatModels.get(position).getReadUsers().size();
-                //Log.d(TAG, "onDataChange: count="+count);
-                if(count>0){
-                    readView.setVisibility(View.VISIBLE);
-                    readView.setText(String.valueOf(count));
-                }else{
-                    readView.setVisibility(View.INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
-
-
+        int count = chatRoomModels.get(0).getUsers().size()-chatModels.get(position).getReadUsers().size();
+        Log.d(TAG, "onDataChange: count="+count);
+        if(count>0){
+            readView.setVisibility(View.VISIBLE);
+            readView.setText(String.valueOf(count));
+        }else{
+            readView.setVisibility(View.INVISIBLE);
+        }
     }
 
 

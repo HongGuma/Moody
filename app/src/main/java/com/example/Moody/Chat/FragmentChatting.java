@@ -183,6 +183,29 @@ public class FragmentChatting extends Fragment {
      */
     public void ChatListDisplay() {
         uid = currentUser.getUid();
+        database.getReference("ChatRoom").orderByChild("lastTime").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                cList.clear();
+                for (DataSnapshot dataSnapshot1 : snapshot.getChildren()) {
+                    ChatRoomModel room = dataSnapshot1.getValue(ChatRoomModel.class);
+                    Iterator<String> iter = room.getUsers().keySet().iterator();
+                    //users에서 상대방 id 찾는다.
+                    while (iter.hasNext()) {
+                        String keys = (String) iter.next();
+                        if(keys.equals(uid)){
+                            cList.add(0,room);
+                        }
+                    }
+                }
+                crAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
+        });
+
+        /*
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -218,6 +241,7 @@ public class FragmentChatting extends Fragment {
             public void onCancelled(@NonNull DatabaseError error) { }
         };
         database.getReference("ChatRoom").orderByChild("lastTime").addChildEventListener(childEventListener);
+        */
 
     }
 
@@ -319,23 +343,7 @@ public class FragmentChatting extends Fragment {
                         //Log.d(TAG, "onDataChange: position="+um.getName());
                         recID.put(position,um.getUID());
                         profiles.put(position,um.getProfile());
-                        if(filterList.get(position).getUsers().size()==2){ //개인채팅방
-                            if (um.getRange().equals("all")) {
-                                if (!um.getProfile().equals(""))
-                                    Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
-                            }
-                            else if (um.getRange().equals("friend")) {
-                                if (um.getLiked() != null) {
-                                    for (String key : um.getLiked().keySet()) {
-                                        if (key.equals(uid)) {
-                                            holder.userImage.setBackgroundResource(R.drawable.yj_profile_border);
-                                            if (!um.getProfile().equals(""))
-                                                Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
-                                        }
-                                    }
-                                }
-                            }
-                        }else{ //단체 채팅방
+                        if(filterList.get(position).getUsers().size()>2){ //단체 채팅방
                             if (um.getRange().equals("all")) {
                                 if (!um.getProfile().equals(""))
                                     Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
@@ -347,6 +355,22 @@ public class FragmentChatting extends Fragment {
                                             holder.userImage1.setBackgroundResource(R.drawable.yj_profile_border);
                                             if (!um.getProfile().equals(""))
                                                 Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
+                                        }
+                                    }
+                                }
+                            }
+                        }else{ //개인 채팅방
+                            if (um.getRange().equals("all")) {
+                                if (!um.getProfile().equals(""))
+                                    Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+                            }
+                            else if (um.getRange().equals("friend")) {
+                                if (um.getLiked() != null) {
+                                    for (String key : um.getLiked().keySet()) {
+                                        if (key.equals(uid)) {
+                                            holder.userImage.setBackgroundResource(R.drawable.yj_profile_border);
+                                            if (!um.getProfile().equals(""))
+                                                Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
                                         }
                                     }
                                 }
@@ -364,6 +388,8 @@ public class FragmentChatting extends Fragment {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     ChatRoomModel crm = dataSnapshot.getValue(ChatRoomModel.class);
+                    if(crm == null)
+                        return;
                     //시간 포맷
                     long unixTime = (long) crm.getLastTime();
                     Date date = new Date(unixTime);
@@ -374,6 +400,8 @@ public class FragmentChatting extends Fragment {
                     //마지막 메시지
                     holder.lastMsg.setText(crm.getLastMsg());
                     //채팅방 이름
+                    if(crm.getUsers().get(uid) == null)
+                        return;
                     holder.roomName.setText(crm.getUsers().get(uid).toString());
                     names.put(position,crm.getUsers().get(uid).toString());
                 }
@@ -442,32 +470,31 @@ public class FragmentChatting extends Fragment {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle(names.get(position));
 
-                    final String[] arr = {"채팅방 이름 변경","채팅방 삭제"};
+                    final String[] arr = {"채팅방 이름 변경","채팅방 나가기"};
                     builder.setItems(arr, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             String select = arr[which].toString();
                             switch (which){
                                 case 0:
-                                    //Toast.makeText(getContext(),arr[which]+" 선택",Toast.LENGTH_SHORT).show();
                                     Intent intent = new Intent(getContext(),ChangeRoomName.class);
                                     intent.putExtra("roomID",roomID.get(position));
                                     startActivity(intent);
                                     break;
                                 case 1:
                                     RemoveItem(position);
-                                    //Toast.makeText(getContext(),arr[which]+" 선택",Toast.LENGTH_SHORT).show();
-                                    //notifyItemRemoved(position);
-                                    //notifyDataSetChanged();
-                                    //database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).removeValue();
-
+                                    if(filterList.get(position).getUsers().size()>1){ //채팅방에 둘이상 있을때 채팅방 나가기 기능
+                                        database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).child("users").child(uid).removeValue();
+                                        notifyDataSetChanged();
+                                    }else{ //채팅방에 혼자 남으면 채팅방 삭제
+                                        database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).removeValue();
+                                        database.getReference("Message").child(filterList.get(position).getRoomID()).removeValue();
+                                        notifyDataSetChanged();
+                                    }
                             }
                         }
                     });
                     builder.show();
-                    //notifyItemRemoved(position);
-                    //notifyItemRangeChanged(position,filterList.size());
-                    //notifyDataSetChanged();
                     return true;
                 }
             });
