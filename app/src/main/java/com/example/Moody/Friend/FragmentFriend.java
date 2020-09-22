@@ -86,6 +86,8 @@ public class FragmentFriend extends Fragment {
     private ArrayList<String> oid = new ArrayList<String>();
     private ArrayList<String> lid = new ArrayList<String>();
 
+    private ImageView online_img;
+
     private Boolean ostate;
     private Boolean lstate;
 
@@ -389,7 +391,6 @@ public class FragmentFriend extends Fragment {
             public TextView uName;
             public Button chatBtn;
             public ToggleButton heartBtn;
-            public ImageView online_img;
 
             ViewHolder(final View view) {
                 super(view);
@@ -401,7 +402,7 @@ public class FragmentFriend extends Fragment {
 
                 //online_img
                 online_img = view.findViewById(R.id.online_image);
-                online_img.setVisibility(View.GONE);
+                online_img.setVisibility(View.INVISIBLE);
 
             }
 
@@ -435,17 +436,16 @@ public class FragmentFriend extends Fragment {
             holder.uName.setText(filterList.get(position).getName());//사용자 이름
 
             //liked 변경, 삭제 수신
-            database.getReference("userInfo").child(currentUser.getUid()).child("liked").addChildEventListener(new ChildEventListener() {
+           database.getReference("userInfo").child(currentUser.getUid()).child("liked").addChildEventListener(new ChildEventListener() {
 
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                     try {
                         String friend = filterList.get(position).getUID();
-//                        System.out.println("friend: " + friend);
+                        System.out.println("friend: " + friend);
 
                         if (snapshot.getKey().equals(friend))
                             holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
-
                     }catch (IndexOutOfBoundsException e){
                         System.out.println(e);
                     }
@@ -458,14 +458,13 @@ public class FragmentFriend extends Fragment {
                 public void onChildRemoved(@NonNull DataSnapshot snapshot) {
 
                     String key = snapshot.getKey();
-//                    System.out.println("position" + position);
 
+                    System.out.println("position" + position);
                     try {
                         String friend = filterList.get(position).getUID();
 
                         if (key.equals(friend))
                             holder.heartBtn.setBackgroundResource(R.drawable.yj_heart);
-
                     }catch (IndexOutOfBoundsException e){
                         System.out.println(e);
                     }
@@ -534,11 +533,10 @@ public class FragmentFriend extends Fragment {
             if(connection!=null) {
                 if (connection == true) {
                     System.out.println("connection");
-                    holder.online_img.setVisibility(View.VISIBLE);
+                    online_img.setVisibility(View.VISIBLE);
                 } else
-                    holder.online_img.setVisibility(View.GONE);
+                    online_img.setVisibility(View.INVISIBLE);
             }
-
         }
 
         //아이템 뷰를 위한 뷰홀더 객체를 생성하여 리턴

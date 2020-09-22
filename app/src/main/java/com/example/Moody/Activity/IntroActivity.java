@@ -1,38 +1,28 @@
 package com.example.Moody.Activity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.Moody.Firebase.Image;
-import com.example.Moody.Feed.DBHelper;
+import com.example.Moody.Background.FirebaseDB;
 import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class IntroActivity extends AppCompatActivity {
@@ -40,6 +30,7 @@ public class IntroActivity extends AppCompatActivity {
     Animation mAnim2;
     private FirebaseAuth mAuth;
     public static HashMap<Integer, String> word_set;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,12 +51,33 @@ public class IntroActivity extends AppCompatActivity {
 
         word_set = Word();
 
+        FirebaseDB firebaseDB = new FirebaseDB(getBaseContext());
+        firebaseDB.DownloadUserData();
 
         //화면 클릭 시 애니메이션 작동
         Button window = (Button)findViewById(R.id.button4);
         final ImageView logo = (ImageView)findViewById(R.id.logo);
         final ImageView moody = (ImageView)findViewById(R.id.moody);
 
+        Handler handler = new Handler(Looper.myLooper());
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //moody 보이기
+                moody.setVisibility(View.VISIBLE);
+                moody.startAnimation(mAnim2);
+                //logo 축소
+                logo.startAnimation(mAnim1);
+                Intent intent = new Intent(IntroActivity.this, LoginActivity.class);
+                startActivity(intent);
+                //점점 사라지기
+                overridePendingTransition(R.anim.fade_in_anim, R.anim.fade_out_anim);
+                finish();
+            }
+        },3000);
+
+        /*
         window.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,16 +106,21 @@ public class IntroActivity extends AppCompatActivity {
 
             }
         });
+
+         */
     }
 
-
-    /*Runnable run = new Runnable() {
+/*
+    Runnable run = new Runnable() {
         @Override
         public void run() {
             //다음화면으로 넘어가기 handler
-            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+
+            Intent intent = new Intent(IntroActivity.this, LoginActivity.class);
             startActivity(intent);
-            //finish(); // activity화면 제거
+            //점점 사라지기
+            overridePendingTransition(R.anim.fade_in_anim, R.anim.fade_out_anim);
+            finish(); // activity화면 제거
         }
     };
     @Override
@@ -116,7 +133,8 @@ public class IntroActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause(); //화면을 벗어나면, handler에 예약한 작업 취소
         handler.removeCallbacks(run); //예약취소
-    }*/
+    }
+ */
 
     private HashMap<Integer, String> Word() {
 

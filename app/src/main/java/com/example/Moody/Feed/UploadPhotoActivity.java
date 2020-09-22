@@ -55,7 +55,6 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 Intent intent = new Intent(UploadPhotoActivity.this, MainActivity.class);
                 intent.putExtra("fragment","feed");
                 startActivity(intent);
-                finish();
             }
         });
 
@@ -104,8 +103,14 @@ public class UploadPhotoActivity  extends AppCompatActivity {
 
     public String getEmotion() throws IOException {
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+        int w= bitmap.getWidth();
+        int h= bitmap.getHeight();
+        System.out.println(w+"dddd"+h);
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 64, (int) 64, true);
 
-        int height = bitmap.getHeight();
+
+
+        /*int height = bitmap.getHeight();
         int width = bitmap.getWidth();
 
         Bitmap resized = null;
@@ -115,7 +120,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
             height = resized.getHeight();
             width = resized.getWidth();
 
-        }
+        }*/
 
 
         /*byte[][][] pixel = new byte[64][64][3];
@@ -143,18 +148,33 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 bytes_img[0][y][x][2] = (Color.blue(pixel)) / (float) 255;
             }
         }
-        for(int a=0; a<64; a++) {
+        /*for(int a=0; a<64; a++) {
             for (int i = 60; i <64; i++)
                 for (int j = 0; j < 3; j++)
                     System.out.println(bytes_img[0][a][i][j]);
             System.out.println("A");
-        }
-        Interpreter tf_lite = getTfliteInterpreter("image2_model.tflite");
+        }*/
+        Interpreter tf_lite = getTfliteInterpreter("expression_model_gray2.tflite");
 
         float[][] output = new float[1][6];
         tf_lite.run(bytes_img, output);
 
-        Log.d("predict", Arrays.toString(output[0]));
+        String[] emotion = {"angry","happy","sad","disgust","fear","surprise"};
+        TextView resultTV = (TextView) findViewById(R.id.resultTV);
+        String resultS = "";
+        int count=0;
+
+        for(int i=0; i<6; i++) {
+            int percent = (int) Math.round(output[0][i] * 100);
+            System.out.println(i + " "+output[0][i] * 100+" " + percent);
+            if(percent >= 10) {
+                if(count == 0)
+                    resultS += emotion[i] + " " + percent + "%";
+                else
+                    resultS += ", " + emotion[i] + " " + percent + "%";
+                count++;
+            }
+        }
 
         int maxIdx = 0;
         float maxProb = output[0][0];
@@ -163,11 +183,11 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 maxProb = output[0][i];
                 maxIdx = i;
             }
-            System.out.println(output[0][i]);
+            //System.out.println(output[0][i]);
         }
         System.out.println(maxIdx);
-        String emotion = null;
-        if (maxIdx == 0)
+        //String emotion = null;
+        /*if (maxIdx == 0)
             emotion = "angry";
         else if (maxIdx == 1)
             emotion = "happy";
@@ -178,12 +198,14 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         else if (maxIdx == 4)
             emotion = "fear";
         else if (maxIdx == 5)
-            emotion = "surprise";
+            emotion = "surprise";*/
 
         System.out.println(emotion);
         TextView tag_field = (TextView) findViewById(R.id.tag_field);
-        tag_field.setText("#"+emotion);
-        return emotion;
+
+        tag_field.setText("#"+emotion[maxIdx]);
+        resultTV.setText(resultS);
+        return emotion[maxIdx];
     }
 
     private Interpreter getTfliteInterpreter(String modelPath) {
@@ -211,30 +233,32 @@ public class UploadPhotoActivity  extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         ImageView imageview = (ImageView) findViewById(R.id.upload_image);
-        imageview.setBackground(null);
+        //imageview.setBackground(null);
         if (requestCode == GET_GALLERY_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
-            imageview.setImageURI(selectedImageUri);
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 64, (int) 64, true);
+
+            imageview.setImageBitmap(bitmap);
             try {
                 emotion = getEmotion();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public boolean onTouchEvent(MotionEvent event) {
+    /*public boolean onTouchEvent(MotionEvent event) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         return true;
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(UploadPhotoActivity.this, MainActivity.class);
-        intent.putExtra("fragment","feed");
-        startActivity(intent);
-    }
+    }*/
 }
 
