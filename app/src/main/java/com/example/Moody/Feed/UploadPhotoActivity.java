@@ -78,7 +78,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 //String tag = tag_field.getText().toString();
                 try {
                     byte[]image=getByteArray();
-                    LoginActivity.dbHelper.insert(image, emotion);
+                    LoginActivity.dbHelper.insertImage(image, emotion);
                     System.out.println("URI:"+selectedImageUri);
 
                 } catch (IOException e) {

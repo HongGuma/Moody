@@ -86,7 +86,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
                 case "1": return 2; //내가 보낸 사진
                 default: return 1; //예외는 그냥 텍스트
             }
-        }else {
+        }else{
             switch (chatModels.get(position).getMsgType()){
                 case "0": return 3; //상대방이 보낸 텍스트
                 case "1": return 4; //상대방이 보낸 사진
@@ -173,7 +173,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     public void ReadMessage(final int position,String id,final TextView readView){
         int count = chatRoomModels.get(0).getUsers().size()-chatModels.get(position).getReadUsers().size();
-        Log.d(TAG, "onDataChange: count="+count);
+        //Log.d(TAG, "onDataChange: count="+count);
         if(count>0){
             readView.setVisibility(View.VISIBLE);
             readView.setText(String.valueOf(count));

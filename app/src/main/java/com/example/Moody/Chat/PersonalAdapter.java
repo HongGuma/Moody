@@ -123,6 +123,9 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
     //position에 해당하는 데이터를 뷰홀더의 아이템뷰에 표시.
     @Override
     public void onBindViewHolder(@NonNull final PersonalAdapter.ViewHolder holder, final int position) {
+        if(chatModel == null)
+            return;
+
         //시간 포맷
         long unixTime = (long) chatModel.get(position).getTimestamp();
         Date date = new Date(unixTime);
@@ -176,7 +179,7 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
     public void ReadMessage(final int position,String id,final TextView readView){
         int count = chatRoomModels.get(0).getUsers().size()-chatModel.get(position).getReadUsers().size();
-        Log.d(TAG, "onDataChange: count="+count);
+        //Log.d(TAG, "onDataChange: count="+count);
         if(count>0){
             readView.setVisibility(View.VISIBLE);
             readView.setText(String.valueOf(count));

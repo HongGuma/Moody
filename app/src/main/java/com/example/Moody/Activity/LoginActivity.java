@@ -20,7 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.Moody.Feed.DBHelper;
+import com.example.Moody.Background.DBHelper;
 import com.example.Moody.Firebase.Image;
 import com.example.Moody.R;
 import com.example.Moody.Sign.SignActivity;

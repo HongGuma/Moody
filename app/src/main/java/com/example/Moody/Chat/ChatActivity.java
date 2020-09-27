@@ -102,8 +102,7 @@ public class ChatActivity extends Activity {
     public static String emotion;
     public static String sText;
 
-    ChildEventListener childEventListener;
-    DatabaseReference reference;
+    ValueEventListener valueEventListener;
 
     //작성 시간
     SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -142,16 +141,18 @@ public class ChatActivity extends Activity {
 
         check = getIntent().getStringExtra("check");
 
-        ChatDisplay(check);
-        if(check.equals("1")){//1:1 채팅
-            receiver = getIntent().getStringExtra("receiver"); //상대방 id
-            pAdapter = new PersonalAdapter(receiver,roomid,chatModels,chatRoomModels); //개인 채팅방 어뎁터
-            chatRecyclerView.setAdapter(pAdapter);
+        if(check!=null){
+            ChatDisplay(check);
+            if(check.equals("1")){//1:1 채팅
+                receiver = getIntent().getStringExtra("receiver"); //상대방 id
+                pAdapter = new PersonalAdapter(receiver,roomid,chatModels,chatRoomModels); //개인 채팅방 어뎁터
+                chatRecyclerView.setAdapter(pAdapter);
 
-        }else{//단체 채팅
-            gAdapter = new GroupAdapter(roomid,chatModels,chatRoomModels); //단체 채팅방 어뎁터
-            chatRecyclerView.setAdapter(gAdapter);
+            }else{//단체 채팅
+                gAdapter = new GroupAdapter(roomid,chatModels,chatRoomModels); //단체 채팅방 어뎁터
+                chatRecyclerView.setAdapter(gAdapter);
 
+            }
         }
 
         //버튼 선언
@@ -356,7 +357,7 @@ public class ChatActivity extends Activity {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
 
-        database.getReference("Message").child(roomid).addValueEventListener(new ValueEventListener() {
+        valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 chatModels.clear();
@@ -381,9 +382,11 @@ public class ChatActivity extends Activity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
-        });
+            public void onCancelled(@NonNull DatabaseError error) {
 
+            }
+        };
+        database.getReference("Message").child(roomid).addValueEventListener(valueEventListener);
     }
 
 
@@ -468,7 +471,7 @@ public class ChatActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        //database.getReference("Message").child(roomid).removeEventListener(childEventListener);
+        database.getReference("Message").child(roomid).removeEventListener(valueEventListener);
         Intent intent = new Intent(ChatActivity.this,MainActivity.class);
         intent.putExtra("fragment","chat");
         startActivity(intent);

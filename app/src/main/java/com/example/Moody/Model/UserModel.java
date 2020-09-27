@@ -77,6 +77,10 @@ public class UserModel {
         return profile;
     }
 
+    public void setLiked(Map<String, Object> liked) {
+        this.liked = liked;
+    }
+
     public Map<String, Object> getLiked() {
         return liked;
     }
@@ -84,6 +88,11 @@ public class UserModel {
     public String getRange() {
         return range;
     }
+
+    public void setRange(String range) {
+        this.range = range;
+    }
+
     public void setConnection(Boolean connection) {
         this.connection = connection;
     }

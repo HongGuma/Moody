@@ -15,8 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.Moody.Background.DBHelper;
 import com.example.Moody.Chat.FragmentChatting;
-import com.example.Moody.Feed.DBHelper;
 import com.example.Moody.Feed.FragmentFeed;
 import com.example.Moody.Friend.FragmentFriend;
 import com.example.Moody.Setting.FragmentSetting;

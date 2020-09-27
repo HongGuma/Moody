@@ -108,16 +108,19 @@
         android:id="@+id/layout2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp">
 
         <Space
             android:layout_width="match_parent"
             android:layout_height="176dp" />
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
+            android:layout_below="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="642dp"
-            android:fillViewport="true">
+            android:layout_height="match_parent">
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -127,7 +130,7 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"/>
+                    android:layout_height="40dp" />
                 <!--                    android:layout_weight="1" />-->
 
                 <RelativeLayout
@@ -163,10 +166,11 @@
                 </RelativeLayout>
 
                 <LinearLayout
+                    android:id="@+id/online_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:animateLayoutChanges="true"
                     android:layout_gravity="center_horizontal"
+                    android:animateLayoutChanges="true"
                     android:orientation="vertical">
 
                     <LinearLayout
@@ -175,16 +179,17 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:layout_marginLeft="10dp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
                             android:text="현재사용자" />
+
                         <Button
-                            android:layout_marginLeft="-30dp"
+                            android:id="@+id/online_toggle_btn"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:background="@drawable/yj_plus_btn"
-                            android:id="@+id/online_toggle_btn"/>
+                            android:layout_marginLeft="-30dp"
+                            android:background="@drawable/yj_plus_btn" />
 
                     </LinearLayout>
 
@@ -197,7 +202,7 @@
 
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="5dp"/>
+                        android:layout_height="5dp" />
 
                 </LinearLayout>
 
@@ -205,26 +210,28 @@
                     android:id="@+id/liked_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:animateLayoutChanges="true"
                     android:layout_gravity="center_horizontal"
+                    android:animateLayoutChanges="true"
                     android:orientation="vertical">
 
                     <LinearLayout
+                        android:id="@+id/favorite_user"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
                         <TextView
-                            android:layout_marginLeft="10dp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
                             android:text="즐겨찾기" />
+
                         <Button
-                            android:layout_marginLeft="-30dp"
+                            android:id="@+id/liked_toggle_btn"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:background="@drawable/yj_plus_btn"
-                            android:id="@+id/liked_toggle_btn"/>
+                            android:layout_marginLeft="-30dp"
+                            android:background="@drawable/yj_plus_btn" />
 
                     </LinearLayout>
 
@@ -237,7 +244,7 @@
 
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="5dp"/>
+                        android:layout_height="5dp" />
 
                 </LinearLayout>
 
@@ -252,9 +259,9 @@
                         android:layout_height="wrap_content">
 
                         <TextView
-                            android:layout_marginLeft="10dp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
                             android:text="친구목록" />
 
                     </LinearLayout>
@@ -270,7 +277,7 @@
 
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

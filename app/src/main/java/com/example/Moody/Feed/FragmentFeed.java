@@ -53,7 +53,6 @@ public class FragmentFeed extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate");
         mAuth = FirebaseAuth.getInstance();
 
     }
@@ -62,7 +61,6 @@ public class FragmentFeed extends Fragment {
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Activity activity = getActivity();
-        Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_feed, container, false);
 
         super.onCreate(savedInstanceState);

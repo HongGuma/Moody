@@ -5,9 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +35,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Chat.ChatActivity;
 import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.UserModel;
-//import com.example.phometalk.Model.FriendModel;
 import com.example.Moody.R;
 import com.example.Moody.Setting.ProfilePageActivity;
 import com.example.Moody.Setting.QR_code;
@@ -40,6 +42,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -66,6 +69,8 @@ public class FragmentFriend extends Fragment {
     private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
+    private String uid = currentUser.getUid();
+    private UserModel userModel = new UserModel();
     private String email;
     public String myName;
     static public int state;
@@ -86,22 +91,19 @@ public class FragmentFriend extends Fragment {
     private ArrayList<String> oid = new ArrayList<String>();
     private ArrayList<String> lid = new ArrayList<String>();
 
-    private ImageView online_img;
-
     private Boolean ostate;
     private Boolean lstate;
 
     private DatabaseReference myOstateRef;
     private DatabaseReference myLstateRef;
 
+    Handler myHandler;
+    Handler fHandler;
+
     //제일 먼저 호출
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-        database = FirebaseDatabase.getInstance(); //db초기화
 
         String userUid = currentUser.getUid();
 
@@ -121,16 +123,29 @@ public class FragmentFriend extends Fragment {
         Button profileBtn = (Button)view.findViewById(R.id.profile_edit_btn); //프로필 수정 버튼
         Button qrBtn = (Button)view.findViewById(R.id.my_qr_btn); //QR 코드 스캔 버튼
 
-        TextView myName = (TextView) view.findViewById(R.id.my_name);
-        ImageView myImage = (ImageView) view.findViewById(R.id.my_image);
-        final EditText friendSearch = (EditText)view.findViewById(R.id.chat_room_search);
+        final TextView myName = (TextView) view.findViewById(R.id.my_name);//상단의 내 이름
+        ImageView myImage = (ImageView) view.findViewById(R.id.my_image); //상단의 내 프로필
+
+        myHandler = new Handler(Looper.myLooper()){
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case 0:
+
+                    case 1:
+                    case 2:
+                }
+            }
+        };
+
+        final EditText friendSearch = (EditText)view.findViewById(R.id.chat_room_search); //친구 검색 바
 
         final Animation mAnim1 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.top_border_short_anim);
         mAnim1.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
         final Animation mAnim2 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.main_fade_out_anim);
         mAnim2.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
 
-        //new
         Button onlineBtn = (Button)view.findViewById(R.id.online_toggle_btn);
         Button likedBtn = (Button)view.findViewById(R.id.liked_toggle_btn);
 
@@ -158,6 +173,13 @@ public class FragmentFriend extends Fragment {
 
         oRecyclerView.setVisibility(View.GONE);
         lRecyclerView.setVisibility(View.GONE);
+
+        oRecyclerView.setNestedScrollingEnabled(false);
+        lRecyclerView.setNestedScrollingEnabled(false);
+        fRecyclerView.setNestedScrollingEnabled(false);
+
+        final LinearLayout online_list = (LinearLayout)view.findViewById(R.id.online_list);
+        final LinearLayout liked_list = (LinearLayout)view.findViewById(R.id.liked_list);
 
         //프로필 수정
         profileBtn.setOnClickListener(new View.OnClickListener() {
@@ -188,6 +210,15 @@ public class FragmentFriend extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String text = s.toString();
+                if(text.length()==0){
+                    online_list.setVisibility(View.VISIBLE);
+                    liked_list.setVisibility(View.VISIBLE);
+                }
+                else{
+                    online_list.setVisibility(View.GONE);
+                    liked_list.setVisibility(View.GONE);
+                }
                 fAdapter.getFilter().filter(s);
             }
 
@@ -275,6 +306,32 @@ public class FragmentFriend extends Fragment {
      * @param image
      */
     public void MyInfo(final TextView name, final ImageView image){
+        /*
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                database.getReference("userInfo").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        userModel = snapshot.getValue(UserModel.class);
+                        Message message = new Message();
+                        message.what = 0; //정상 데이터
+                        myHandler.sendMessage(message);
+                        if(userModel == null)
+                            message.what = 2; //데이터는 불러왔으나 값이 없음
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error){
+                        Message message = new Message();
+                        message.what = 1; //데이터 업로드 실패
+                        myHandler.sendMessage(message);
+                    }
+                });
+            }
+        });
+
+         */
         database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -302,6 +359,7 @@ public class FragmentFriend extends Fragment {
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
     }
+
 
     /**
      * 친구 목록 불러오기
@@ -370,8 +428,6 @@ public class FragmentFriend extends Fragment {
         private ArrayList<UserModel> uData; //필터링 안된 리스트(전체 리스트)
         private ArrayList<UserModel> filterList; //필터링 된 리스트(검색창에 입력이 있음)
 
-        private ArrayList<String> ftemp = new ArrayList<String>();
-
         private String uid;
         private String roomid = null;
         private Boolean check=false;
@@ -391,6 +447,7 @@ public class FragmentFriend extends Fragment {
             public TextView uName;
             public Button chatBtn;
             public ToggleButton heartBtn;
+            public ImageView online_img;
 
             ViewHolder(final View view) {
                 super(view);
@@ -402,7 +459,7 @@ public class FragmentFriend extends Fragment {
 
                 //online_img
                 online_img = view.findViewById(R.id.online_image);
-                online_img.setVisibility(View.INVISIBLE);
+                online_img.setVisibility(View.GONE);
 
             }
 
@@ -417,6 +474,8 @@ public class FragmentFriend extends Fragment {
 
             //친한 친구 프로필
             if (filterList.get(position).getRange().equals("all")) {
+                if(filterList.get(position).getProfile() == null)
+                    return;
                 if (!filterList.get(position).getProfile().equals(""))
                     Glide.with(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
             }
@@ -425,6 +484,8 @@ public class FragmentFriend extends Fragment {
                     for (String key : filterList.get(position).getLiked().keySet()) {
                         if (key.equals(uid)) {
                             holder.photo.setBackgroundResource(R.drawable.yj_profile_border);
+                            if(filterList.get(position).getProfile() == null)
+                                return;
                             if (!filterList.get(position).getProfile().equals(""))
                                 Glide.with(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
                         }
@@ -436,16 +497,17 @@ public class FragmentFriend extends Fragment {
             holder.uName.setText(filterList.get(position).getName());//사용자 이름
 
             //liked 변경, 삭제 수신
-           database.getReference("userInfo").child(currentUser.getUid()).child("liked").addChildEventListener(new ChildEventListener() {
+            database.getReference("userInfo").child(currentUser.getUid()).child("liked").addChildEventListener(new ChildEventListener() {
 
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                     try {
                         String friend = filterList.get(position).getUID();
-                        System.out.println("friend: " + friend);
+//                        System.out.println("friend: " + friend);
 
                         if (snapshot.getKey().equals(friend))
                             holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
+
                     }catch (IndexOutOfBoundsException e){
                         System.out.println(e);
                     }
@@ -458,13 +520,14 @@ public class FragmentFriend extends Fragment {
                 public void onChildRemoved(@NonNull DataSnapshot snapshot) {
 
                     String key = snapshot.getKey();
+//                    System.out.println("position" + position);
 
-                    System.out.println("position" + position);
                     try {
                         String friend = filterList.get(position).getUID();
 
                         if (key.equals(friend))
                             holder.heartBtn.setBackgroundResource(R.drawable.yj_heart);
+
                     }catch (IndexOutOfBoundsException e){
                         System.out.println(e);
                     }
@@ -502,7 +565,6 @@ public class FragmentFriend extends Fragment {
                         database.getReference("friend").child(currentUser.getUid()).updateChildren(likedMap);
                         database.getReference("userInfo").child(currentUser.getUid()).child("liked").updateChildren(likedMap);
 
-                        //new
                         FriendListDisplay();
 
                     }
@@ -518,7 +580,6 @@ public class FragmentFriend extends Fragment {
                         database.getReference("friend").child(currentUser.getUid()).updateChildren(likedMap);
                         database.getReference("userInfo").child(currentUser.getUid()).child("liked/"+friend).removeValue();
 
-                        //new
                         FriendListDisplay();
 
                     }
@@ -528,15 +589,16 @@ public class FragmentFriend extends Fragment {
 
             //현재 사용자
             Boolean connection = uData.get(position).getConnection();
-            System.out.println(connection);
+            //System.out.println(connection);
 
             if(connection!=null) {
                 if (connection == true) {
-                    System.out.println("connection");
-                    online_img.setVisibility(View.VISIBLE);
+                    //System.out.println("connection");
+                    holder.online_img.setVisibility(View.VISIBLE);
                 } else
-                    online_img.setVisibility(View.INVISIBLE);
+                    holder.online_img.setVisibility(View.GONE);
             }
+
         }
 
         //아이템 뷰를 위한 뷰홀더 객체를 생성하여 리턴
@@ -559,26 +621,37 @@ public class FragmentFriend extends Fragment {
         //채팅방으로 바로 이동
         public void ChatDisplay(final String rec, final String name, final String profile) {
 
+            //System.out.println("chatdisplay : "+ currentUser.getUid());
+
             //현재 로그인한 유저가 속해있는 채팅방 정보 출력
-            database.getReference("ChatRoom").orderByChild("users/" +currentUser.getUid()).equalTo(true).addListenerForSingleValueEvent(new ValueEventListener() {
+            database.getReference("ChatRoom").orderByChild("users").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     ChatRoomModel croom = null;
+                    //System.out.println("chatdisplay2: " + dataSnapshot.getChildren());
+
+                    Log.d(TAG, "onDataChange: "+dataSnapshot.exists());
+
                     for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                        //System.out.println("hi");
                         croom = dataSnapshot1.getValue(ChatRoomModel.class); // 사용자가 속한 채팅방 정보만 담김
+                        //System.out.println("사용자가 속한 채팅방: "+croom);
                         if(croom.getUsers().size() == 2){ //1:1 채팅방인 경우만 찾는다.
                             Iterator<String> iter = croom.getUsers().keySet().iterator();
                             //users에서 상대방 id 찾는다.
+                            ArrayList<String> user_id = new ArrayList<String>();
                             while (iter.hasNext()) {
                                 String keys = (String) iter.next();
-                                if (keys.equals(rec)) {
-                                    roomid = croom.getRoomID();
-                                    check = true;
-                                    break;
-                                } else {
-                                    roomid = null;
-                                    check = false;
-                                }
+                                //System.out.println(keys);
+                                user_id.add(keys);
+                            }
+                            if (user_id.contains(rec)&&user_id.contains(currentUser.getUid())) {
+                                roomid = croom.getRoomID();
+                                check = true;
+                                break;
+                            } else {
+                                roomid = null;
+                                check = false;
                             }
                         }else{check = false;}
 
@@ -587,7 +660,8 @@ public class FragmentFriend extends Fragment {
                     }
 
                     if (check == true) {
-                        //Toast.makeText(UserPageActivity.this,"채팅방 존재함",Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(UserPageActivity.this,"채팅방 존재함",Toast.LENGTH_SHORT).show();
+                        //System.out.println("채팅방 존재함");
                         Intent intent = new Intent(getActivity(), ChatActivity.class);
 
                         intent.putExtra("roomid", roomid);
@@ -595,11 +669,13 @@ public class FragmentFriend extends Fragment {
                         intent.putExtra("recName", name);
                         intent.putExtra("recProfile",profile);
                         intent.putExtra("check","1");
+                        intent.putExtra("name", name);
 
                         startActivity(intent);
 
                     } else {
                         //Toast.makeText(UserPageActivity.this,"채팅방 없음",Toast.LENGTH_SHORT).show();
+                        //System.out.println("채팅방 없음");
                         ChatRoomModel room = new ChatRoomModel();
                         //채팅방 id 생성
                         Map<String, Object> map = new HashMap<String, Object>();
@@ -628,6 +704,7 @@ public class FragmentFriend extends Fragment {
                                 intent.putExtra("receiver", rec);
                                 intent.putExtra("recName", name);
                                 intent.putExtra("check",1);
+                                intent.putExtra("name", name);
                                 startActivity(intent);
 
                             }
@@ -648,6 +725,7 @@ public class FragmentFriend extends Fragment {
                     String charString = constraint.toString();
                     if(charString.isEmpty()){ //입력받은게 없다면 전부 출력
                         filterList = uData;
+
                     }else{//있다면
                         ArrayList<UserModel> filtering = new ArrayList<>();
                         for(UserModel item: uData){

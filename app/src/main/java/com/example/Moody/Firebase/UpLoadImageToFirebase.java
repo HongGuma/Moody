@@ -58,7 +58,7 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
         upload_lbl.setText("Upload image for adminstrator");
 
         //뒤로가기 버튼
-        Button back_btn = (Button) findViewById(R.id.upload_back_btn);
+        ImageView back_btn = (ImageView) findViewById(R.id.upload_back_btn);
         back_btn.setOnClickListener(new View.OnClickListener() {
 
             @Override
