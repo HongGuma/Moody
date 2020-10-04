@@ -45,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth; //이메일 비밀번호 로그인 모듈 변수
     private FirebaseUser currentUser; //현재 로그인 된 유저 정보를 담을 변수
-    public static ArrayList<Image> publicItems = new ArrayList<Image>();
     public static DBHelper dbHelper=null;
 
     @Override
@@ -64,7 +63,6 @@ public class LoginActivity extends AppCompatActivity {
         //아이디별 db파일 호출
         String file=mAuth.getUid()+".db";
         dbHelper = new DBHelper(LoginActivity.this, file, null, 1);
-        getImageList();
 
         //로그인 버튼 눌렀을때
         loginBtn.setOnClickListener(new View.OnClickListener() {
@@ -219,29 +217,5 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
-    //공용이미지 가져오기
-    private void getImageList() {
-        final ProgressDialog mProgressDialog = new ProgressDialog(LoginActivity.this);
-        DatabaseReference databaseReference;
-        databaseReference = FirebaseDatabase.getInstance().getReference().child("Image");
-        //mProgressDialog.show();
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                mProgressDialog.dismiss();
-                publicItems.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Image image = snapshot.getValue(Image.class);
-                    publicItems.add(image);
 
-                }
-                //FragmentFeed.adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                mProgressDialog.dismiss();
-            }
-        });
-    }
 }

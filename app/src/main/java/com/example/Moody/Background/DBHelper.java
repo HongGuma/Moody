@@ -24,8 +24,8 @@ public class DBHelper extends SQLiteOpenHelper {
     // DB를 새로 생성할 때 호출되는 함수
     public void onCreate(SQLiteDatabase db) {
         // 새로운 테이블 생성
-        db.execSQL("CREATE TABLE image (_id INTEGER PRIMARY KEY AUTOINCREMENT, img BLOB, tag TEXT, star INTEGER);");
-        db.execSQL("CREATE TABLE mark (_id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT, tag TEXT);");
+        db.execSQL("CREATE TABLE image (_id INTEGER PRIMARY KEY AUTOINCREMENT, img BLOB, tag TEXT, star INTEGER, results TEXT);");
+        db.execSQL("CREATE TABLE mark (_id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT, tag TEXT, results TEXT);");
         db.execSQL("CREATE TABLE friend (fid TEXT PRIMARY KEY NOT NULL, profile TEXT, name TEXT, email TEXT, liked INTEGER, range TEXT)");
         db.execSQL("CREATE TABLE myInfo (uid TEXT PRIMARY KEY NOT NULL, profile TEXT, name TEXT, email TEXT, oState INTEGER, lState INTEGER)");
         db.execSQL("CREATE TABLE chatRoom (roomID TEXT PRIMARY KEY NOT NULL, lastTime INTEGER, lastMsg TEXT, roomName TEXT, isCheck INTEGER)");
@@ -132,18 +132,19 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     //이미지 추가
-    public void insertImage(byte[]image, String tag) {
-        db = getWritableDatabase();
-        SQLiteStatement p = db.compileStatement("INSERT INTO image(img, tag, star) VALUES(?,?,0);");
+    public void insert(byte[]image, String tag, String results) {
+        SQLiteDatabase db = getWritableDatabase();
+        SQLiteStatement p = db.compileStatement("INSERT INTO image(img, tag, star, results) VALUES(?,?,0,?);");
 
         p.bindBlob(1,image);
         p.bindString(2,tag);
+        p.bindString(3,results);
         p.execute();
         db.close();
     }
     //이미지 조회(1이면 역순)
     public ArrayList<FeedItems> getItems(int mode){
-        db = getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         String sql=null;
         if(mode==1)
             sql="SELECT * FROM image ORDER BY _id DESC;";
@@ -159,6 +160,7 @@ public class DBHelper extends SQLiteOpenHelper {
             entity.setImage(BitmapFactory.decodeByteArray(image,0,image.length));
             entity.setTag(cursor.getString(2));
             entity.setStar(cursor.getInt(3));
+            entity.setResult(cursor.getString(4));
             list.add(entity);
         }
         db.close();
@@ -166,7 +168,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
     //즐겨찾기 이미지 조회(1이면 역순)
     public ArrayList<FeedItems> getStarItems(int mode){
-        db = getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         String sql=null;
         if(mode==1){
             sql="SELECT * FROM image WHERE star=1 ORDER BY _id DESC;";
@@ -184,6 +186,7 @@ public class DBHelper extends SQLiteOpenHelper {
             entity.setImage(BitmapFactory.decodeByteArray(image,0,image.length));
             entity.setTag(cursor.getString(2));
             entity.setStar(cursor.getInt(3));
+            entity.setResult(cursor.getString(4));
             list.add(entity);
         }
         db.close();
@@ -191,7 +194,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
     //태그내용에 대한 이미지출력
     public ArrayList<FeedItems> getTagItems(String tag){
-        db = getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM image WHERE tag='"+tag+"';", null);
         ArrayList<FeedItems> list=new ArrayList<FeedItems>();
         byte []image=null;
@@ -202,6 +205,7 @@ public class DBHelper extends SQLiteOpenHelper {
             entity.setImage(BitmapFactory.decodeByteArray(image,0,image.length));
             entity.setTag(cursor.getString(2));
             entity.setStar(cursor.getInt(3));
+            entity.setResult(cursor.getString(4));
             list.add(entity);
         }
         db.close();
@@ -209,25 +213,26 @@ public class DBHelper extends SQLiteOpenHelper {
     }
     //즐겨찾기 설정
     public void setStar(int star, int position){
-        db = getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         SQLiteStatement p = db.compileStatement("UPDATE image SET star="+star+" WHERE _id="+position+";");
 
         p.execute();
         db.close();
     }
     //공용이미지 즐겨찾기
-    public void pblInsert(String url, String tag) {
-        db = getWritableDatabase();
-        SQLiteStatement p = db.compileStatement("INSERT INTO mark(url, tag) VALUES(?,?);");
+    public void pblInsert(String url, String tag, String result) {
+        SQLiteDatabase db = getWritableDatabase();
+        SQLiteStatement p = db.compileStatement("INSERT INTO mark(url, tag, results) VALUES(?,?,?);");
 
         p.bindString(1,url);
         p.bindString(2,tag);
+        p.bindString(3,result);
         p.execute();
         db.close();
     }
     //공용이미지 즐겨찾기 해제
     public void pblDelete(String url){
-        db = getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         SQLiteStatement p = db.compileStatement("DELETE FROM mark WHERE url=?;");
         p.bindString(1,url);
         p.execute();
@@ -235,7 +240,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
     //즐겨찾기 이미지 조회(1이면 역순)
     public ArrayList<FeedItems> getMarkItems(int mode){
-        db = getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         String sql=null;
         if(mode==1){
             sql="SELECT * FROM mark ORDER BY _id DESC;";
@@ -251,6 +256,7 @@ public class DBHelper extends SQLiteOpenHelper {
             FeedItems entity = new FeedItems();
             entity.setUrl(cursor.getString(1));
             entity.setTag(cursor.getString(2));
+            entity.setResult(cursor.getString(3));
             entity.setStar(1);
             list.add(entity);
         }
@@ -259,7 +265,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
     //공용 즐겨찾기 표시
     public boolean searchItem(String url){
-        db = getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         String sql="SELECT url FROM mark WHERE url='"+url+"';";
         Cursor cursor = db.rawQuery(sql, null);
         int i=0;

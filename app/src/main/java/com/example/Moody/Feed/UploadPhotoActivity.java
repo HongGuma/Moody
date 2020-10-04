@@ -1,11 +1,6 @@
 package com.example.Moody.Feed;
-import com.example.Moody.Activity.IntroActivity;
-import com.example.Moody.Activity.LoginActivity;
-import com.example.Moody.Activity.MainActivity;
-import com.example.Moody.R;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -13,10 +8,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,19 +17,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.Moody.Activity.LoginActivity;
+import com.example.Moody.Activity.MainActivity;
+import com.example.Moody.R;
+
 import org.tensorflow.lite.Interpreter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 
 public class UploadPhotoActivity  extends AppCompatActivity {
     private final int GET_GALLERY_IMAGE = 200;
     String emotion="null";
+    String resultS="";
     Uri selectedImageUri;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +50,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 Intent intent = new Intent(UploadPhotoActivity.this, MainActivity.class);
                 intent.putExtra("fragment","feed");
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -64,7 +60,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setDataAndType(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
                 startActivityForResult(intent, GET_GALLERY_IMAGE);
             }
         });
@@ -78,8 +74,7 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 //String tag = tag_field.getText().toString();
                 try {
                     byte[]image=getByteArray();
-                    LoginActivity.dbHelper.insertImage(image, emotion);
-                    System.out.println("URI:"+selectedImageUri);
+                    LoginActivity.dbHelper.insert(image, emotion, resultS);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -161,13 +156,12 @@ public class UploadPhotoActivity  extends AppCompatActivity {
 
         String[] emotion = {"angry","happy","sad","disgust","fear","surprise"};
         TextView resultTV = (TextView) findViewById(R.id.resultTV);
-        String resultS = "";
         int count=0;
 
         for(int i=0; i<6; i++) {
             int percent = (int) Math.round(output[0][i] * 100);
             System.out.println(i + " "+output[0][i] * 100+" " + percent);
-            if(percent >= 10) {
+            if(percent >= 1) {
                 if(count == 0)
                     resultS += emotion[i] + " " + percent + "%";
                 else

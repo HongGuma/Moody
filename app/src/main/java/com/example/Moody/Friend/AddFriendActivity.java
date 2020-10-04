@@ -10,8 +10,6 @@ import android.os.Handler;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -78,37 +76,6 @@ public class AddFriendActivity extends Activity {
         final LinearLayout layout1 = (LinearLayout)findViewById(R.id.layout1);
         final RelativeLayout layout2 = (RelativeLayout) findViewById(R.id.layout2);
         final LinearLayout layout3 = (LinearLayout)findViewById(R.id.layout3);
-
-        //애니메이션
-        final Animation mAnim1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.top_border_long_anim);
-        mAnim1.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
-        final Animation mAnim2 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.top_border_pause_anim);
-        mAnim2.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
-        final Animation mAnim3 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.main_fade_in_anim);
-        mAnim3.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
-        final Animation mAnim4 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.main_fade_pause_anim);
-        mAnim4.setInterpolator(getApplicationContext(), android.R.anim.accelerate_interpolator);
-
-        //상단바 애니메이션
-        top1.startAnimation(mAnim2);
-        //화면 투명하게 하기
-        layout1.startAnimation(mAnim4);
-        layout2.startAnimation(mAnim4);
-        layout3.startAnimation(mAnim4);
-
-        //딜레이
-        Handler delayHandler = new Handler();
-        delayHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                top1.startAnimation(mAnim1);
-                //fade-in
-                layout1.startAnimation(mAnim3);
-                layout2.startAnimation(mAnim3);
-                layout3.startAnimation(mAnim3);
-            }
-        }, 50);
-
 
         //엔터키 클릭 시 이메일 검색
         friendEmail.setOnKeyListener(new View.OnKeyListener() {

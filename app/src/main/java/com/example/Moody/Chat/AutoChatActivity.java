@@ -142,11 +142,11 @@ public class AutoChatActivity extends Activity {
         tRecyclerView=(RecyclerView)findViewById(R.id.tag_recyclerview);
         String emotion=ChatActivity.emotion;
         ArrayList<FeedItems> tagItems = new ArrayList<>();
-        for (int i = 0; i < LoginActivity.publicItems.size(); i++) {
+        for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
-            if (emotion.equals(LoginActivity.publicItems.get(i).getType())) {
-                entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                entity.setTag(LoginActivity.publicItems.get(i).getType());
+            if (emotion.equals(IntroActivity.publicItems.get(i).getType())) {
+                entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                entity.setTag(IntroActivity.publicItems.get(i).getType());
                 tagItems.add(entity);
             }
         }

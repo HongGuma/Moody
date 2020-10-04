@@ -29,8 +29,8 @@
         <activity android:name="com.example.Moody.Chat.ChangeRoomName"/>
         <activity android:name="com.example.Moody.Chat.UserSelectActivity"/>
         <activity android:name="com.example.Moody.Chat.AutoChatActivity"/>
-        <activity android:name="com.example.Moody.Feed.SearchPhotoActivity"/>
         <activity android:name="com.example.Moody.Feed.UploadPhotoActivity"/>
+        <activity android:name="com.example.Moody.Feed.DetailPopupActivity" android:theme="@android:style/Theme.Dialog"/>
         <activity android:name="com.example.Moody.Setting.app_info"/>
         <activity android:name="com.example.Moody.Setting.ProfilePageActivity"/>
         <activity android:name="com.example.Moody.Setting.QR_code"/>

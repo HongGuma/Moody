@@ -8,6 +8,7 @@ public class FeedItems {
     String tag;
     int star;
     String url;
+    String result;
 
     public int getId(){return id;}
     public void setId(int id){this.id=id;}
@@ -25,4 +26,6 @@ public class FeedItems {
     public void setStar(int star){this.star=star;}
     public String getUrl(){return url;}
     public void setUrl(String url){this.url=url;}
+    public String getResult(){return result;}
+    public void setResult(String result){this.result=result;}
 }

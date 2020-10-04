@@ -48,14 +48,15 @@ public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
-        ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tag[position]);
+        final ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tag[position]);
 
-        for(int i = 0; i< LoginActivity.publicItems.size(); i++) {
+        for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
 
-            if(tag[position].equals(LoginActivity.publicItems.get(i).getType())) {
-                entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                entity.setTag(LoginActivity.publicItems.get(i).getType());
+            if(tag[position].equals(IntroActivity.publicItems.get(i).getType())) {
+                entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                entity.setTag(IntroActivity.publicItems.get(i).getType());
+                entity.setResult(IntroActivity.publicItems.get(i).getResult());
                 tagItems.add(entity);
             }
         }
@@ -75,19 +76,6 @@ public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             myViewHolder.seltag.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String tagtext = myViewHolder.seltag.getText().toString();
-                    tagtext = tagtext.substring(1);
-
-                    ArrayList<FeedItems> tagItems = LoginActivity.dbHelper.getTagItems(tagtext);
-                    for (int i = 0; i < LoginActivity.publicItems.size(); i++) {
-                        FeedItems entity = new FeedItems();
-
-                        if (tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
-                            entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                            entity.setTag(LoginActivity.publicItems.get(i).getType());
-                            tagItems.add(entity);
-                        }
-                    }
                     FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context, 2));
                     FeedAdapter myAdapter = new FeedAdapter(context, tagItems);
                     PageAdapter pAdapter = new PageAdapter(context, tagItems);

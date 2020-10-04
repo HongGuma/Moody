@@ -1,7 +1,6 @@
 package com.example.Moody.Feed;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,11 +41,11 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
-        if((position+1)%3!=1){
+        if((position+1)%8!=1){
             myViewHolder.page.setVisibility(View.GONE);
         }
         else {
-            int num=(position+1)/3+1;
+            int num=(position+1)/8+1;
             myViewHolder.page.setText(Integer.toString(num));
         }
         //페이지 번호 클릭
@@ -56,7 +55,7 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                 int pagenum=Integer.parseInt(myViewHolder.page.getText().toString());
                 ArrayList<FeedItems> pageItems=new ArrayList<FeedItems>();
                 //myViewHolder.page.setTextColor(Color.parseColor("#EFEDF0"));
-                for(int i=(pagenum-1)*3;i<pagenum*3;i++) {
+                for(int i=(pagenum-1)*8;i<pagenum*8;i++) {
                     FeedItems entity = new FeedItems();
                     if(i<feedDataArrayList.size()) {
                         if (feedDataArrayList.get(i).getUrl() == null) {
@@ -64,10 +63,12 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                             entity.setImage(feedDataArrayList.get(i).getImage());
                             entity.setTag(feedDataArrayList.get(i).getTag());
                             entity.setStar(feedDataArrayList.get(i).getStar());
+                            entity.setResult(feedDataArrayList.get(i).getResult());
                             pageItems.add(entity);
                         } else {
                             entity.setUrl(feedDataArrayList.get(i).getUrl());
                             entity.setTag(feedDataArrayList.get(i).getTag());
+                            entity.setResult(feedDataArrayList.get(i).getResult());
                             pageItems.add(entity);
                         }
                     }

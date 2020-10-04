@@ -53,6 +53,7 @@ public class FragmentFeed extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
         mAuth = FirebaseAuth.getInstance();
 
     }
@@ -61,6 +62,7 @@ public class FragmentFeed extends Fragment {
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Activity activity = getActivity();
+        Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_feed, container, false);
 
         super.onCreate(savedInstanceState);
@@ -73,11 +75,12 @@ public class FragmentFeed extends Fragment {
         pageRecyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         ArrayList<FeedItems> feedItems = new ArrayList<FeedItems>();
-        for(int i = 0; i< LoginActivity.publicItems.size(); i++){
+        for(int i = 0; i< IntroActivity.publicItems.size(); i++){
             FeedItems entity=new FeedItems();
-            int length=LoginActivity.publicItems.size();
-            entity.setUrl(LoginActivity.publicItems.get(length-i-1).getUrl());
-            entity.setTag(LoginActivity.publicItems.get(length-i-1).getType());
+            int length= IntroActivity.publicItems.size();
+            entity.setUrl(IntroActivity.publicItems.get(length-i-1).getUrl());
+            entity.setTag(IntroActivity.publicItems.get(length-i-1).getType());
+            entity.setResult(IntroActivity.publicItems.get(length-i-1).getResult());
             feedItems.add(entity);
         }
         FeedAdapter myAdapter = new FeedAdapter(inflater.getContext(),feedItems);
@@ -107,11 +110,12 @@ public class FragmentFeed extends Fragment {
                 ArrayList<FeedItems> pList=new ArrayList<FeedItems>();
                 if(parent.getItemAtPosition(position).equals("Newest")&&tab==1){
                     mode=1;
-                    adapter=new ImageAdapter(inflater.getContext(),LoginActivity.publicItems,1);
-                    for(int i=LoginActivity.publicItems.size()-1;i>=0;i--) {
+                    adapter=new ImageAdapter(inflater.getContext(), IntroActivity.publicItems,1);
+                    for(int i = IntroActivity.publicItems.size()-1; i>=0; i--) {
                         FeedItems entity = new FeedItems();
-                        entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                        entity.setTag(LoginActivity.publicItems.get(i).getType());
+                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                        entity.setTag(IntroActivity.publicItems.get(i).getType());
+                        entity.setResult(IntroActivity.publicItems.get(i).getResult());
                         pList.add(entity);
                     }
                     feedRecyclerView.setAdapter(adapter);
@@ -120,11 +124,12 @@ public class FragmentFeed extends Fragment {
                 }
                 else if(parent.getItemAtPosition(position).equals("Oldest")&&tab==1){
                     mode=2;
-                    adapter=new ImageAdapter(inflater.getContext(),LoginActivity.publicItems,2);
-                    for(int i=0;i<LoginActivity.publicItems.size();i++) {
+                    adapter=new ImageAdapter(inflater.getContext(), IntroActivity.publicItems,2);
+                    for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
                         FeedItems entity = new FeedItems();
-                        entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                        entity.setTag(LoginActivity.publicItems.get(i).getType());
+                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                        entity.setTag(IntroActivity.publicItems.get(i).getType());
+                        entity.setResult(IntroActivity.publicItems.get(i).getResult());
                         pList.add(entity);
                     }
                     feedRecyclerView.setAdapter(adapter);
@@ -135,7 +140,7 @@ public class FragmentFeed extends Fragment {
                 else if(parent.getItemAtPosition(position).equals("Newest")&&tab==2){
                     mode =1;
                     ArrayList<FeedItems> descItems = LoginActivity.dbHelper.getItems(1);
-                    FeedAdapter myAdapter = new FeedAdapter(descItems);
+                    FeedAdapter myAdapter = new FeedAdapter(inflater.getContext(),descItems);
                     PageAdapter pAdapter = new PageAdapter(inflater.getContext(),descItems);
                     feedRecyclerView.setAdapter(myAdapter);
                     pageRecyclerView.setAdapter(pAdapter);
@@ -144,7 +149,7 @@ public class FragmentFeed extends Fragment {
                 else if(parent.getItemAtPosition(position).equals("Oldest")&&tab==2){
                     mode =2;
                     ArrayList<FeedItems> feedItems = LoginActivity.dbHelper.getItems(2);
-                    FeedAdapter myAdapter = new FeedAdapter(feedItems);
+                    FeedAdapter myAdapter = new FeedAdapter(inflater.getContext(), feedItems);
                     feedRecyclerView.setAdapter(myAdapter);
                     PageAdapter pAdapter = new PageAdapter(inflater.getContext(), feedItems);
                     pageRecyclerView.setAdapter(pAdapter);
@@ -185,7 +190,7 @@ public class FragmentFeed extends Fragment {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mAuth.getUid().equals("e67K1BVGsxT7b8qq40uvI8CkCGA2")) {
+                if(mAuth.getUid().equals("2NcIdO1JV7DhwRZRd0FN1Vuuhikn2")) {
                     startActivity(new Intent(inflater.getContext(), UpLoadImageToFirebase.class));
                 }
                 else {
@@ -219,20 +224,23 @@ public class FragmentFeed extends Fragment {
 
                 ArrayList<FeedItems> pList=new ArrayList<FeedItems>();
                 if(mode==2) {
-                    adapter = new ImageAdapter(inflater.getContext(), LoginActivity.publicItems, 2);
-                    for(int i=0;i<LoginActivity.publicItems.size();i++) {
+                    adapter = new ImageAdapter(inflater.getContext(), IntroActivity.publicItems, 2);
+                    for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
                         FeedItems entity = new FeedItems();
-                        entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                        entity.setTag(LoginActivity.publicItems.get(i).getType());
+                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                        entity.setTag(IntroActivity.publicItems.get(i).getType());
+                        entity.setResult(IntroActivity.publicItems.get(i).getResult());
                         pList.add(entity);
                     }
                 }
                 else{
-                    adapter = new ImageAdapter(inflater.getContext(), LoginActivity.publicItems, 1);
-                    for(int i=LoginActivity.publicItems.size()-1;i>=0;i--) {
+                    adapter = new ImageAdapter(inflater.getContext(), IntroActivity.publicItems, 1);
+                    for(int i = IntroActivity.publicItems.size()-1; i>=0; i--) {
                         FeedItems entity = new FeedItems();
-                        entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                        entity.setTag(LoginActivity.publicItems.get(i).getType());
+                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                        entity.setTag(IntroActivity.publicItems.get(i).getType());
+                        entity.setResult(IntroActivity.publicItems.get(i).getResult());
+
                         pList.add(entity);
                     }
                 }
@@ -268,7 +276,7 @@ public class FragmentFeed extends Fragment {
                 else{
                     privateItems = LoginActivity.dbHelper.getItems(1);
                 }
-                FeedAdapter myAdapter = new FeedAdapter(privateItems);
+                FeedAdapter myAdapter = new FeedAdapter(inflater.getContext(),privateItems);
                 feedRecyclerView.setLayoutManager(new GridLayoutManager(inflater.getContext(),2));
                 feedRecyclerView.setAdapter(myAdapter);
                 PageAdapter pAdapter=new PageAdapter(inflater.getContext(), privateItems);

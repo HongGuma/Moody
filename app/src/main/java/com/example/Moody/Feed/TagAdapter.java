@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.Moody.Activity.IntroActivity;
 import com.example.Moody.Activity.LoginActivity;
-import com.example.Moody.R;
 import com.example.Moody.Model.FeedItems;
+import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
@@ -63,11 +63,11 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
         String tagtext=myViewHolder.tag.getText().toString();
         tagtext=tagtext.substring(1);
 
-        for(int i = 0; i< LoginActivity.publicItems.size(); i++) {
+        for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
-            if(tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
-                entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                entity.setTag(LoginActivity.publicItems.get(i).getType());
+            if(tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
+                entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                entity.setTag(IntroActivity.publicItems.get(i).getType());
                 feedDataArrayList.add(entity);
             }
         }
@@ -97,7 +97,7 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                         LoginActivity.dbHelper.setStar(1, feedDataArrayList.get(position).getId());
                     }
                     else{
-                        LoginActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag());
+                        LoginActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag(), feedDataArrayList.get(position).getResult());
                     }
                 }
                 else{
@@ -119,12 +119,12 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
 
                 ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tagtext);
 
-                for(int i=0;i<LoginActivity.publicItems.size();i++) {
+                for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
                     FeedItems entity = new FeedItems();
 
-                    if(tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
-                        entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                        entity.setTag(LoginActivity.publicItems.get(i).getType());
+                    if(tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
+                        entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                        entity.setTag(IntroActivity.publicItems.get(i).getType());
                         tagItems.add(entity);
                     }
                 }

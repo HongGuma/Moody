@@ -1,5 +1,6 @@
 package com.example.Moody.Activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,12 +19,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.Moody.Background.DBHelper;
 import com.example.Moody.Background.DataSynchronize;
+import com.example.Moody.Firebase.Image;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -46,7 +49,7 @@ public class IntroActivity extends AppCompatActivity {
     String uid = currentUser.getUid();
     Handler mHandler;
     Intent intent;
-    DBHelper dbHelper;
+    public static ArrayList<Image> publicItems = new ArrayList<Image>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,7 +69,7 @@ public class IntroActivity extends AppCompatActivity {
         setContentView(R.layout.intro); //intro.xml과 연결
 
         word_set = Word();
-
+        getImageList();
 
         //화면 클릭 시 애니메이션 작동
         Button window = (Button)findViewById(R.id.button4);
@@ -97,7 +100,7 @@ public class IntroActivity extends AppCompatActivity {
                         //점점 사라지기
                         overridePendingTransition(R.anim.fade_in_anim, R.anim.fade_out_anim);
                     }
-                }, 1000);
+                }, 600);
 
             }
         });
@@ -177,5 +180,31 @@ public class IntroActivity extends AppCompatActivity {
             }
         }
         return null;
+    }
+
+    //공용이미지 가져오기
+    private void getImageList() {
+        final ProgressDialog mProgressDialog = new ProgressDialog(IntroActivity.this);
+        DatabaseReference databaseReference;
+        databaseReference = FirebaseDatabase.getInstance().getReference().child("Image");
+        //mProgressDialog.show();
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                mProgressDialog.dismiss();
+                publicItems.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Image image = snapshot.getValue(Image.class);
+                    publicItems.add(image);
+
+                }
+                //FragmentFeed.adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                mProgressDialog.dismiss();
+            }
+        });
     }
 }

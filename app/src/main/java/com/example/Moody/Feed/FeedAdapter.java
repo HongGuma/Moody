@@ -1,6 +1,8 @@
 package com.example.Moody.Feed;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Model.FeedItems;
 import com.example.Moody.R;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
@@ -38,9 +41,6 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         this.context=context;
         this.feedDataArrayList = feedDataArrayList;
     }
-    public FeedAdapter(ArrayList<FeedItems> feedDataArrayList){
-        this.feedDataArrayList = feedDataArrayList;
-    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -54,7 +54,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
         //이미지 출력
-        if(position<3) {
+        if(position<8) {
             if (feedDataArrayList.get(position).getUrl() == null) {
                 myViewHolder.image.setImageBitmap(feedDataArrayList.get(position).getImage());
             } else {
@@ -83,7 +83,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                         LoginActivity.dbHelper.setStar(1, feedDataArrayList.get(position).getId());
                     }
                     else{
-                        LoginActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag());
+                        LoginActivity.dbHelper.pblInsert(feedDataArrayList.get(position).getUrl(), feedDataArrayList.get(position).getTag(), feedDataArrayList.get(position).getResult());
                     }
                 }
                 else{
@@ -110,12 +110,13 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                         chk=1;
                 }
                 if(chk==1) {
-                    for (int i = 0; i < LoginActivity.publicItems.size(); i++) {
+                    for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
                         FeedItems entity = new FeedItems();
 
-                        if (tagtext.equals(LoginActivity.publicItems.get(i).getType())) {
-                            entity.setUrl(LoginActivity.publicItems.get(i).getUrl());
-                            entity.setTag(LoginActivity.publicItems.get(i).getType());
+                        if (tagtext.equals(IntroActivity.publicItems.get(i).getType())) {
+                            entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                            entity.setTag(IntroActivity.publicItems.get(i).getType());
+                            entity.setResult(IntroActivity.publicItems.get(i).getResult());
                             tagItems.add(entity);
                         }
                     }
@@ -127,6 +128,29 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                 FragmentFeed.pageRecyclerView.setAdapter(pAdapter);
             }
         });
+
+        //이미지 클릭 시
+        myViewHolder.image.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(context, DetailPopupActivity.class);
+                if(feedDataArrayList.get(position).getUrl()==null) {
+                    intent.putExtra("result", feedDataArrayList.get(position).getResult());
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    feedDataArrayList.get(position).getImage().compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    intent.putExtra("image", byteArray);
+                }
+                else{
+                    intent.putExtra("res", feedDataArrayList.get(position).getResult());
+                    intent.putExtra("url",feedDataArrayList.get(position).getUrl());
+                }
+                context.startActivity(intent);
+
+
+            }
+        });
+
 
     }
 

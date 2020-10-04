@@ -141,11 +141,6 @@ public class FragmentFriend extends Fragment {
 
         final EditText friendSearch = (EditText)view.findViewById(R.id.chat_room_search); //친구 검색 바
 
-        final Animation mAnim1 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.top_border_short_anim);
-        mAnim1.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
-        final Animation mAnim2 = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.main_fade_out_anim);
-        mAnim2.setInterpolator(activity.getApplicationContext(), android.R.anim.accelerate_interpolator);
-
         Button onlineBtn = (Button)view.findViewById(R.id.online_toggle_btn);
         Button likedBtn = (Button)view.findViewById(R.id.liked_toggle_btn);
 
@@ -277,23 +272,9 @@ public class FragmentFriend extends Fragment {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //상단바 애니메이션
-                top1.startAnimation(mAnim1);
 
-                //fade-out
-                layout1.startAnimation(mAnim2);
-                layout2.startAnimation(mAnim2);
-                addBtn.startAnimation(mAnim2);
-
-                //딜레이
-                Handler delayHandler = new Handler();
-                delayHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        startActivity(new Intent(getActivity(),AddFriendActivity.class));
-                        getActivity().overridePendingTransition(R.anim.fade_in_anim, R.anim.fade_out_anim);
-                    }
-                }, 200);
+                Intent intent = new Intent(getActivity(), AddFriendActivity.class);
+                startActivity(intent);
             }
         });
 

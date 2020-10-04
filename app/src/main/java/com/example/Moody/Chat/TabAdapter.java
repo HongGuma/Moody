@@ -61,7 +61,16 @@ public class TabAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
 
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
-        TabImageAdapter myAdapter = new TabImageAdapter(context,feedDataArrayList);
+        ArrayList<FeedItems> tagItems=new ArrayList<>();
+        for(int i=0;i<feedDataArrayList.size();i++) {
+            FeedItems entity = new FeedItems();
+            if (feedDataArrayList.get(i).getUrl() != null) {
+                entity.setUrl(feedDataArrayList.get(i).getUrl());
+                entity.setTag(feedDataArrayList.get(i).getTag());
+                tagItems.add(entity);
+            }
+        }
+        TabImageAdapter myAdapter = new TabImageAdapter(context,tagItems);
         myViewHolder.tagRecyclerview.setHasFixedSize(true);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(context,2);
