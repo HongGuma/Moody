@@ -5,47 +5,49 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.example.Moody.Activity.IntroActivity;
+import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.Model.ChatModel;
 
 import com.example.Moody.Model.ChatRoomModel;
+import com.example.Moody.Model.FeedItems;
 import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
-import com.example.Moody.Sign.SignAddInfoActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -59,11 +61,11 @@ import com.google.firebase.storage.UploadTask;
 import org.tensorflow.lite.Interpreter;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.ref.Reference;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -80,10 +82,14 @@ public class ChatActivity extends Activity {
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private StorageReference storageRef = storage.getReference();
 
-    public static RecyclerView chatRecyclerView;//채팅 내용 리사이클러뷰
-    private PersonalAdapter pAdapter; //1:1 채팅 어뎁터
-    private GroupAdapter gAdapter;//단체 채팅 어뎁터
+    private RecyclerView chatRecyclerView;
+    private RecyclerView tagRecyclerView;
+    private PersonalAdapter pAdapter;
+    private GroupAdapter gAdapter;
+    public static boolean autoSendCheck = false;
 
     private ArrayList<ChatModel> chatModels = new ArrayList<ChatModel>();
     private ArrayList<ChatRoomModel> chatRoomModels = new ArrayList<ChatRoomModel>();
@@ -93,14 +99,16 @@ public class ChatActivity extends Activity {
     public static String uName; //사용자 이름
     public static String roomid; //채팅방 id
     private String chatRoomName; //상단에 채팅방 이름
-    private String check; //단체인지 개인인지 체크
+    private String groupCheck; //단체인지 개인인지 체크
+    private boolean autoCheck = false; //오토 버튼 눌렀는지 체크
 
     private String imageUrl; //보낸 사진 url
     private int GET_GALLERY_IMAGE=200;
 
     private String auto_text;
-    public static String emotion;
+    public static String emotion = "";
     public static String sText;
+    public static EditText sendText;
 
     ValueEventListener valueEventListener;
 
@@ -132,44 +140,73 @@ public class ChatActivity extends Activity {
         roomid = getIntent().getStringExtra("roomid");//채팅방 id
         chatRoomName = getIntent().getStringExtra("name"); //채팅방 상단 이름 받아옴
 
+        RequestManager glide = Glide.with(this); //glide 매개변수
+
         final TextView recUser = (TextView) findViewById(R.id.chatRoom_users);//채팅방 상단
-        final EditText sendText = (EditText) findViewById(R.id.chatRoom_text); //메세지 입력창
+
+        //버튼 선언
+        ImageView backBtn = (ImageView) findViewById(R.id.chatRoom_backBtn);
+        final Button sendBtn = (Button) findViewById(R.id.chatRoom_sendBtn);
+        Button galleryBtn = (Button) findViewById(R.id.chatRoom_galleryBtn);
+        final Button autoBtn = (Button) findViewById(R.id.chatRoom_autoBtn);
+        sendText = (EditText) findViewById(R.id.chatRoom_text); //메세지 입력창
+
         recUser.setText(chatRoomName);//채팅방 상단 이름 설정
 
-        chatRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView); //리사이클러뷰
+        //채팅 리사이클러뷰
+        chatRecyclerView = (RecyclerView) findViewById(R.id.chatRoom_recyclerView);
         chatRecyclerView.setHasFixedSize(true); //리사이클러뷰 크기 고정
+        //이미지 추천 리사이클러뷰
+        tagRecyclerView = (RecyclerView)findViewById(R.id.tag_recyclerview);
+        tagRecyclerView.setHasFixedSize(true);
+        tagRecyclerView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
 
-        check = getIntent().getStringExtra("check");
-
-        if(check!=null){
-            ChatDisplay(check);
-            if(check.equals("1")){//1:1 채팅
+        //단체 채팅방 그룹 채팅방 여부
+        groupCheck = getIntent().getStringExtra("check");
+        if(groupCheck !=null){
+            ChatDisplay(groupCheck);
+            if(groupCheck.equals("1")){//1:1 채팅
                 receiver = getIntent().getStringExtra("receiver"); //상대방 id
-                pAdapter = new PersonalAdapter(receiver,roomid,chatModels,chatRoomModels); //개인 채팅방 어뎁터
+                pAdapter = new PersonalAdapter(receiver,roomid,chatModels,chatRoomModels, glide); //개인 채팅방 어뎁터
                 chatRecyclerView.setAdapter(pAdapter);
 
             }else{//단체 채팅
-                gAdapter = new GroupAdapter(roomid,chatModels,chatRoomModels); //단체 채팅방 어뎁터
+                gAdapter = new GroupAdapter(roomid,chatModels,chatRoomModels, glide); //단체 채팅방 어뎁터
                 chatRecyclerView.setAdapter(gAdapter);
 
             }
         }
 
-        //버튼 선언
-        ImageView backBtn = (ImageView) findViewById(R.id.chatRoom_backBtn);
-        Button sendBtn = (Button) findViewById(R.id.chatRoom_sendBtn);
-        Button galleryBtn = (Button) findViewById(R.id.chatRoom_galleryBtn);
-        Button autoBtn = (Button) findViewById(R.id.chatRoom_autoBtn);
-
-
         //뒤로가기
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                database.getReference("Message").child(roomid).removeEventListener(valueEventListener);
                 Intent intent = new Intent(ChatActivity.this,MainActivity.class);
                 intent.putExtra("fragment","chat");
                 startActivity(intent);
                 finish();
+            }
+        });
+
+        //엔터키 누르면 전송
+        sendText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if((keyCode == event.KEYCODE_ENTER)){
+                    sText = sendText.getText().toString();
+                    sText = sText.replace( System.getProperty( "line.separator" ), "" );
+                    SendMsg(sText,"1");
+                    sendText.setText(null);
+
+                    if(groupCheck.equals("1")){
+                        chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
+                    }else{
+                        chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
+                    }
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -178,10 +215,10 @@ public class ChatActivity extends Activity {
             @Override
             public void onClick(View v) {
                 sText = sendText.getText().toString();
-                SendMsg(sText);
+                SendMsg(sText,"0");
                 sendText.setText(null);
 
-                if(check.equals("1")){
+                if(groupCheck.equals("1")){
                     chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
                 }else{
                     chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
@@ -189,7 +226,7 @@ public class ChatActivity extends Activity {
             }
         });
 
-        //갤러리 버튼
+        //갤러리 버튼 클릭시
         galleryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -201,18 +238,57 @@ public class ChatActivity extends Activity {
         });
 
 
-        //이미지추천 버튼
+        //이미지추천 버튼 클릭시
         autoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                RelativeLayout tagLayout = (RelativeLayout)findViewById(R.id.tag_layout);
+
                 sText = sendText.getText().toString();
-                AutoImage(sendText,sText);
+                String emotion = AutoImage(sendText,sText);
+
+                if(autoCheck || emotion == null) {
+                    tagLayout.setVisibility(View.GONE);
+                    autoCheck = false;
+                }
+                else{
+                    tagLayout.setVisibility(View.VISIBLE);
+
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(sendText.getWindowToken(), 0);
+
+                    ArrayList<FeedItems> tagItems = new ArrayList<>();
+                    for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
+                        FeedItems entity = new FeedItems();
+                        if (emotion.equals(IntroActivity.publicItems.get(i).getType())) {
+                            entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                            entity.setTag(IntroActivity.publicItems.get(i).getType());
+                            tagItems.add(entity);
+                        }
+                    }
+
+                    tagItems.addAll(LoginActivity.dbHelper.getTagItems(emotion));
+                    TabAdapter tAdapter = new TabAdapter(ChatActivity.this, tagItems);
+                    tagRecyclerView.setAdapter(tAdapter);
+
+                    if(autoSendCheck){
+                        tagLayout.setVisibility(View.GONE);
+                        sendText.setText(null);
+
+                        if (groupCheck.equals("1")) {
+                            chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
+                        } else {
+                            chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
+                        }
+
+                        autoCheck = true;
+                    }
+                }
 
             }
 
 
         });
-
 
         //예약 전송 버튼
         sendBtn.setOnLongClickListener(new View.OnLongClickListener() {
@@ -288,7 +364,7 @@ public class ChatActivity extends Activity {
                             long elapsedMillis = SystemClock.elapsedRealtime() - chrono.getBase();
                             if (elapsedMillis == settime * 60000) {
                                 if(!resText.equals("")){
-                                    SendMsg(resText);
+                                    SendMsg(resText,"0");
                                     sendText.setText(null);
                                     chrono.stop();
 
@@ -314,11 +390,10 @@ public class ChatActivity extends Activity {
 
         });
 
-
     }
 
     //채팅 보내기
-    public void SendMsg(String sendMsg){
+    public void SendMsg(String sendMsg,String msgType){
         if (!(sendMsg.equals(""))) {
             DatabaseReference ref = database.getReference("Message").child(roomid);
 
@@ -330,14 +405,18 @@ public class ChatActivity extends Activity {
             member.put("userName", uName); //보낸 사람 이름
             member.put("msg", sendMsg); //보낸 메시지
             member.put("timestamp", ServerValue.TIMESTAMP); //보낸 시간
-            member.put("msgType", "0"); //메시지 타입
+            member.put("msgType", msgType); //메시지 타입
             member.put("readUsers",read); //읽음 여부
             ref.push().setValue(member);
 
             auto_text = sendMsg;
 
             HashMap<String, Object> chatroom = new HashMap<String, Object>();
-            chatroom.put("lastMsg",sendMsg);//마지막 메시지
+            if(msgType.equals("0")){
+                chatroom.put("lastMsg",sendMsg);//마지막 메시지
+            }else if(msgType.equals("1")){
+                chatroom.put("lastMsg","사진");
+            }
             chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
             database.getReference("ChatRoom").child(roomid).updateChildren(chatroom);
         }
@@ -390,6 +469,16 @@ public class ChatActivity extends Activity {
     }
 
 
+    //메시지 예약 스레드
+    public void MsgTimer(){
+        Thread timerThraed = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
+    }
+
     //갤러리 함수
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -405,10 +494,8 @@ public class ChatActivity extends Activity {
 
     //파이어베이스에 사진 업로드
     public void UploadFiles(Uri uri, final String path) {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        final StorageReference storageRef = storage.getReference();
-
         final StorageReference riversRef = storageRef.child(path);
+
         UploadTask uploadTask = riversRef.putFile(uri);
         Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
             @Override
@@ -416,7 +503,6 @@ public class ChatActivity extends Activity {
                 if (!task.isSuccessful()) {
                     throw task.getException();
                 }
-
                 // Continue with the task to get the download URL
                 return riversRef.getDownloadUrl();
             }
@@ -427,26 +513,10 @@ public class ChatActivity extends Activity {
                     Uri downloadUri = task.getResult();
                     imageUrl = downloadUri.toString();
                     //DB에 저장
-                    DatabaseReference ref = database.getReference("Message").child(roomid);
-                    Map<String,Object> read = new HashMap<>();
-                    read.put(currentUser.getUid(),true);
-                    HashMap<String, Object> member = new HashMap<String, Object>();
-                    member.put("uID", currentUser.getUid()); //보낸사람 id
-                    member.put("userName", uName); //보낸 사람 이름
-                    member.put("msg", imageUrl); //url
-                    member.put("timestamp",ServerValue.TIMESTAMP); //작성 시간
-                    member.put("msgType","1"); //메세지 타입
-                    member.put("readUsers",read);
-                    ref.push().setValue(member); //DB에 저장
-
-                    HashMap<String, Object> chatroom = new HashMap<String, Object>();
-                    chatroom.put("lastMsg","사진"); //사진일때
-                    chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
-                    database.getReference("ChatRoom").child(roomid).updateChildren(chatroom);
+                    SendMsg(imageUrl,"1");
                 }
             }
         });
-
 
     }
 
@@ -472,22 +542,22 @@ public class ChatActivity extends Activity {
     public void onBackPressed() {
         super.onBackPressed();
         database.getReference("Message").child(roomid).removeEventListener(valueEventListener);
-        Intent intent = new Intent(ChatActivity.this,MainActivity.class);
-        intent.putExtra("fragment","chat");
+        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+        intent.putExtra("fragment", "chat");
         startActivity(intent);
         finish();
     }
 
     //키보드 내리기
     public boolean onTouchEvent(MotionEvent event) {
-        EditText sendText = (EditText)findViewById(R.id.chatRoom_text);
+        //EditText sendText = (EditText)findViewById(R.id.chatRoom_text);
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(sendText.getWindowToken(), 0);
         return true;
     }
 
     //자동이미지 추천
-    public void AutoImage(TextView sendText,String sText){
+    public String AutoImage(TextView sendText,String sText){
 
         if(IntroActivity.word_set==null){
             IntroActivity.word_set=Word();
@@ -509,6 +579,11 @@ public class ChatActivity extends Activity {
 
             String[] word = input_text.split(" ");
 
+            for(int i=0; i<word.length; i++){
+                System.out.println(i+" "+ word[i]);
+            }
+
+            //word_set에 저장되어 있는 단어와 입력된 단어 비교
             for (int i = 0; i < word.length; i++) {
                 if (IntroActivity.word_set.containsValue(word[i])) {
                     Integer key = IntroActivity.getKey(IntroActivity.word_set, word[i]);
@@ -539,30 +614,31 @@ public class ChatActivity extends Activity {
                                     break;
                                 }
                             }
-
                         }
                         temp--;
                         if (check != 0) break;
                     }
                     if (check == 0) {
                         for (int j = 0; j < word[i].length(); j++) {
-                            String str2 = word[i].substring(1, temp2);
-                            for (Map.Entry<Integer, String> entry : IntroActivity.word_set.entrySet()) {
-                                if (entry.getValue().contains(str2)) {
-                                    System.out.println("1> " + entry.getValue());
-                                    Integer key = entry.getKey();
-                                    System.out.println("2> " + key);
-                                    num[cnt] = key.intValue();
-                                    check = cnt;
-                                    cnt++;
-                                    break;
+                            if(word[i].length()!=1) {
+                                String str2 = word[i].substring(1, temp2);
+                                for (Map.Entry<Integer, String> entry : IntroActivity.word_set.entrySet()) {
+                                    if (entry.getValue().contains(str2)) {
+                                        System.out.println("1> " + entry.getValue());
+                                        Integer key = entry.getKey();
+                                        System.out.println("2> " + key);
+                                        num[cnt] = key.intValue();
+                                        check = cnt;
+                                        cnt++;
+                                        break;
+                                    }
                                 }
-                            }
 
-                            if (check != 0) break;
+                                if (check != 0) break;
+                            }
                         }
                         temp2--;
-                        if (check != 0) break;
+                        if (check != 0) continue;
                     }
                 }
             }
@@ -598,6 +674,7 @@ public class ChatActivity extends Activity {
                 System.out.println();
                 System.out.println("here");
 
+                //텐서플로우 라이트 파일 사용을 위한 float 변환
                 for (int i = 0; i < 8; i++) {
                     System.out.print(arr[i] + " ");
                     input[0][i] = (float) arr[i];
@@ -609,8 +686,6 @@ public class ChatActivity extends Activity {
             Interpreter tflite = getTfliteInterpreter("new_lstm_model.tflite");
             tflite.run(input, output);
 
-            String result = String.valueOf(output[0]);
-
             int maxIdx = 0;
             float maxProb = output[0][0];
             for (int i = 1; i < 6; i++) {
@@ -618,36 +693,41 @@ public class ChatActivity extends Activity {
                     maxProb = output[0][i];
                     maxIdx = i;
                     System.out.println("확률: " + maxIdx + maxProb);
-
                 }
             }
+
             System.out.println(maxIdx);
             emotion = null;
             if (maxIdx == 0)
-                emotion = "happy";
+                emotion = "Happy";
             else if (maxIdx == 1)
-                emotion = "sad";
+                emotion = "Sad";
             else if (maxIdx == 2)
-                emotion = "angry";
+                emotion = "Angry";
             else if (maxIdx == 3)
-                emotion = "surprise";
+                emotion = "Surprise";
             else if (maxIdx == 4)
-                emotion = "fear";
+                emotion = "Fear";
             else if (maxIdx == 5)
-                emotion = "disgust";
+                emotion = "Disgust";
 
             System.out.println("감정: " + emotion);
             sendText.setText(null);
 
+            /*
 
             Intent intent = new Intent(ChatActivity.this, AutoChatActivity.class);
             intent.putExtra("name", chatRoomName);
             intent.putExtra("receiver", receiver);
             intent.putExtra("roomid", roomid);
-            intent.putExtra("check",check);
+            intent.putExtra("check", groupCheck);
 
             startActivity(intent);
+
+             */
         }
+
+        return emotion;
 
     }
 

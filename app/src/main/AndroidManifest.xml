@@ -3,6 +3,8 @@
     package="com.example.Moody">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -28,13 +30,17 @@
             android:windowSoftInputMode="adjustResize" />
         <activity android:name="com.example.Moody.Chat.ChangeRoomName"/>
         <activity android:name="com.example.Moody.Chat.UserSelectActivity"/>
-        <activity android:name="com.example.Moody.Chat.AutoChatActivity"/>
         <activity android:name="com.example.Moody.Feed.UploadPhotoActivity"/>
         <activity android:name="com.example.Moody.Feed.DetailPopupActivity" android:theme="@android:style/Theme.Dialog"/>
         <activity android:name="com.example.Moody.Setting.app_info"/>
         <activity android:name="com.example.Moody.Setting.ProfilePageActivity"/>
         <activity android:name="com.example.Moody.Setting.QR_code"/>
-
+        <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
+        <activity android:name="com.example.Moody.Firebase.UpLoadImageToFirebase"/>
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>

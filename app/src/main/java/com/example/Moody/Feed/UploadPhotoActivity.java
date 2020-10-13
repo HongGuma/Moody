@@ -1,13 +1,17 @@
 package com.example.Moody.Feed;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,25 +19,47 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.Activity.MainActivity;
 import com.example.Moody.R;
+import com.yalantis.ucrop.UCrop;
 
 import org.tensorflow.lite.Interpreter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class UploadPhotoActivity  extends AppCompatActivity {
-    private final int GET_GALLERY_IMAGE = 200;
+public class UploadPhotoActivity  extends BaseActivity {
     String emotion="null";
-    String resultS="";
+    String resultS;
     Uri selectedImageUri;
+    ImageView image;
+    TextView tag_field, resultTV;
+
+    //UCROP
+    private static final int REQUEST_SELECT_PICTURE = 0x01;
+    private static final String SAMPLE_CROPPED_IMAGE_NAME = "SampleCropImage.jpeg";
+
+    private static final int RATIO_ORIGIN = 0;
+    private static final int RATIO_SQUARE = 1;
+    private static final int RATIO_DYNAMIC = 2;
+    private static final int RATIO_CUSTOM = 3;
+
+    private static final int FORMAT_PNG = 0;
+    private static final int FORMAT_WEBP = 1;
+    private static final int FORMAT_JPEG = 2;
+
+    private Uri mDestinationUri;
+    //private ImageView mImageView;
+    private Uri mResultUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //아이디별 db파일 호출
@@ -43,6 +69,15 @@ public class UploadPhotoActivity  extends AppCompatActivity {
 
         //뒤로가기 버튼
         ImageView back_btn = (ImageView) findViewById(R.id.upload_back_btn);
+        LinearLayout sel_btn = (LinearLayout) findViewById(R.id.upload_sel_btn);
+        LinearLayout upload_btn = (LinearLayout) findViewById(R.id.ok_Layout);
+
+        image = (ImageView) findViewById(R.id.upload_image);
+        tag_field = (TextView) findViewById(R.id.tag_field);
+        resultTV = (TextView) findViewById(R.id.resultTV);
+
+        mDestinationUri = Uri.fromFile(new File(getCacheDir(), SAMPLE_CROPPED_IMAGE_NAME));
+
         back_btn.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -54,24 +89,18 @@ public class UploadPhotoActivity  extends AppCompatActivity {
             }
         });
 
-        //사진 선택
-        LinearLayout sel_btn = (LinearLayout)findViewById(R.id.upload_sel_btn);
+        //UCROP
         sel_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-                startActivityForResult(intent, GET_GALLERY_IMAGE);
+                pickFromGallery();
             }
         });
 
         //이미지 등록
-        Button upload_btn = (Button) findViewById(R.id.upload_okBtn);
-        //final EditText tag_field=(EditText)findViewById(R.id.tag_field);
         upload_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //String tag = tag_field.getText().toString();
                 try {
                     byte[]image=getByteArray();
                     LoginActivity.dbHelper.insert(image, emotion, resultS);
@@ -87,6 +116,146 @@ public class UploadPhotoActivity  extends AppCompatActivity {
             }
         });
     }
+
+    //UCROP
+    //go to gallery and pick the image
+    private void pickFromGallery(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN // Permission was added in API Level 16
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
+                    getString(R.string.permission_read_storage_rationale),
+                    REQUEST_STORAGE_READ_ACCESS_PERMISSION);    // @see onRequestPermissionsResult()
+        } else {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(
+                    Intent.createChooser(intent, getString(R.string.label_select_picture)),
+                    REQUEST_SELECT_PICTURE);
+        }
+    }
+
+    //start crop
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_SELECT_PICTURE) {
+                selectedImageUri = data.getData();
+                if (selectedImageUri != null) {
+                    startCropActivity(data.getData());
+                }
+            } else if (requestCode == UCrop.REQUEST_CROP) {
+                handleCropResult(data);
+            }
+        }
+        if (resultCode == UCrop.RESULT_ERROR) {
+            handleCropError(data);
+        }
+    }
+
+    //After image crop
+    private void handleCropResult(@NonNull Intent result) {
+        mResultUri = UCrop.getOutput(result);
+        if (mResultUri != null) {
+            Uri cropImage = mResultUri;
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            image.setImageBitmap(bitmap);
+            try {
+                emotion = getEmotion(cropImage);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //crop error
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private void handleCropError(@NonNull Intent result) {
+        final Throwable cropError = UCrop.getError(result);
+        if (cropError != null) {
+            Log.e("crop", "handleCropError: ", cropError);
+            Toast.makeText(UploadPhotoActivity.this, cropError.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void startCropActivity(@NonNull Uri uri) {
+        UCrop uCrop = UCrop.of(uri, mDestinationUri);
+
+        uCrop = _setRatio(uCrop, RATIO_ORIGIN, 0, 0);
+        uCrop = _setSize(uCrop, 0, 0);
+
+        uCrop = _advancedConfig(uCrop, FORMAT_JPEG, 90);
+
+        uCrop.start(UploadPhotoActivity.this);
+    }
+
+    private UCrop _setRatio(@NonNull UCrop uCrop, int choice, float xratio, float yratio){
+        switch (choice) {
+            case RATIO_ORIGIN:
+                uCrop = uCrop.useSourceImageAspectRatio();
+                break;
+            case RATIO_SQUARE:
+                uCrop = uCrop.withAspectRatio(1, 1);
+                break;
+            case RATIO_DYNAMIC:
+                // do nothing
+                break;
+            case RATIO_CUSTOM:
+            default:
+                try {
+                    float ratioX = xratio;
+                    float ratioY = yratio;
+                    if (ratioX > 0 && ratioY > 0) {
+                        uCrop = uCrop.withAspectRatio(ratioX, ratioY);
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e("Crop", "Number please", e);
+                }
+                break;
+        }
+
+        return uCrop;
+
+    }
+
+    private UCrop _setSize(@NonNull UCrop uCrop, int maxWidth, int maxHeight){
+        if(maxWidth > 0 && maxHeight > 0){
+            return uCrop.withMaxResultSize(maxWidth, maxHeight);
+        }
+        return uCrop;
+    }
+
+    private UCrop _advancedConfig(@NonNull UCrop uCrop, int format, int quality) {
+        UCrop.Options options = new UCrop.Options();
+
+
+        switch (format) {
+            case FORMAT_PNG:
+                options.setCompressionFormat(Bitmap.CompressFormat.PNG);
+                break;
+            case FORMAT_WEBP:
+                options.setCompressionFormat(Bitmap.CompressFormat.WEBP);
+                break;
+            case FORMAT_JPEG:
+            default:
+                options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
+                break;
+        }
+        options.setCompressionQuality(quality); // range [0-100]
+
+        return uCrop.withOptions(options);
+    }
+
     //이미지 바이트 단위로 변환
     public byte[]getByteArray() throws IOException {
         Bitmap byteBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),selectedImageUri);
@@ -96,79 +265,28 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         return data;
     }
 
-    public String getEmotion() throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+    public String getEmotion(Uri cropImage) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), cropImage);
         int w= bitmap.getWidth();
         int h= bitmap.getHeight();
-        System.out.println(w+"dddd"+h);
-        Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 64, (int) 64, true);
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 48, (int) 48, true);
 
-
-
-        /*int height = bitmap.getHeight();
-        int width = bitmap.getWidth();
-
-        Bitmap resized = null;
-
-        while (height > 64) {
-            resized = Bitmap.createScaledBitmap(bitmap, (width * 118) / height, 64, true);
-            height = resized.getHeight();
-            width = resized.getWidth();
-
-        }*/
-
-
-        /*byte[][][] pixel = new byte[64][64][3];
-        int count =0;
-        for(int i=0; i<64; i++)
-            for(int j=0; j<64; j++)
-                for(int k=0; k<3; k++) {
-                    pixel[i][j][k] = bytes[count];
-                    count++;
-                }*/
-
-        /*ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
-        bitmap.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-
-        byte[] array = buffer.array();*/
-        float[][][][] bytes_img = new float[1][64][64][3];
+        float[][][][] bytes_img = new float[1][48][48][1];
 
         int k = 0;
-        for (int x = 0; x < 64; x++) {
-            for (int y = 0; y < 64; y++) {
+        for (int x = 0; x < 48; x++) {
+            for (int y = 0; y < 48; y++) {
                 int pixel = resized.getPixel(x, y);      // ARGB : ff4e2a2a
 
                 bytes_img[0][y][x][0] = (Color.red(pixel)) / (float) 255;
-                bytes_img[0][y][x][1] = (Color.green(pixel)) / (float) 255;
-                bytes_img[0][y][x][2] = (Color.blue(pixel)) / (float) 255;
             }
         }
-        /*for(int a=0; a<64; a++) {
-            for (int i = 60; i <64; i++)
-                for (int j = 0; j < 3; j++)
-                    System.out.println(bytes_img[0][a][i][j]);
-            System.out.println("A");
-        }*/
-        Interpreter tf_lite = getTfliteInterpreter("expression_model_gray2.tflite");
+        Interpreter tf_lite = getTfliteInterpreter("acc65.tflite");
 
-        float[][] output = new float[1][6];
+        float[][] output = new float[1][7];
         tf_lite.run(bytes_img, output);
 
-        String[] emotion = {"angry","happy","sad","disgust","fear","surprise"};
-        TextView resultTV = (TextView) findViewById(R.id.resultTV);
-        int count=0;
-
-        for(int i=0; i<6; i++) {
-            int percent = (int) Math.round(output[0][i] * 100);
-            System.out.println(i + " "+output[0][i] * 100+" " + percent);
-            if(percent >= 1) {
-                if(count == 0)
-                    resultS += emotion[i] + " " + percent + "%";
-                else
-                    resultS += ", " + emotion[i] + " " + percent + "%";
-                count++;
-            }
-        }
+        String[] emotion = {"Angry", "Disgust", "Fear","Happy","sad","Surprise", "Natural"};
 
         int maxIdx = 0;
         float maxProb = output[0][0];
@@ -177,25 +295,24 @@ public class UploadPhotoActivity  extends AppCompatActivity {
                 maxProb = output[0][i];
                 maxIdx = i;
             }
-            //System.out.println(output[0][i]);
         }
-        System.out.println(maxIdx);
-        //String emotion = null;
-        /*if (maxIdx == 0)
-            emotion = "angry";
-        else if (maxIdx == 1)
-            emotion = "happy";
-        else if (maxIdx == 2)
-            emotion = "sad";
-        else if (maxIdx == 3)
-            emotion = "disgust";
-        else if (maxIdx == 4)
-            emotion = "fear";
-        else if (maxIdx == 5)
-            emotion = "surprise";*/
 
-        System.out.println(emotion);
-        TextView tag_field = (TextView) findViewById(R.id.tag_field);
+        int[] result_array = new int[6];
+        for(int i=0; i<7; i++) {
+            int percent = (int) Math.round(output[0][i] * 100);
+            if(i != 6)
+                result_array[i] = percent;
+            else
+                result_array[maxIdx] += percent;
+        }
+
+        resultS ="";
+        for(int i=0; i<6; i++) {
+            if(result_array[i] != 0) {
+                resultS += emotion[i] + " " + result_array[i] + "% ";
+            }
+        }
+
 
         tag_field.setText("#"+emotion[maxIdx]);
         resultTV.setText(resultS);
@@ -221,38 +338,5 @@ public class UploadPhotoActivity  extends AppCompatActivity {
         long declaredLength = fileDescriptor.getDeclaredLength();
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
-
-    //갤러리 이미지 출력
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        ImageView imageview = (ImageView) findViewById(R.id.upload_image);
-        //imageview.setBackground(null);
-        if (requestCode == GET_GALLERY_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            selectedImageUri = data.getData();
-            Bitmap bitmap = null;
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            //Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 64, (int) 64, true);
-
-            imageview.setImageBitmap(bitmap);
-            try {
-                emotion = getEmotion();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /*public boolean onTouchEvent(MotionEvent event) {
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-        return true;
-    }*/
 }
 

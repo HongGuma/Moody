@@ -76,7 +76,7 @@
                     android:id="@+id/chat_add_backBtn"
                     android:layout_width="13.51dp"
                     android:layout_height="13.11dp"
-                    android:background="@drawable/yj_chat_plus_btn" />
+                    android:background="@drawable/sign_back" />
             </LinearLayout>
 
         </LinearLayout>

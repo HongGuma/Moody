@@ -65,7 +65,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chatRoom_recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="246dp"
+            android:layout_height="345dp"
             android:layout_marginTop="140dp"
             android:nestedScrollingEnabled="false"
             android:overScrollMode="never"
@@ -162,7 +162,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/tag_recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="348dp" />
+            android:layout_height="match_parent" />
 
 
     </LinearLayout>

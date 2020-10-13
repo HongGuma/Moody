@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Model.ChatModel;
 import com.example.Moody.Model.ChatRoomModel;
@@ -48,12 +49,15 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
 
     SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
 
+    private final RequestManager glide;
+
     //생성자에서 데이터 리스트 객체를 전달받음
-    public PersonalAdapter(String receiver,String roomid,ArrayList<ChatModel> list, ArrayList<ChatRoomModel> chatlist){
+    public PersonalAdapter(String receiver,String roomid,ArrayList<ChatModel> list, ArrayList<ChatRoomModel> chatlist, RequestManager glide){
         this.recID=receiver;
         this.roomID=roomid;
         this.chatModel = list;
         this.chatRoomModels = chatlist;
+        this.glide = glide;
     }
 
     //아이템 뷰를 저장하는 뷰홀더 클래스
@@ -152,13 +156,12 @@ public class PersonalAdapter extends RecyclerView.Adapter<PersonalAdapter.ViewHo
                     UserModel um = dataSnapshot.getValue(UserModel.class);
                     if (um.getRange().equals("all")) {
                         if (!um.getProfile().equals(""))
-                            Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+                            glide.load(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).error(R.drawable.user).into(holder.userImage);
                     }
                     else if (um.getRange().equals("friend")) {
                         holder.userImage.setBackgroundResource(R.drawable.yj_profile_border);
                         if (!um.getProfile().equals(""))
-                            Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
-
+                            glide.load(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).error(R.drawable.user).into(holder.userImage);
                     }
                 }
 

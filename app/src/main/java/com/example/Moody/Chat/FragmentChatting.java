@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Model.ChatRoomModel;
 import com.example.Moody.Model.ChatModel;
@@ -67,11 +68,16 @@ public class FragmentChatting extends Fragment {
         return new FragmentChatting();
     }
 
+    public RequestManager glide; //glide를 위한 매개변수
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance(); //db초기화
+
+        glide = Glide.with(this);
+
         ChatListDisplay();
     }
 
@@ -164,13 +170,12 @@ public class FragmentChatting extends Fragment {
                 name.setText(um.getName()); //채팅방 상단에 사용자 정보
                 if (um.getRange().equals("all")) {
                     if (!um.getProfile().equals(""))
-                        Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
+                        glide.load(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).error(R.drawable.user).into(image);
                 }
                 else if (um.getRange().equals("friend")) {
                     image.setBackgroundResource(R.drawable.yj_profile_border);
                     if (!um.getProfile().equals(""))
-                        Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
-
+                        glide.load(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).error(R.drawable.user).into(image);
                 }
             }
             @Override
@@ -306,23 +311,7 @@ public class FragmentChatting extends Fragment {
                         //Log.d(TAG, "onDataChange: position="+um.getName());
                         recID.put(position,um.getUID());
                         profiles.put(position,um.getProfile());
-                        if(filterList.get(position).getUsers().size()>2){ //단체 채팅방
-                            if (um.getRange().equals("all")) {
-                                if (um.getProfile() != null && !um.getProfile().equals(""))
-                                    Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
-                            }
-                            else if (um.getRange().equals("friend")) {
-                                if (um.getLiked() != null) {
-                                    for (String key : um.getLiked().keySet()) {
-                                        if (key.equals(uid)) {
-                                            holder.userImage1.setBackgroundResource(R.drawable.yj_profile_border);
-                                            if (um.getProfile() != null && !um.getProfile().equals(""))
-                                                Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
-                                        }
-                                    }
-                                }
-                            }
-                        }else{ //개인 채팅방
+                        if(filterList.get(position).getUsers().size()<2){ //개인 채팅방
                             if (um.getRange().equals("all")) {
                                 if (um.getProfile() != null && !um.getProfile().equals(""))
                                     Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);

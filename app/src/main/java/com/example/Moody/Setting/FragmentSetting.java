@@ -71,9 +71,7 @@ public class FragmentSetting extends Fragment {
 
         //버튼 선언
         Button profileBtn = (Button)view.findViewById(R.id.profile_btn);
-        final Button block_message_btn = (Button)view.findViewById(R.id.block_message_btn);
         Button logoutBtn = (Button)view.findViewById(R.id.logout_btn);
-        Button blocked_userlist_btn = (Button)view.findViewById(R.id.blocked_userlist_btn);
         Button change_password_btn = (Button)view.findViewById(R.id.change_password_btn);
         Button app_info_btn = (Button)view.findViewById(R.id.app_info_btn);
         Button qrCode = (Button)view.findViewById(R.id.QR_code);
@@ -162,8 +160,18 @@ public class FragmentSetting extends Fragment {
                 myName.setText(user.getName());
                 myEmail.setText(user.getEmail());
                 email = user.getEmail();
-                if(!user.getProfile().equals(""))
-                    Glide.with(getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(myImage);
+
+                if(!user.getProfile().equals("")) {
+                    if (user.getRange().equals("all")) {
+                        if (!user.getProfile().equals(""))
+                            Glide.with(getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(myImage);
+                    } else if (user.getRange().equals("friend")) {
+                        myImage.setBackgroundResource(R.drawable.yj_profile_border);
+                        if (!user.getProfile().equals(""))
+                            Glide.with(getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(myImage);
+
+                    }
+                }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }

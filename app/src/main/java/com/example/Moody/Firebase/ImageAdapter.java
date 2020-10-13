@@ -54,9 +54,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 Glide.with(context).load(item.getUrl()).into(holder.photo);
 
                 if (LoginActivity.dbHelper.searchItem(item.getUrl())) {
-                    holder.star.setBackgroundResource(R.drawable.feed_heart);
+                    holder.star.setBackgroundResource(R.drawable.yj_heart);
                 } else {
-                    holder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                    holder.star.setBackgroundResource(R.drawable.yj_full_heart);
                 }
             } else {
                 holder.photo.setVisibility(View.GONE);
@@ -68,10 +68,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 @Override
                 public void onClick(View view) {
                     if (holder.star.isChecked()) {
-                        holder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                        holder.star.setBackgroundResource(R.drawable.yj_full_heart);
                         LoginActivity.dbHelper.pblInsert(item.getUrl(), item.getType(), item.getResult());
                     } else {
-                        holder.star.setBackgroundResource(R.drawable.feed_heart);
+                        holder.star.setBackgroundResource(R.drawable.yj_heart);
                         LoginActivity.dbHelper.pblDelete(item.getUrl());
                     }
                 }
@@ -135,7 +135,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return 8;
+        return imageArrayList.size();
     }
 
     class  ViewHolder extends RecyclerView.ViewHolder{

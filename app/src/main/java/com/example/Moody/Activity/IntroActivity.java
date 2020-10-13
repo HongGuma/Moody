@@ -17,13 +17,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.Moody.Background.DBHelper;
-import com.example.Moody.Background.DataSynchronize;
 import com.example.Moody.Firebase.Image;
-import com.example.Moody.Model.UserModel;
 import com.example.Moody.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -31,7 +27,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,11 +37,8 @@ public class IntroActivity extends AppCompatActivity {
     Animation mAnim1;
     Animation mAnim2;
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseUser currentUser = mAuth.getCurrentUser();
 
     public static HashMap<Integer, String> word_set;
-    ArrayList<UserModel> fid = new ArrayList<UserModel>();
-    String uid = currentUser.getUid();
     Handler mHandler;
     Intent intent;
     public static ArrayList<Image> publicItems = new ArrayList<Image>();
@@ -68,7 +60,7 @@ public class IntroActivity extends AppCompatActivity {
 
         setContentView(R.layout.intro); //intro.xml과 연결
 
-        word_set = Word();
+        word_set = Word(); //단어집합 가져오기
         getImageList();
 
         //화면 클릭 시 애니메이션 작동
@@ -110,17 +102,7 @@ public class IntroActivity extends AppCompatActivity {
 
     }
 
-    public void LoadData(){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                DataSynchronize dataSynchronize = new DataSynchronize();
-                dataSynchronize.LoadData();
-                Message message = new Message();
 
-            }
-        });
-    }
 
 
 
@@ -145,6 +127,7 @@ public class IntroActivity extends AppCompatActivity {
         handler.removeCallbacks(run); //예약취소
     }*/
 
+    //단어집합 가져오기
     private HashMap<Integer, String> Word() {
 
         HashMap<Integer, String> word_set = new HashMap<Integer, String>();
@@ -158,8 +141,6 @@ public class IntroActivity extends AppCompatActivity {
 
             int i=0;
             while ((line = bufReader.readLine()) != null) {
-//                System.out.println(line);
-
                 String[] word = line.split(":");
                 word_set.put(Integer.parseInt(word[1]), word[0]);
                 i++;

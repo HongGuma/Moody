@@ -32,13 +32,6 @@
             android:textSize="13dp"
             android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/feed_search_btn"
-            android:layout_width="15.04dp"
-            android:layout_height="15.04dp"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="39dp"
-            android:background="@drawable/yj_search" />
     </RelativeLayout>
 
     <LinearLayout
@@ -205,7 +198,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="30dp"
         android:backgroundTint="#BC96FA"
-        android:src="@drawable/friend_plus"
+        android:src="@drawable/yj_plus_btn"
         app:backgroundTintMode="src_in"
         app:borderWidth="0dp"
         app:fabSize="normal"

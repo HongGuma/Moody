@@ -6,120 +6,170 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/Layout1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="452dp"
+        android:id="@+id/top1"
+        android:layout_width="match_parent"
+        android:layout_height="170dp"
+        android:gravity="top"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/rangeSpinner"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        tools:ignore="MissingConstraints">
 
-        <Button
-            android:id="@+id/back_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/ic_arrow_back_black_24dp" />
-
-        <TextView
+        <ImageView
+            android:id="@+id/imageView4"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="프로필 편집"
-            android:textSize="25dp" />
+            android:layout_height="121dp"
+            android:background="@drawable/yj_top_border"
+            android:elevation="20dp" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/Layout2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Layout1">
+        android:id="@+id/layout1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/profile_my_image"
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="132dp" />
+
+        <LinearLayout
             android:layout_width="170dp"
             android:layout_height="170dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/ic_insert_photo_black_24dp" />
+            android:layout_marginTop="30dp"
+            android:background="@drawable/yj_profile_shadow"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/profile_my_image"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:background="@drawable/yj_profile_border_white"
+                android:padding="7dp"
+                android:src="@drawable/profile" />
+        </LinearLayout>
+
 
         <Button
             android:id="@+id/profile_gallery_btn"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_margin="20dp"
-            android:background="@drawable/ic_camera_alt_black_24dp" />
+            android:layout_width="120dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/select_photo"
+            android:text="Change Photo"
+            android:textAllCaps="false"
+            android:textColor="#9F9F9F" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_textInputLayout1"
+            android:layout_width="414dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            tools:layout_editor_absoluteY="407dp">
+
+            <EditText
+                android:id="@+id/my_name"
+                android:layout_width="250dp"
+                android:layout_height="40dp"
+                android:background="@drawable/edit_blank"
+                android:hint="Name"
+                android:padding="10dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_textInputLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            tools:layout_editor_absoluteY="478dp">
+
+            <EditText
+                android:id="@+id/my_birth"
+                android:layout_width="250dp"
+                android:layout_height="40dp"
+                android:background="@drawable/edit_blank"
+                android:hint="Birthday"
+                android:padding="10dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Spinner
+            android:id="@+id/rangeSpinner"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:entries="@array/profileMode"
+            android:textAlignment="center"
+            tools:layout_editor_absoluteX="84dp"
+            tools:layout_editor_absoluteY="592dp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/login_textInputLayout1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Layout2">
-
-        <EditText
-            android:id="@+id/my_name"
-            android:layout_width="290dp"
-            android:layout_height="50dp"
-            android:background="@drawable/border" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/login_textInputLayout2"
+    <RelativeLayout
+        android:id="@+id/layout2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_height="120dp"
         android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.504"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/login_textInputLayout1">
+        tools:ignore="MissingConstraints">
 
-        <EditText
-            android:id="@+id/my_birth"
-            android:layout_width="290dp"
-            android:layout_height="50dp"
-            android:background="@drawable/border" />
+        <TextView
+            android:id="@+id/profile_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Edit Profile"
+            android:textSize="13dp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
-    </com.google.android.material.textfield.TextInputLayout>
+    <LinearLayout
+        android:id="@+id/layout3"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:gravity="center"
+        tools:ignore="MissingConstraints">
 
-    <Button
-        android:id="@+id/save_btn"
-        android:layout_width="290dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="76dp"
-        android:text="저장하기"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/login_textInputLayout2" />
+        <ImageView
+            android:id="@+id/profileEdit_backBtn"
+            android:layout_width="14.15dp"
+            android:layout_height="10.85dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="39dp"
+            android:background="@drawable/yj_back_btn"
+            android:stateListAnimator="@null" />
 
-    <Spinner
-        android:id="@+id/rangeSpinner"
-        android:layout_width="268dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="280dp"
-        android:entries="@array/profileMode"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.573"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Layout1" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="11dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="39dp"
+            android:background="@drawable/yj_btn1_border"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/save_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#00FFFFFF"
+                android:textColor="#FFFFFF"
+                android:text="ok" />
+        </LinearLayout>
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

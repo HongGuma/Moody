@@ -49,7 +49,7 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public TabImageAdapter(Context context,ArrayList<FeedItems> tagDataArrayList){
         this.context=context;
         this.tagDataArrayList = tagDataArrayList;
-
+        UserInfo();
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
@@ -74,10 +74,10 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
         if(tagDataArrayList.get(position).getUrl()==null) {
-            myViewHolder.image.setImageBitmap(tagDataArrayList.get(position).getImage());
+            myViewHolder.image.setImageBitmap(resizeBitmapImage(tagDataArrayList.get(position).getImage(),80));
         }
         else{
-            Glide.with(context).load(tagDataArrayList.get(position).getUrl()).into(myViewHolder.image);
+            Glide.with(context).load(tagDataArrayList.get(position).getUrl()).override(80,80).into(myViewHolder.image);
         }
 
         myViewHolder.image.setOnClickListener(new View.OnClickListener() {
@@ -87,31 +87,19 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 String datetime = dateFormat.format(Calendar.getInstance().getTime());
 
                 if(tagDataArrayList.get(position).getUrl()!=null) {
-                    sendImage(tagDataArrayList.get(position).getUrl());
+                    sendMsg(tagDataArrayList.get(position).getUrl(),"1");
                 }else{
                     String imagePath = "Chat/"+ ChatActivity.roomid+"/"+datetime; //사진파일 경로 및 이름
                     UploadFiles(tagDataArrayList.get(position).getImage(),imagePath);
                 }
-                if (!(AutoChatActivity.sText.equals(""))) {
-                    DatabaseReference ref = database.getReference("Message").child(ChatActivity.roomid);
-                    SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
-                    final String writeTime = writeTimeFormat.format(Calendar.getInstance().getTime());
-                    HashMap<String, Object> member = new HashMap<String, Object>();
-                    member.put("uID", currentUser.getUid()); //보낸사람 id
-                    member.put("userName", ChatActivity.uName); //보낸 사람 이름
-                    member.put("msg", ChatActivity.sText);
-                    member.put("timestamp", ServerValue.TIMESTAMP);
-                    member.put("msgType", "0");
-                    ref.push().setValue(member);
+                if (!(ChatActivity.sText.equals(""))) {
+                    sendMsg(ChatActivity.sText,"0");
 
-                    HashMap<String, Object> last = new HashMap<String, Object>();
-                    last.put("lastMsg",ChatActivity.sText);
-                    last.put("lastTime",ServerValue.TIMESTAMP);
-                    database.getReference("ChatRoom").child(ChatActivity.roomid).updateChildren(last);
                 }
-                ((AutoChatActivity)context).finish();
+
             }
         });
+
     }
     public void UploadFiles(Bitmap bitmap, final String path) {
 
@@ -132,7 +120,6 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 if (!task.isSuccessful()) {
                     throw task.getException();
                 }
-
                 // Continue with the task to get the download URL
                 return riversRef.getDownloadUrl();
             }
@@ -143,40 +130,34 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     Uri downloadUri = task.getResult();
                     imageUrl = downloadUri.toString();
                     //DB에 저장
-                    DatabaseReference ref = database.getReference("Message").child(ChatActivity.roomid);
-                    Map<String,Object> read = new HashMap<>();
-                    read.put(currentUser.getUid(),true);
-                    HashMap<String, Object> member = new HashMap<String, Object>();
-                    member.put("uID", currentUser.getUid()); //보낸사람 id
-                    member.put("userName", uName); //보낸 사람 이름
-                    member.put("msg", imageUrl); //url
-                    member.put("timestamp",ServerValue.TIMESTAMP); //작성 시간
-                    member.put("msgType","1"); //메세지 타입
-                    member.put("readUsers",read);
-                    ref.push().setValue(member); //DB에 저장
-
-                    HashMap<String, Object> chatroom = new HashMap<String, Object>();
-                    chatroom.put("lastMsg","사진"); //사진일때
-                    chatroom.put("lastTime",ServerValue.TIMESTAMP); //마지막 시간
-                    database.getReference("ChatRoom").child(ChatActivity.roomid).updateChildren(chatroom);
-                    //Glide.with(UpLoadImageToFirebase.this).load(imageUrl).into(upload_image);
+                    sendMsg(imageUrl,"1");
                 }
             }
         });
+
     }
 
-    public void sendImage(String url){
+    public void sendMsg(String sendMsg,String sendType){
         DatabaseReference ref = database.getReference("Message").child(ChatActivity.roomid);
-        SimpleDateFormat writeTimeFormat = new SimpleDateFormat("a hh:mm");
-        //final String writeTime = writeTimeFormat.format(Calendar.getInstance().getTime());
         HashMap<String, Object> member = new HashMap<String, Object>();
         member.put("uID", currentUser.getUid()); //보낸사람 id
         member.put("userName", ChatActivity.uName); //보낸 사람 이름
-        member.put("msg", url); //url
+        member.put("msg", sendMsg); //url
         member.put("timestamp", ServerValue.TIMESTAMP); //작성 시간
-        member.put("msgType","1"); //메세지 타입
+        member.put("msgType",sendType); //메세지 타입
         ref.push().setValue(member); //DB에 저장
+
+        HashMap<String, Object> last = new HashMap<String, Object>();
+        if(sendType.equals("0"))
+            last.put("lastMsg",ChatActivity.sText);
+        else if(sendType.equals("1"))
+            last.put("lastMsg","사진"); //사진일때
+        last.put("lastTime",ServerValue.TIMESTAMP);
+        database.getReference("ChatRoom").child(ChatActivity.roomid).updateChildren(last);
+
+        ChatActivity.autoSendCheck = true;
     }
+
     @Override
     public int getItemCount() {
         return tagDataArrayList.size();
@@ -193,5 +174,37 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+    }
+
+
+    //미리보기 사진 해상도 최적화
+    public Bitmap resizeBitmapImage(Bitmap source, int maxResolution)
+    {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        int newWidth = width;
+        int newHeight = height;
+        float rate = 0.0f;
+
+        if(width > height)
+        {
+            if(maxResolution < width)
+            {
+                rate = maxResolution / (float) width;
+                newHeight = (int) (height * rate);
+                newWidth = maxResolution;
+            }
+        }
+        else
+        {
+            if(maxResolution < height)
+            {
+                rate = maxResolution / (float) height;
+                newWidth = (int) (width * rate);
+                newHeight = maxResolution;
+            }
+        }
+
+        return Bitmap.createScaledBitmap(source, newWidth, newHeight, true);
     }
 }

@@ -3,9 +3,11 @@ package com.example.Moody.Setting;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -64,7 +66,7 @@ public class ProfilePageActivity extends AppCompatActivity {
         UserInfo(photo,name,birth); //유저 정보 불러와서 보여주기
 
         //각 버튼
-        Button backBtn = (Button) findViewById(R.id.back_btn);
+        ImageView backBtn = (ImageView) findViewById(R.id.profileEdit_backBtn);
         Button saveBtn = (Button) findViewById(R.id.save_btn);
         Button gallery = (Button) findViewById(R.id.profile_gallery_btn);
 
@@ -84,6 +86,8 @@ public class ProfilePageActivity extends AppCompatActivity {
 
         //프로필 범위
         s = (Spinner)findViewById(R.id.rangeSpinner);
+        ArrayAdapter SpinAdapter = ArrayAdapter.createFromResource(ProfilePageActivity.this, R.array.profileMode, R.layout.range_spinner_design);
+        s.setAdapter(SpinAdapter);
         final Object[] range = new Object[1];
 
         s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -200,7 +204,7 @@ public class ProfilePageActivity extends AppCompatActivity {
             String imagePath = "Users/" + currentUser.getUid(); //사진파일 경로 및 이름
             UploadFiles(selectedImageUri, imagePath); //사진 업로드
 
-            Glide.with(this).load(selectedImageUri).apply(new RequestOptions().circleCrop()).into(photo);
+            Glide.with(ProfilePageActivity.this).load(selectedImageUri).apply(new RequestOptions().circleCrop()).into(photo);
         }
 
     }
@@ -243,8 +247,19 @@ public class ProfilePageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel um = dataSnapshot.getValue(UserModel.class);
-                if(!um.getProfile().equals(""))
-                    Glide.with(profile.getContext()).load(um.getProfile()).into(profile);
+
+                if(!um.getProfile().equals("")) {
+                    if (um.getRange().equals("all")) {
+                        if (!um.getProfile().equals(""))
+                            Glide.with(profile.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(profile);
+                    } else if (um.getRange().equals("friend")) {
+                        profile.setBackgroundResource(R.drawable.yj_profile_border);
+                        if (!um.getProfile().equals(""))
+                            Glide.with(profile.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(profile);
+
+                    }
+                }
+
                 name.setText(um.getName());
                 birth.setText(um.getBirth());
 

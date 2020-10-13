@@ -55,7 +55,6 @@ public class FragmentFeed extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         mAuth = FirebaseAuth.getInstance();
-
     }
 
     @Nullable
@@ -88,7 +87,6 @@ public class FragmentFeed extends Fragment {
         PageAdapter pAdapter=new PageAdapter(inflater.getContext(),feedItems);
         pageRecyclerView.setAdapter(pAdapter);
 
-
         final TextView public_btn = (TextView)view.findViewById(R.id.feed_public_btn);
         final TextView private_btn = (TextView) view.findViewById(R.id.feed_private_btn);
         final TextView mark_btn = (TextView) view.findViewById(R.id.feed_mark_btn);
@@ -101,7 +99,6 @@ public class FragmentFeed extends Fragment {
         //출력 순서
         final Spinner spinner=(Spinner)view.findViewById(R.id.feed_sortmode_spinner);
         ArrayAdapter SpinAdapter = ArrayAdapter.createFromResource(inflater.getContext(), R.array.selmode, R.layout.spinner_design);
-        //adapter.setDropDownViewResource(R.layout.customer_spinner);
         spinner.setAdapter(SpinAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -178,7 +175,6 @@ public class FragmentFeed extends Fragment {
                     mode=3;
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
@@ -190,7 +186,7 @@ public class FragmentFeed extends Fragment {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mAuth.getUid().equals("2NcIdO1JV7DhwRZRd0FN1Vuuhikn2")) {
+                if(mAuth.getUid().equals("QBriucJOQMZlerNl6p4EI1zJTuW2")) {
                     startActivity(new Intent(inflater.getContext(), UpLoadImageToFirebase.class));
                 }
                 else {
@@ -199,24 +195,11 @@ public class FragmentFeed extends Fragment {
             }
         });
 
-        //이미지 검색
-        Button searchBtn = (Button)view.findViewById(R.id.feed_search_btn);
-        searchBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(inflater.getContext(),SearchPhotoActivity.class));
-            }
-        });
-
         //공용 이미지
         public_btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 tab=1;
-                /*public_btn.setTextColor(Color.parseColor("#EFEDF0"));
-                mark_btn.setTextColor(Color.parseColor("#707070"));
-                private_btn.setTextColor(Color.parseColor("#707070"));
-                tag_btn.setTextColor(Color.parseColor("#707070"));*/
                 layout1.setBackgroundResource(R.drawable.yj_feed_click_btn);
                 layout2.setBackgroundColor(Color.parseColor("#00ff0000"));
                 layout3.setBackgroundColor(Color.parseColor("#00ff0000"));
@@ -259,10 +242,6 @@ public class FragmentFeed extends Fragment {
             @Override
             public void onClick(View view) {
                 tab=2;
-                /*private_btn.setTextColor(Color.parseColor("#EFEDF0"));
-                mark_btn.setTextColor(Color.parseColor("#707070"));
-                public_btn.setTextColor(Color.parseColor("#707070"));
-                tag_btn.setTextColor(Color.parseColor("#707070"));*/
                 layout2.setBackgroundResource(R.drawable.yj_feed_click_btn);
                 layout1.setBackgroundColor(Color.parseColor("#00ff0000"));
                 layout3.setBackgroundColor(Color.parseColor("#00ff0000"));
@@ -291,10 +270,6 @@ public class FragmentFeed extends Fragment {
             @Override
             public void onClick(View view) {
                 tab=4;
-                /*mark_btn.setTextColor(Color.parseColor("#EFEDF0"));
-                public_btn.setTextColor(Color.parseColor("#707070"));
-                private_btn.setTextColor(Color.parseColor("#707070"));
-                tag_btn.setTextColor(Color.parseColor("#707070"));*/
                 layout4.setBackgroundResource(R.drawable.yj_feed_click_btn);
                 layout2.setBackgroundColor(Color.parseColor("#00ff0000"));
                 layout3.setBackgroundColor(Color.parseColor("#00ff0000"));
@@ -327,10 +302,6 @@ public class FragmentFeed extends Fragment {
             @Override
             public void onClick(View view) {
                 tab=3;
-                /*tag_btn.setTextColor(Color.parseColor("#EFEDF0"));
-                mark_btn.setTextColor(Color.parseColor("#707070"));
-                private_btn.setTextColor(Color.parseColor("#707070"));
-                public_btn.setTextColor(Color.parseColor("#707070"));*/
                 layout3.setBackgroundResource(R.drawable.yj_feed_click_btn);
                 layout2.setBackgroundColor(Color.parseColor("#00ff0000"));
                 layout1.setBackgroundColor(Color.parseColor("#00ff0000"));

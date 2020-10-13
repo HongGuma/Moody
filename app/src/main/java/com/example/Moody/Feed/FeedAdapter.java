@@ -63,11 +63,11 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
 
             myViewHolder.tag.setText("#" + feedDataArrayList.get(position).getTag());
             if (feedDataArrayList.get(position).getStar() == 1) {
-                myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                myViewHolder.star.setBackgroundResource(R.drawable.yj_full_heart);
             } else if (!LoginActivity.dbHelper.searchItem(feedDataArrayList.get(position).getUrl())) {
-                myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                myViewHolder.star.setBackgroundResource(R.drawable.yj_full_heart);
             } else {
-                myViewHolder.star.setBackgroundResource(R.drawable.feed_heart);
+                myViewHolder.star.setBackgroundResource(R.drawable.yj_heart);
             }
         }
         else{
@@ -78,7 +78,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
             @Override
             public void onClick(View view){
                 if(myViewHolder.star.isChecked()){
-                    myViewHolder.star.setBackgroundResource(R.drawable.feed_full_heart);
+                    myViewHolder.star.setBackgroundResource(R.drawable.yj_full_heart);
                     if(feedDataArrayList.get(position).getUrl()==null) {
                         LoginActivity.dbHelper.setStar(1, feedDataArrayList.get(position).getId());
                     }
@@ -87,7 +87,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                     }
                 }
                 else{
-                    myViewHolder.star.setBackgroundResource(R.drawable.feed_heart);
+                    myViewHolder.star.setBackgroundResource(R.drawable.yj_heart);
                     if(feedDataArrayList.get(position).getUrl()==null) {
                         LoginActivity.dbHelper.setStar(0,feedDataArrayList.get(position).getId());
                     }
@@ -146,14 +146,9 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                     intent.putExtra("url",feedDataArrayList.get(position).getUrl());
                 }
                 context.startActivity(intent);
-
-
             }
         });
-
-
     }
-
     @Override
     public int getItemCount() {
         return feedDataArrayList.size();

@@ -45,6 +45,7 @@
             android:layout_weight="1" />
 
         <LinearLayout
+            android:id="@+id/ok_Layout"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_marginLeft="10dp"
@@ -137,25 +138,25 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="99dp"
             android:gravity="center">
 
             <LinearLayout
                 android:layout_width="377dp"
-                android:layout_height="30dp"
+                android:layout_height="70dp"
                 android:layout_gravity="center"
                 android:background="@drawable/yj_feed_border"
                 android:elevation="5dp"
-                android:gravity="center"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/resultTV"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="13dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
-                    android:layout_marginLeft="20dp" />
+                    android:textSize="13dp" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -173,7 +174,8 @@
             android:layout_marginTop="305dp"
             android:gravity="center"
             android:background="@drawable/yj_upload_btn"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:onClick="onClick">
 
             <TextView
                 android:layout_width="match_parent"

@@ -20,7 +20,7 @@
             android:layout_height="10.85dp"
             android:layout_gravity="center_vertical"
             android:layout_margin="15dp"
-            android:background="@drawable/chat_back"
+            android:background="@drawable/yj_back_btn"
             android:stateListAnimator="@null" />
 
 
@@ -39,7 +39,7 @@
             android:layout_width="2dp"
             android:layout_height="35dp"
             android:layout_weight="1"
-            android:background="@drawable/friend_plus" />
+            android:background="@drawable/yj_plus_btn" />
 
         <Space
             android:layout_width="15dp"

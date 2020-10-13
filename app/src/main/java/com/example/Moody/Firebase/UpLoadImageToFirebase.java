@@ -1,13 +1,16 @@
 package com.example.Moody.Firebase;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -15,11 +18,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.example.Moody.Activity.MainActivity;
+import com.example.Moody.Feed.BaseActivity;
+import com.example.Moody.Feed.UploadPhotoActivity;
 import com.example.Moody.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,27 +36,47 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.yalantis.ucrop.UCrop;
 
 import org.tensorflow.lite.Interpreter;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-public class UpLoadImageToFirebase extends AppCompatActivity {
+public class UpLoadImageToFirebase extends BaseActivity {
+    String emotion="null";
+    String resultS;
+    Uri selectedImageUri;
+    ImageView image;
+    TextView tag_field, resultTV;
+    private String urls;
+    private String tags;
+    private String res;
     private ProgressDialog dialog;
     private StorageReference mStoreReference;
-    String emotion="null";
-    String resultS="";
-    Uri selectedImageUri;
     private String imageUrl;
-    private final int GET_GALLERY_IMAGE = 200;
-    private ArrayList<String> urls=new ArrayList<>();
-    private ArrayList<String> tags=new ArrayList<>();
-    private ArrayList<String> res=new ArrayList<>();
+
+    //UCROP
+    private static final int REQUEST_SELECT_PICTURE = 0x01;
+    private static final String SAMPLE_CROPPED_IMAGE_NAME = "SampleCropImage.jpeg";
+
+    private static final int RATIO_ORIGIN = 0;
+    private static final int RATIO_SQUARE = 1;
+    private static final int RATIO_DYNAMIC = 2;
+    private static final int RATIO_CUSTOM = 3;
+
+    private static final int FORMAT_PNG = 0;
+    private static final int FORMAT_WEBP = 1;
+    private static final int FORMAT_JPEG = 2;
+
+    private Uri mDestinationUri;
+    private Uri mResultUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +84,11 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
         dialog = new ProgressDialog(this);
         TextView upload_lbl = (TextView)findViewById(R.id.upload_lbl);
         upload_lbl.setText("Upload image for adminstrator");
+
+        image = (ImageView) findViewById(R.id.upload_image);
+        tag_field = (TextView) findViewById(R.id.tag_field);
+        resultTV = (TextView) findViewById(R.id.resultTV);
+        mDestinationUri = Uri.fromFile(new File(getCacheDir(), SAMPLE_CROPPED_IMAGE_NAME));
 
         //뒤로가기 버튼
         ImageView back_btn = (ImageView) findViewById(R.id.upload_back_btn);
@@ -72,20 +104,17 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
 
         findViewById(R.id.upload_sel_btn).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                startActivityForResult(intent, GET_GALLERY_IMAGE);
+            public void onClick(View view) {
+                pickFromGallery();
             }
         });
-        findViewById(R.id.upload_okBtn).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.ok_Layout).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(UpLoadImageToFirebase.this, MainActivity.class);
                 intent.putExtra("fragment","feed");
                 startActivity(intent);
-                if (TextUtils.isEmpty(imageUrl)){
+                if (TextUtils.isEmpty(urls)){
                     return;
                 }
                 sendImage();
@@ -94,79 +123,182 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
 
     }
 
-    public String getEmotion() throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+    //UCROP
+    //go to gallery and pick the image
+    private void pickFromGallery(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN // Permission was added in API Level 16
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
+                    getString(R.string.permission_read_storage_rationale),
+                    REQUEST_STORAGE_READ_ACCESS_PERMISSION);    // @see onRequestPermissionsResult()
+        } else {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(
+                    Intent.createChooser(intent, getString(R.string.label_select_picture)),
+                    REQUEST_SELECT_PICTURE);
+        }
+    }
+
+    //start crop
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_SELECT_PICTURE) {
+                selectedImageUri = data.getData();
+                if (selectedImageUri != null) {
+                    startCropActivity(data.getData());
+                }
+            } else if (requestCode == UCrop.REQUEST_CROP) {
+                handleCropResult(data);
+            }
+        }
+        if (resultCode == UCrop.RESULT_ERROR) {
+            handleCropError(data);
+        }
+    }
+
+    //After image crop
+    private void handleCropResult(@NonNull Intent result) {
+        mResultUri = UCrop.getOutput(result);
+        if (mResultUri != null) {
+            Uri cropImage = mResultUri;
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            image.setImageBitmap(bitmap);
+            try {
+                emotion = getEmotion(cropImage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String uris = selectedImageUri.toString();
+            System.out.println("url:"+urls);
+            tags = emotion;
+            res = resultS;
+
+            upload(uris);
+        }
+    }
+
+    //crop error
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private void handleCropError(@NonNull Intent result) {
+        final Throwable cropError = UCrop.getError(result);
+        if (cropError != null) {
+            Log.e("crop", "handleCropError: ", cropError);
+            Toast.makeText(UpLoadImageToFirebase.this, cropError.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void startCropActivity(@NonNull Uri uri) {
+        UCrop uCrop = UCrop.of(uri, mDestinationUri);
+
+        uCrop = _setRatio(uCrop, RATIO_ORIGIN, 0, 0);
+        uCrop = _setSize(uCrop, 0, 0);
+
+        uCrop = _advancedConfig(uCrop, FORMAT_JPEG, 90);
+
+        uCrop.start(UpLoadImageToFirebase.this);
+    }
+
+    private UCrop _setRatio(@NonNull UCrop uCrop, int choice, float xratio, float yratio){
+        switch (choice) {
+            case RATIO_ORIGIN:
+                uCrop = uCrop.useSourceImageAspectRatio();
+                break;
+            case RATIO_SQUARE:
+                uCrop = uCrop.withAspectRatio(1, 1);
+                break;
+            case RATIO_DYNAMIC:
+                // do nothing
+                break;
+            case RATIO_CUSTOM:
+            default:
+                try {
+                    float ratioX = xratio;
+                    float ratioY = yratio;
+                    if (ratioX > 0 && ratioY > 0) {
+                        uCrop = uCrop.withAspectRatio(ratioX, ratioY);
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e("Crop", "Number please", e);
+                }
+                break;
+        }
+
+        return uCrop;
+
+    }
+
+    private UCrop _setSize(@NonNull UCrop uCrop, int maxWidth, int maxHeight){
+        if(maxWidth > 0 && maxHeight > 0){
+            return uCrop.withMaxResultSize(maxWidth, maxHeight);
+        }
+        return uCrop;
+    }
+
+    private UCrop _advancedConfig(@NonNull UCrop uCrop, int format, int quality) {
+        UCrop.Options options = new UCrop.Options();
+
+
+        switch (format) {
+            case FORMAT_PNG:
+                options.setCompressionFormat(Bitmap.CompressFormat.PNG);
+                break;
+            case FORMAT_WEBP:
+                options.setCompressionFormat(Bitmap.CompressFormat.WEBP);
+                break;
+            case FORMAT_JPEG:
+            default:
+                options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
+                break;
+        }
+        options.setCompressionQuality(quality); // range [0-100]
+
+        return uCrop.withOptions(options);
+    }
+
+    //이미지 바이트 단위로 변환
+    public byte[]getByteArray() throws IOException {
+        Bitmap byteBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),selectedImageUri);
+        ByteArrayOutputStream stream=new ByteArrayOutputStream();
+        byteBitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+        byte[]data= stream.toByteArray();
+        return data;
+    }
+
+    public String getEmotion(Uri cropImage) throws IOException {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), cropImage);
         int w= bitmap.getWidth();
         int h= bitmap.getHeight();
-        System.out.println(w+"dddd"+h);
-        Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 64, (int) 64, true);
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int) 48, (int) 48, true);
 
-
-
-        /*int height = bitmap.getHeight();
-        int width = bitmap.getWidth();
-
-        Bitmap resized = null;
-
-        while (height > 64) {
-            resized = Bitmap.createScaledBitmap(bitmap, (width * 118) / height, 64, true);
-            height = resized.getHeight();
-            width = resized.getWidth();
-
-        }*/
-
-
-        /*byte[][][] pixel = new byte[64][64][3];
-        int count =0;
-        for(int i=0; i<64; i++)
-            for(int j=0; j<64; j++)
-                for(int k=0; k<3; k++) {
-                    pixel[i][j][k] = bytes[count];
-                    count++;
-                }*/
-
-        /*ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
-        bitmap.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-
-        byte[] array = buffer.array();*/
-        float[][][][] bytes_img = new float[1][64][64][3];
+        float[][][][] bytes_img = new float[1][48][48][1];
 
         int k = 0;
-        for (int x = 0; x < 64; x++) {
-            for (int y = 0; y < 64; y++) {
+        for (int x = 0; x < 48; x++) {
+            for (int y = 0; y < 48; y++) {
                 int pixel = resized.getPixel(x, y);      // ARGB : ff4e2a2a
 
                 bytes_img[0][y][x][0] = (Color.red(pixel)) / (float) 255;
-                bytes_img[0][y][x][1] = (Color.green(pixel)) / (float) 255;
-                bytes_img[0][y][x][2] = (Color.blue(pixel)) / (float) 255;
             }
         }
-        /*for(int a=0; a<64; a++) {
-            for (int i = 60; i <64; i++)
-                for (int j = 0; j < 3; j++)
-                    System.out.println(bytes_img[0][a][i][j]);
-            System.out.println("A");
-        }*/
-        Interpreter tf_lite = getTfliteInterpreter("expression_model_gray2.tflite");
+        Interpreter tf_lite = getTfliteInterpreter("acc65.tflite");
 
-        float[][] output = new float[1][6];
+        float[][] output = new float[1][7];
         tf_lite.run(bytes_img, output);
 
-        String[] emotion = {"angry","happy","sad","disgust","fear","surprise"};
-        TextView resultTV = (TextView) findViewById(R.id.resultTV);
-        int count=0;
-
-        for(int i=0; i<6; i++) {
-            int percent = (int) Math.round(output[0][i] * 100);
-            System.out.println(i + " "+output[0][i] * 100+" " + percent);
-            if(percent >= 1) {
-                if(count == 0)
-                    resultS += emotion[i] + " " + percent + "%";
-                else
-                    resultS += ", " + emotion[i] + " " + percent + "%";
-                count++;
-            }
-        }
+        String[] emotion = {"Angry", "Disgust", "Fear","Happy","sad","Surprise", "Natural"};
 
         int maxIdx = 0;
         float maxProb = output[0][0];
@@ -175,25 +307,25 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
                 maxProb = output[0][i];
                 maxIdx = i;
             }
-            //System.out.println(output[0][i]);
         }
-        System.out.println(maxIdx);
-        //String emotion = null;
-        /*if (maxIdx == 0)
-            emotion = "angry";
-        else if (maxIdx == 1)
-            emotion = "happy";
-        else if (maxIdx == 2)
-            emotion = "sad";
-        else if (maxIdx == 3)
-            emotion = "disgust";
-        else if (maxIdx == 4)
-            emotion = "fear";
-        else if (maxIdx == 5)
-            emotion = "surprise";*/
 
-        System.out.println(emotion);
-        TextView tag_field = (TextView) findViewById(R.id.tag_field);
+        int[] result_array = new int[6];
+        for(int i=0; i<7; i++) {
+            int percent = (int) Math.round(output[0][i] * 100);
+            System.out.println(i + " "+output[0][i] * 100+" " + percent);
+            if(i != 6)
+                result_array[i] = percent;
+            else
+                result_array[maxIdx] += percent;
+        }
+
+        resultS ="";
+        for(int i=0; i<6; i++) {
+            if(result_array[i] != 0) {
+                resultS += emotion[i] + " " + result_array[i] + "% ";
+            }
+        }
+
 
         tag_field.setText("#"+emotion[maxIdx]);
         resultTV.setText(resultS);
@@ -220,74 +352,12 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        ImageView imageview = (ImageView) findViewById(R.id.upload_image);
-        imageview.setBackground(null);
-        TextView tag_field = (TextView) findViewById(R.id.tag_field);
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case GET_GALLERY_IMAGE:
-                    //selectedImageUri = data.getData();
-                    ClipData clipData=data.getClipData();
-                    urls.clear();
-                    tags.clear();
-                    res.clear();
-                    ArrayList<String> uris=new ArrayList<>();
-                    Log.i("clipdata", String.valueOf(clipData.getItemCount()));
-
-                    //이미지 하나만 선택했을 경우
-                    if (clipData.getItemCount() == 1) {
-                        String dataStr = String.valueOf(clipData.getItemAt(0).getUri());
-                        Log.i("1. clipdata choice", String.valueOf(clipData.getItemAt(0).getUri()));
-                        Log.i("1. single choice", clipData.getItemAt(0).getUri().getPath());
-                        selectedImageUri=data.getData();
-                        imageview.setImageURI(selectedImageUri);
-                        try {
-                            emotion = getEmotion();
-                            tags.add(emotion);
-                            res.add(resultS);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        uris.add(dataStr);
-                    }
-                    //여러장 선택한 경우
-                    else if (clipData.getItemCount() > 1 && clipData.getItemCount() < 100) {
-                        for (int i = 0; i < clipData.getItemCount(); i++) {
-                            Log.i("2. single choice", String.valueOf(clipData.getItemAt(i).getUri()));
-                            uris.add(String.valueOf(clipData.getItemAt(i).getUri()));
-                            selectedImageUri=clipData.getItemAt(i).getUri();
-                            imageview.setImageURI(selectedImageUri);
-                            try {
-                                emotion = getEmotion();
-                                tag_field.append(" #"+emotion);
-                                tags.add(emotion);
-                                res.add(emotion);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    upload(uris);
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-    }
-
     // uri -> url로 변경
-    private void upload(final ArrayList<String> uris) {
+    private void upload(String uris) {
         dialog.show();
-        for(int i=0;i<uris.size();i++){
-            final int position=i;
             mStoreReference = FirebaseStorage.getInstance().getReference();
             final StorageReference riversRef = mStoreReference.child("image/" + System.currentTimeMillis() + ".jpg");
-            UploadTask uploadTask = riversRef.putFile(Uri.parse(uris.get(i)));
+            UploadTask uploadTask = riversRef.putFile(Uri.parse(String.valueOf(uris)));
             Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
@@ -305,27 +375,24 @@ public class UpLoadImageToFirebase extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
                         imageUrl = downloadUri.toString();
-                        urls.add(imageUrl);
-                        //Glide.with(UpLoadImageToFirebase.this).load(imageUrl).into(upload_image);
-                        if (position==uris.size()-1){
-                            dialog.dismiss();
-                        }
+                        urls = imageUrl;
                     }
                 }
             });
-        }
     }
 
     // 이미지 업로드
     private void sendImage() {
-        for(int i=0;i<urls.size();i++) {
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-            HashMap<String, Object> hashMap = new HashMap<>();
-            hashMap.put("url", urls.get(i));
-            hashMap.put("type", tags.get(i));
-            hashMap.put("result",res.get(i));
-            databaseReference.child("Image").push().setValue(hashMap);
-        }
+        //for(int i=0;i<urls.size();i++) {
+        System.out.println("url2:"+urls);
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("url", urls);
+        hashMap.put("type", tags);
+        hashMap.put("result",res);
+        databaseReference.child("Image").push().setValue(hashMap);
+        //}
         finish();
     }
 }

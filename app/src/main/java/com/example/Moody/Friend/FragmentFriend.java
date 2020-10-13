@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.Moody.Chat.ChatActivity;
 import com.example.Moody.Model.ChatRoomModel;
@@ -69,8 +70,6 @@ public class FragmentFriend extends Fragment {
     private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-    private String uid = currentUser.getUid();
-    private UserModel userModel = new UserModel();
     private String email;
     public String myName;
     static public int state;
@@ -88,7 +87,6 @@ public class FragmentFriend extends Fragment {
     private ArrayList<UserModel> lList = new ArrayList<UserModel>();
 
     private ArrayList<String> fid = new ArrayList<String>();
-    private ArrayList<String> oid = new ArrayList<String>();
     private ArrayList<String> lid = new ArrayList<String>();
 
     private Boolean ostate;
@@ -100,6 +98,8 @@ public class FragmentFriend extends Fragment {
     Handler myHandler;
     Handler fHandler;
 
+    public RequestManager mGlideRequestManager;
+
     //제일 먼저 호출
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,6 +109,8 @@ public class FragmentFriend extends Fragment {
 
         myOstateRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/ostate");
         myLstateRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/lstate");
+
+        mGlideRequestManager = Glide.with(this);
 
         FriendListDisplay();
 
@@ -333,8 +335,7 @@ public class FragmentFriend extends Fragment {
                 if(um.getRange().equals("friend"))
                     image.setBackgroundResource(R.drawable.yj_profile_border);
                 if (!um.getProfile().equals(""))
-                    Glide.with(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(image);
-
+                    mGlideRequestManager.load(getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).error(R.drawable.user).into(image);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
@@ -437,8 +438,6 @@ public class FragmentFriend extends Fragment {
                 uName = view.findViewById(R.id.user_sel_name);
                 chatBtn = view.findViewById(R.id.friend_chatBtn);
                 heartBtn = view.findViewById(R.id.heartBtn);
-
-                //online_img
                 online_img = view.findViewById(R.id.online_image);
                 online_img.setVisibility(View.GONE);
 
@@ -458,8 +457,8 @@ public class FragmentFriend extends Fragment {
                 if(filterList.get(position).getProfile() == null)
                     return;
                 if (!filterList.get(position).getProfile().equals(""))
-                    Glide.with(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
-            }
+                    mGlideRequestManager.load(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
+           }
             else if (filterList.get(position).getRange().equals("friend")) {
                 if (filterList.get(position).getLiked() != null) {
                     for (String key : filterList.get(position).getLiked().keySet()) {
@@ -468,8 +467,8 @@ public class FragmentFriend extends Fragment {
                             if(filterList.get(position).getProfile() == null)
                                 return;
                             if (!filterList.get(position).getProfile().equals(""))
-                                Glide.with(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
-                        }
+                                mGlideRequestManager.load(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
+                       }
                     }
                 }
             }
@@ -484,7 +483,6 @@ public class FragmentFriend extends Fragment {
                 public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                     try {
                         String friend = filterList.get(position).getUID();
-//                        System.out.println("friend: " + friend);
 
                         if (snapshot.getKey().equals(friend))
                             holder.heartBtn.setBackgroundResource(R.drawable.yj_full_heart);
@@ -501,8 +499,6 @@ public class FragmentFriend extends Fragment {
                 public void onChildRemoved(@NonNull DataSnapshot snapshot) {
 
                     String key = snapshot.getKey();
-//                    System.out.println("position" + position);
-
                     try {
                         String friend = filterList.get(position).getUID();
 
@@ -570,13 +566,10 @@ public class FragmentFriend extends Fragment {
 
             //현재 사용자
             Boolean connection = uData.get(position).getConnection();
-            //System.out.println(connection);
-
             if(connection!=null) {
-                if (connection == true) {
-                    //System.out.println("connection");
+                if (connection == true)
                     holder.online_img.setVisibility(View.VISIBLE);
-                } else
+                else
                     holder.online_img.setVisibility(View.GONE);
             }
 
@@ -595,35 +588,27 @@ public class FragmentFriend extends Fragment {
 
         @Override
         public int getItemCount() {
-            //Log.d(TAG, "uData size: "+uData.length);
             return filterList.size();
         }
 
         //채팅방으로 바로 이동
         public void ChatDisplay(final String rec, final String name, final String profile) {
 
-            //System.out.println("chatdisplay : "+ currentUser.getUid());
-
             //현재 로그인한 유저가 속해있는 채팅방 정보 출력
             database.getReference("ChatRoom").orderByChild("users").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     ChatRoomModel croom = null;
-                    //System.out.println("chatdisplay2: " + dataSnapshot.getChildren());
-
                     Log.d(TAG, "onDataChange: "+dataSnapshot.exists());
 
                     for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
-                        //System.out.println("hi");
                         croom = dataSnapshot1.getValue(ChatRoomModel.class); // 사용자가 속한 채팅방 정보만 담김
-                        //System.out.println("사용자가 속한 채팅방: "+croom);
                         if(croom.getUsers().size() == 2){ //1:1 채팅방인 경우만 찾는다.
                             Iterator<String> iter = croom.getUsers().keySet().iterator();
                             //users에서 상대방 id 찾는다.
                             ArrayList<String> user_id = new ArrayList<String>();
                             while (iter.hasNext()) {
                                 String keys = (String) iter.next();
-                                //System.out.println(keys);
                                 user_id.add(keys);
                             }
                             if (user_id.contains(rec)&&user_id.contains(currentUser.getUid())) {
@@ -641,8 +626,6 @@ public class FragmentFriend extends Fragment {
                     }
 
                     if (check == true) {
-//                        Toast.makeText(UserPageActivity.this,"채팅방 존재함",Toast.LENGTH_SHORT).show();
-                        //System.out.println("채팅방 존재함");
                         Intent intent = new Intent(getActivity(), ChatActivity.class);
 
                         intent.putExtra("roomid", roomid);
@@ -655,8 +638,6 @@ public class FragmentFriend extends Fragment {
                         startActivity(intent);
 
                     } else {
-                        //Toast.makeText(UserPageActivity.this,"채팅방 없음",Toast.LENGTH_SHORT).show();
-                        //System.out.println("채팅방 없음");
                         ChatRoomModel room = new ChatRoomModel();
                         //채팅방 id 생성
                         Map<String, Object> map = new HashMap<String, Object>();

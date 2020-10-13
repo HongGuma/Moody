@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.Moody.Activity.IntroActivity;
 import com.example.Moody.Activity.LoginActivity;
 import com.example.Moody.R;
 import com.example.Moody.Model.FeedItems;
@@ -24,10 +23,10 @@ import java.util.ArrayList;
 public class TabAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
     private ArrayList<FeedItems> feedDataArrayList;
     Context context;
-    private String imageUrl;
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();//현재 로그인 정보
     private FirebaseUser currentUser = mAuth.getCurrentUser();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
+
     public TabAdapter(Context context,ArrayList<FeedItems> feedDataArrayList){
         this.context=context;
         this.feedDataArrayList = feedDataArrayList;
@@ -98,6 +97,7 @@ public class TabAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                 gridLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                 myViewHolder.tagRecyclerview.setLayoutManager(gridLayoutManager);
                 myViewHolder.tagRecyclerview.setAdapter(myAdapter);
+
             }
         });
 
@@ -169,12 +169,18 @@ public class TabAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                 gridLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                 myViewHolder.tagRecyclerview.setLayoutManager(gridLayoutManager);
                 myViewHolder.tagRecyclerview.setAdapter(myAdapter);
+
             }
         });
+
     }
 
     @Override
     public int getItemCount() {
         return 1;
     }
+
+
+
+
 }

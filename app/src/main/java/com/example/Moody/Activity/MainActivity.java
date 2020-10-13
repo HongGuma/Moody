@@ -141,11 +141,10 @@ public class MainActivity extends AppCompatActivity {
         checkOnline(); //user connect 확인
     }
 
+    //사용자 connection 정보
     public void checkOnline(){
         final String TAG = "MainActivity";
         String userUid = currentUser.getUid();
-
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/UsersConnection/"+userUid);
 
         final DatabaseReference myConnectionsRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/connection");
         final DatabaseReference lastOnlineRef = FirebaseDatabase.getInstance().getReference("/userInfo/"+userUid+"/lastOnline");
@@ -156,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 boolean connected = snapshot.getValue(Boolean.class);
-                if (connected) {
+                if (connected) {//연결되었을 경우
                     Log.d(TAG, "connected");
 
                     myConnectionsRef.setValue(true);

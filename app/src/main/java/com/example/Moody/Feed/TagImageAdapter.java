@@ -48,7 +48,7 @@ public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
-        final ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tag[position]);
+        ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tag[position]);
 
         for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
             FeedItems entity = new FeedItems();
@@ -77,6 +77,18 @@ public class TagImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 @Override
                 public void onClick(View view) {
                     FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context, 2));
+                    String tagtext=myViewHolder.seltag.getText().toString();
+                    tagtext=tagtext.substring(1);
+                    ArrayList<FeedItems> tagItems= LoginActivity.dbHelper.getTagItems(tagtext);
+                    for(int i = 0; i< IntroActivity.publicItems.size(); i++) {
+                        FeedItems entity = new FeedItems();
+                        if(tag[position].equals(IntroActivity.publicItems.get(i).getType())) {
+                            entity.setUrl(IntroActivity.publicItems.get(i).getUrl());
+                            entity.setTag(IntroActivity.publicItems.get(i).getType());
+                            entity.setResult(IntroActivity.publicItems.get(i).getResult());
+                            tagItems.add(entity);
+                        }
+                    }
                     FeedAdapter myAdapter = new FeedAdapter(context, tagItems);
                     PageAdapter pAdapter = new PageAdapter(context, tagItems);
                     FragmentFeed.pageRecyclerView.setVisibility(View.VISIBLE);

@@ -58,8 +58,9 @@ dependencies {
         exclude group: 'com.github.shineware', module: 'aho-corasick'
     }
     implementation 'org.tensorflow:tensorflow-lite:+'
-
+    implementation 'com.soundcloud.android:android-crop:1.0.1@aar'
     implementation 'cn.yipianfengye.android:zxing-library:2.2'
+    implementation 'com.github.yalantis:ucrop:2.2.6'
 }
 
 apply plugin: 'com.google.gms.google-services'
