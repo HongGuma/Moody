@@ -196,7 +196,7 @@ public class ChatActivity extends Activity {
                 if((keyCode == event.KEYCODE_ENTER)){
                     sText = sendText.getText().toString();
                     sText = sText.replace( System.getProperty( "line.separator" ), "" );
-                    SendMsg(sText,"1");
+                    SendMsg(sText,"0");
                     sendText.setText(null);
 
                     if(groupCheck.equals("1")){
@@ -247,16 +247,14 @@ public class ChatActivity extends Activity {
                 sText = sendText.getText().toString();
                 String emotion = AutoImage(sendText,sText);
 
-                if(autoCheck || emotion == null) {
+                if(sText.equals("")) {
                     tagLayout.setVisibility(View.GONE);
-                    autoCheck = false;
                 }
                 else{
                     tagLayout.setVisibility(View.VISIBLE);
 
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(sendText.getWindowToken(), 0);
-
                     ArrayList<FeedItems> tagItems = new ArrayList<>();
                     for (int i = 0; i < IntroActivity.publicItems.size(); i++) {
                         FeedItems entity = new FeedItems();
@@ -266,23 +264,19 @@ public class ChatActivity extends Activity {
                             tagItems.add(entity);
                         }
                     }
-
                     tagItems.addAll(LoginActivity.dbHelper.getTagItems(emotion));
                     TabAdapter tAdapter = new TabAdapter(ChatActivity.this, tagItems);
                     tagRecyclerView.setAdapter(tAdapter);
 
-                    if(autoSendCheck){
-                        tagLayout.setVisibility(View.GONE);
-                        sendText.setText(null);
-
-                        if (groupCheck.equals("1")) {
-                            chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
-                        } else {
-                            chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
-                        }
-
-                        autoCheck = true;
+                    if (groupCheck.equals("1")) {
+                        chatRecyclerView.scrollToPosition(pAdapter.getItemCount() - 1);
+                    } else {
+                        chatRecyclerView.scrollToPosition(gAdapter.getItemCount() - 1);
                     }
+
+                    sendText.setText("");
+
+
                 }
 
             }

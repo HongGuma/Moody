@@ -74,10 +74,10 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
         if(tagDataArrayList.get(position).getUrl()==null) {
-            myViewHolder.image.setImageBitmap(resizeBitmapImage(tagDataArrayList.get(position).getImage(),80));
+            myViewHolder.image.setImageBitmap(tagDataArrayList.get(position).getImage());
         }
         else{
-            Glide.with(context).load(tagDataArrayList.get(position).getUrl()).override(80,80).into(myViewHolder.image);
+            Glide.with(context).load(tagDataArrayList.get(position).getUrl()).into(myViewHolder.image);
         }
 
         myViewHolder.image.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +99,7 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             }
         });
+
 
     }
     public void UploadFiles(Bitmap bitmap, final String path) {
@@ -135,6 +136,7 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
         });
 
+
     }
 
     public void sendMsg(String sendMsg,String sendType){
@@ -156,6 +158,7 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         database.getReference("ChatRoom").child(ChatActivity.roomid).updateChildren(last);
 
         ChatActivity.autoSendCheck = true;
+
     }
 
     @Override

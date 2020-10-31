@@ -286,7 +286,7 @@ public class UploadPhotoActivity  extends BaseActivity {
         float[][] output = new float[1][7];
         tf_lite.run(bytes_img, output);
 
-        String[] emotion = {"Angry", "Disgust", "Fear","Happy","sad","Surprise", "Natural"};
+        String[] emotion = {"Angry", "Disgust", "Fear","Happy","Sad","Surprise", "Natural"};
 
         int maxIdx = 0;
         float maxProb = output[0][0];

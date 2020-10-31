@@ -25,22 +25,7 @@
             android:rowCount="2">
 
             <LinearLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:background="@drawable/yj_profile_shadow"
-                android:gravity="center">
-
-                <ImageView
-                    android:id="@+id/chat_image1"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:background="@drawable/yj_profile_border_white"
-                    android:padding="2dp"
-                    android:src="@drawable/profile" />
-
-            </LinearLayout>
-
-            <LinearLayout
+                android:id="@+id/profile1"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
                 android:background="@drawable/yj_profile_shadow"
@@ -57,6 +42,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/profile1"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
                 android:background="@drawable/yj_profile_shadow"
@@ -73,6 +59,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/profile3"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
                 android:background="@drawable/yj_profile_shadow"
@@ -80,6 +67,23 @@
 
                 <ImageView
                     android:id="@+id/chat_image4"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="@drawable/yj_profile_border_white"
+                    android:padding="2dp"
+                    android:src="@drawable/profile" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/profile4"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/yj_profile_shadow"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/chat_image5"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:background="@drawable/yj_profile_border_white"

@@ -59,14 +59,11 @@
                     android:background="@drawable/yj_heart"
                     android:text="ToggleButton"
                     android:textOff=" "
-                    android:textOn=" "
-                    android:visibility="visible" />
+                    android:textOn=" " />
 
             </LinearLayout>
 
         </LinearLayout>
 
     </FrameLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

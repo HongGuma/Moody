@@ -255,10 +255,10 @@ public class FragmentChatting extends Fragment {
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 userImage = (ImageView) itemView.findViewById(R.id.chat_image1);
-                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image1);
-                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image2);
-                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image3);
-                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image4);
+                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image2);
+                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image3);
+                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image4);
+                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image5);
                 roomName = (TextView) itemView.findViewById(R.id.chat_room_name);
                 lastMsg = (TextView) itemView.findViewById(R.id.chat_lastMsg);
                 time = (TextView) itemView.findViewById(R.id.chat_time);
@@ -303,6 +303,8 @@ public class FragmentChatting extends Fragment {
             }
 
             //유저 수 대로 정보 출력
+            final int[] count = {0};
+
             for(int i=0; i<filterList.get(position).getUsers().size()-1; i++){
                 database.getReference("userInfo").child(user.get(i)).addValueEventListener(new ValueEventListener() {
                     @Override
@@ -311,23 +313,92 @@ public class FragmentChatting extends Fragment {
                         //Log.d(TAG, "onDataChange: position="+um.getName());
                         recID.put(position,um.getUID());
                         profiles.put(position,um.getProfile());
-                        if(filterList.get(position).getUsers().size()<2){ //개인 채팅방
-                            if (um.getRange().equals("all")) {
-                                if (um.getProfile() != null && !um.getProfile().equals(""))
-                                    Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
-                            }
-                            else if (um.getRange().equals("friend")) {
-                                if (um.getLiked() != null) {
-                                    for (String key : um.getLiked().keySet()) {
-                                        if (key.equals(uid)) {
-                                            holder.userImage.setBackgroundResource(R.drawable.yj_profile_border);
-                                            if (um.getProfile() != null && !um.getProfile().equals(""))
-                                                Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+                        try {
+                            if (filterList.get(position).getUsers().size() <= 2) { //개인 채팅방
+                                if (um.getRange().equals("all")) {
+                                    if (um.getProfile() != null && !um.getProfile().equals(""))
+                                        Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+                                } else if (um.getRange().equals("friend")) {
+                                    if (um.getLiked() != null) {
+                                        for (String key : um.getLiked().keySet()) {
+                                            if (key.equals(uid)) {
+                                                holder.userImage.setBackgroundResource(R.drawable.yj_profile_border);
+                                                if (um.getProfile() != null && !um.getProfile().equals(""))
+                                                    Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
+                            else{
+                                if (count[0] == 0) {
+                                    if (um.getRange().equals("all")) {
+                                        if (um.getProfile() != null && !um.getProfile().equals(""))
+                                            Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
+                                    } else if (um.getRange().equals("friend")) {
+                                        if (um.getLiked() != null) {
+                                            for (String key : um.getLiked().keySet()) {
+                                                if (key.equals(uid)) {
+                                                    holder.userImage1.setBackgroundResource(R.drawable.yj_profile_border);
+                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
+                                                        Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(count[0] == 1){
+                                    if (um.getRange().equals("all")) {
+                                        if (um.getProfile() != null && !um.getProfile().equals(""))
+                                            Glide.with(holder.userImage2.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage2);
+                                    } else if (um.getRange().equals("friend")) {
+                                        if (um.getLiked() != null) {
+                                            for (String key : um.getLiked().keySet()) {
+                                                if (key.equals(uid)) {
+                                                    holder.userImage2.setBackgroundResource(R.drawable.yj_profile_border);
+                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
+                                                        Glide.with(holder.userImage2.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage2);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(count[0] == 3){
+                                    if (um.getRange().equals("all")) {
+                                        if (um.getProfile() != null && !um.getProfile().equals(""))
+                                            Glide.with(holder.userImage3.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage3);
+                                    } else if (um.getRange().equals("friend")) {
+                                        if (um.getLiked() != null) {
+                                            for (String key : um.getLiked().keySet()) {
+                                                if (key.equals(uid)) {
+                                                    holder.userImage3.setBackgroundResource(R.drawable.yj_profile_border);
+                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
+                                                        Glide.with(holder.userImage3.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage3);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(count[0] == 4){
+                                    if (um.getRange().equals("all")) {
+                                        if (um.getProfile() != null && !um.getProfile().equals(""))
+                                            Glide.with(holder.userImage4.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage4);
+                                    } else if (um.getRange().equals("friend")) {
+                                        if (um.getLiked() != null) {
+                                            for (String key : um.getLiked().keySet()) {
+                                                if (key.equals(uid)) {
+                                                    holder.userImage4.setBackgroundResource(R.drawable.yj_profile_border);
+                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
+                                                        Glide.with(holder.userImage4.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage4);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            count[0]++;
+
+                        }catch (IndexOutOfBoundsException e){ }
 
                     }
                     @Override
@@ -412,6 +483,34 @@ public class FragmentChatting extends Fragment {
                 }
             });
 
+            //채팅방 삭제
+            database.getReference("ChatRoom").addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
+
+                @Override
+                public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                    String key = snapshot.getKey();
+                    System.out.println(key);
+
+                    ChatRoomModel crm = snapshot.getValue(ChatRoomModel.class);
+
+                    System.out.println(crm.getRoomID());
+
+                    if(key.equals(crm.getRoomID())&&crm.getUsers().size()==1)
+                        database.getReference("ChatRoom").child(crm.getRoomID()).removeValue();
+                }
+
+                @Override
+                public void onChildRemoved(@NonNull DataSnapshot snapshot) {}
+
+                @Override
+                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {}
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {}
+            });
+
             /**
              * 채팅방 길게 클릭시
              */
@@ -436,6 +535,7 @@ public class FragmentChatting extends Fragment {
                                     RemoveItem(position);
                                     if(filterList.get(position).getUsers().size()>1){ //채팅방에 둘이상 있을때 채팅방 나가기 기능
                                         database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).child("users").child(uid).removeValue();
+
                                     }else{ //채팅방에 혼자 남으면 채팅방 삭제
                                         database.getReference("ChatRoom").child(filterList.get(position).getRoomID()).removeValue();
                                         database.getReference("Message").child(filterList.get(position).getRoomID()).removeValue();

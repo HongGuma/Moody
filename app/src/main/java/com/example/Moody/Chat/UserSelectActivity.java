@@ -312,12 +312,20 @@ public class UserSelectActivity extends Activity {
         @Override
         public void onBindViewHolder(@NonNull UserSelectAdapter.ViewHolder holder, final int position) {
             holder.selName.setText(userList.get(position).getName());
-            if(! userList.get(position).getProfile().equals("")){
-                //사용자 프로필
-                Glide.with(holder.selImage.getContext())
-                        .load(userList.get(position).getProfile())
-                        .apply(new RequestOptions().circleCrop())
-                        .into(holder.selImage);
+            //사용자 프로필
+            if (userList.get(position).getRange().equals("all")) {
+                if (userList.get(position).getProfile() != null && !userList.get(position).getProfile().equals(""))
+                    Glide.with(holder.selImage.getContext()).load(userList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.selImage);
+            } else if (userList.get(position).getRange().equals("friend")) {
+                if (userList.get(position).getLiked() != null) {
+                    for (String key : userList.get(position).getLiked().keySet()) {
+                        if (key.equals(uid)) {
+                            holder.selImage.setBackgroundResource(R.drawable.yj_profile_border);
+                            if (userList.get(position).getProfile() != null && !userList.get(position).getProfile().equals(""))
+                                Glide.with(holder.selImage.getContext()).load(userList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.selImage);
+                        }
+                    }
+                }
             }
             holder.selBox.setOnClickListener(new View.OnClickListener() {
                 @Override

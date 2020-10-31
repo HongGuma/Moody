@@ -148,11 +148,10 @@ public class AddFriendActivity extends Activity {
 
                     shadow_layout.setBackgroundResource(R.drawable.yj_profile_shadow);
                     friend_profile.setBackgroundResource(R.drawable.yj_profile_border_white);
-                    if((user.getProfile().equals("")) || (user.getRange()== "friend")) {
-                        System.out.println("prfofile");
-                        friend_profile.setImageResource(R.drawable.yj_profile);
-                    }
-                    else{
+
+                    shadow_layout.setVisibility(View.VISIBLE);
+
+                    if(user.getRange().equals("all")){
                         Glide.with(friend_profile.getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(friend_profile);
                     }
                     friend_name.setText(user.getName());

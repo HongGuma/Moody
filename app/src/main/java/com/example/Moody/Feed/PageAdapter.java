@@ -1,6 +1,7 @@
 package com.example.Moody.Feed;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
     private ArrayList<FeedItems> feedDataArrayList;
     Context context;
+    private int clickedButton=0;
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         Button page;
         MyViewHolder(View view){
@@ -36,8 +38,6 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         return new MyViewHolder(v);
     }
 
-    boolean click=true;
-
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final MyViewHolder myViewHolder = (MyViewHolder) holder;
@@ -46,15 +46,24 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         }
         else {
             int num=(position+1)/8+1;
+            myViewHolder.page.setVisibility(View.VISIBLE);
             myViewHolder.page.setText(Integer.toString(num));
+        }
+        if(clickedButton==position){
+            myViewHolder.page.setBackgroundResource(R.drawable.yj_btn1_border);
+            myViewHolder.page.setTextColor(Color.parseColor("#FFFFFF"));
+        }else {
+            myViewHolder.page.setBackgroundColor(Color.parseColor("#00FF0000"));
+            myViewHolder.page.setTextColor(Color.parseColor("#707070"));
         }
         //페이지 번호 클릭
         myViewHolder.page.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                clickedButton = myViewHolder.getAdapterPosition();
+                notifyDataSetChanged();
                 int pagenum=Integer.parseInt(myViewHolder.page.getText().toString());
                 ArrayList<FeedItems> pageItems=new ArrayList<FeedItems>();
-                //myViewHolder.page.setTextColor(Color.parseColor("#EFEDF0"));
                 for(int i=(pagenum-1)*8;i<pagenum*8;i++) {
                     FeedItems entity = new FeedItems();
                     if(i<feedDataArrayList.size()) {
@@ -73,13 +82,13 @@ public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                         }
                     }
                 }
-
-
                 FeedAdapter myAdapter = new FeedAdapter(context,pageItems);
                 FragmentFeed.feedRecyclerView.setLayoutManager(new GridLayoutManager(context,2));
                 FragmentFeed.feedRecyclerView.setAdapter(myAdapter);
+
             }
         });
+
     }
 
     @Override
