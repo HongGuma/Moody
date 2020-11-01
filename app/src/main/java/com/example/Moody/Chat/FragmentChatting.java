@@ -254,11 +254,11 @@ public class FragmentChatting extends Fragment {
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                userImage = (ImageView) itemView.findViewById(R.id.chat_image1);
-                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image2);
-                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image3);
-                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image4);
-                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image5);
+                userImage = (ImageView) itemView.findViewById(R.id.chat_image);
+                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image1);
+                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image2);
+                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image3);
+                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image4);
                 roomName = (TextView) itemView.findViewById(R.id.chat_room_name);
                 lastMsg = (TextView) itemView.findViewById(R.id.chat_lastMsg);
                 time = (TextView) itemView.findViewById(R.id.chat_time);
@@ -304,6 +304,7 @@ public class FragmentChatting extends Fragment {
 
             //유저 수 대로 정보 출력
             final int[] count = {0};
+            //Log.d(TAG, "onBindViewHolder: size="+filterList.get(position).getUsers().size());
 
             for(int i=0; i<filterList.get(position).getUsers().size()-1; i++){
                 database.getReference("userInfo").child(user.get(i)).addValueEventListener(new ValueEventListener() {
@@ -314,7 +315,8 @@ public class FragmentChatting extends Fragment {
                         recID.put(position,um.getUID());
                         profiles.put(position,um.getProfile());
                         try {
-                            if (filterList.get(position).getUsers().size() <= 2) { //개인 채팅방
+                            //System.out.println("count: " + count[0]);
+                            if (filterList.get(position).getUsers().size() <= 2 && !filterList.get(position).getGroup()) { //개인 채팅방
                                 if (um.getRange().equals("all")) {
                                     if (um.getProfile() != null && !um.getProfile().equals(""))
                                         Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
@@ -332,6 +334,7 @@ public class FragmentChatting extends Fragment {
                             }
                             else{
                                 if (count[0] == 0) {
+                                    //Log.d("group","a");
                                     if (um.getRange().equals("all")) {
                                         if (um.getProfile() != null && !um.getProfile().equals(""))
                                             Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
@@ -348,6 +351,8 @@ public class FragmentChatting extends Fragment {
                                     }
                                 }
                                 if(count[0] == 1){
+                                    //Log.d("group","b");
+
                                     if (um.getRange().equals("all")) {
                                         if (um.getProfile() != null && !um.getProfile().equals(""))
                                             Glide.with(holder.userImage2.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage2);
@@ -364,6 +369,8 @@ public class FragmentChatting extends Fragment {
                                     }
                                 }
                                 if(count[0] == 3){
+                                    //Log.d("group","c");
+
                                     if (um.getRange().equals("all")) {
                                         if (um.getProfile() != null && !um.getProfile().equals(""))
                                             Glide.with(holder.userImage3.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage3);
@@ -380,6 +387,8 @@ public class FragmentChatting extends Fragment {
                                     }
                                 }
                                 if(count[0] == 4){
+                                    //Log.d("group","d");
+
                                     if (um.getRange().equals("all")) {
                                         if (um.getProfile() != null && !um.getProfile().equals(""))
                                             Glide.with(holder.userImage4.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage4);
@@ -398,7 +407,7 @@ public class FragmentChatting extends Fragment {
                             }
                             count[0]++;
 
-                        }catch (IndexOutOfBoundsException e){ }
+                        }catch (IndexOutOfBoundsException e){e.printStackTrace();}
 
                     }
                     @Override
@@ -497,7 +506,7 @@ public class FragmentChatting extends Fragment {
 
                     System.out.println(crm.getRoomID());
 
-                    if(key.equals(crm.getRoomID())&&crm.getUsers().size()==1)
+                    if(key.equals(crm.getRoomID())&&crm.getUsers().size()==1 && crm.getGroup()==false)
                         database.getReference("ChatRoom").child(crm.getRoomID()).removeValue();
                 }
 
@@ -510,6 +519,7 @@ public class FragmentChatting extends Fragment {
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {}
             });
+
 
             /**
              * 채팅방 길게 클릭시

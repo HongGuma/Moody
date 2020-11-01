@@ -286,7 +286,6 @@ public class ChatActivity extends Activity {
 
         //예약 전송 버튼
         sendBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            final Chronometer chrono = (Chronometer)findViewById(R.id.chrono);
             int hour=0;
             int min=0;
             String resText = null;
@@ -331,20 +330,12 @@ public class ChatActivity extends Activity {
 
             //스레드
             private void newThread() {
-                chrono.setBase(SystemClock.elapsedRealtime());
                 th = new Thread(new Runnable() {
                     @Override
                     public void run() {
 
-                        long mNow = System.currentTimeMillis();
-                        Date mReDate = new Date(mNow);
-                        SimpleDateFormat mFormat = new SimpleDateFormat("HHmm");
-                        String formatDate = mFormat.format(mReDate);
+                        int settime = hour * 100 + min;
 
-                        int settime = (hour * 100 + min) - Integer.parseInt(formatDate);
-
-                        chrono.start();
-                        System.out.println("send:" + resText);
                         //예약 문자 레이아웃 띄우기
                         runOnUiThread(new Runnable() {
                             @Override
@@ -355,20 +346,19 @@ public class ChatActivity extends Activity {
                         });
 
                         while (true) {
-                            long elapsedMillis = SystemClock.elapsedRealtime() - chrono.getBase();
-                            if (elapsedMillis == settime * 60000) {
+                            long mNow = System.currentTimeMillis();
+                            Date mReDate = new Date(mNow);
+                            SimpleDateFormat mFormat = new SimpleDateFormat("HHmm");
+                            String formatDate = mFormat.format(mReDate);
+                            if(Integer.parseInt(formatDate)==settime){
                                 if(!resText.equals("")){
                                     SendMsg(resText,"0");
                                     sendText.setText(null);
-                                    chrono.stop();
-
                                     break;
                                 }
-
                             }
                         }
-
-                        //레이아웃 지우기기
+                        //레이아웃 지우기
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -380,8 +370,6 @@ public class ChatActivity extends Activity {
 
                 });
             }
-
-
         });
 
     }

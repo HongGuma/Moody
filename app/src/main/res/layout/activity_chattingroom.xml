@@ -31,23 +31,25 @@
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:visibility="gone"
+            android:layout_marginRight="19dp"
+            android:layout_marginLeft="19dp"
+            android:background="@drawable/yj_chat_bubble"
             tools:ignore="MissingConstraints">
 
             <TextView
                 android:id="@+id/late_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="6dp"
-                android:text="예약된 메시지:"
-                android:textSize="20sp" />
+                android:layout_marginLeft="10dp"
+                android:text="예약된 메시지 : "
+                android:textSize="13dp" />
 
             <TextView
                 android:id="@+id/late_msg_send"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
                 android:text="전송된 메시지"
-                android:textSize="18sp" />
+                android:textSize="13dp" />
 
         </LinearLayout>
 
@@ -185,13 +187,5 @@
             android:layout_weight="1" />
 
     </LinearLayout>
-
-    <Chronometer
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/chrono"
-        android:textSize="30sp"
-        android:visibility="gone"
-        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

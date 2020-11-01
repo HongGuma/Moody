@@ -134,6 +134,7 @@ public class UserSelectActivity extends Activity {
                 objectMap.put("users",users);
                 objectMap.put("lastTime", ServerValue.TIMESTAMP);//새채팅방 생성 시간
                 objectMap.put("lastMsg","");
+//                objectMap.put("group", "");
 
                 //DB에 저장
                 database.getReference().child("ChatRoom").child(roomkey).setValue(objectMap).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -149,6 +150,8 @@ public class UserSelectActivity extends Activity {
                             intent.putExtra("name", name.get(0));
                             intent.putExtra("recProfile",recImage.get(0));
                             intent.putExtra("check","1");
+                            intent.putExtra("group", false);
+                            objectMap.put("group", false);
 
                             startActivity(intent);
                             finish();
@@ -167,6 +170,8 @@ public class UserSelectActivity extends Activity {
                             intent.putExtra("roomid",roomkey);
                             intent.putExtra("name",roomNames+" ("+(rec.size()+1)+")");
                             intent.putExtra("check","2");
+                            intent.putExtra("group", true);
+                            objectMap.put("group", true);
 
                             startActivity(intent);
                             finish();
