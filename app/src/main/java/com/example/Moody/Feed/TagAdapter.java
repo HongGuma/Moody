@@ -85,7 +85,7 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
             myViewHolder.star.setBackgroundResource(R.drawable.yj_full_heart);
         }
         else {
-            myViewHolder.star.setBackgroundResource(R.drawable.yj_heart);
+            myViewHolder.star.setBackgroundResource(R.drawable.yj_heart2);
         }
 
         myViewHolder.star.setOnClickListener(new View.OnClickListener(){
@@ -101,7 +101,7 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
                     }
                 }
                 else{
-                    myViewHolder.star.setBackgroundResource(R.drawable.yj_heart);
+                    myViewHolder.star.setBackgroundResource(R.drawable.yj_heart2);
                     if(feedDataArrayList.get(position).getUrl()==null) {
                         LoginActivity.dbHelper.setStar(0,feedDataArrayList.get(position).getId());
                     }

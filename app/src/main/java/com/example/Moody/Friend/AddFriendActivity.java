@@ -68,8 +68,6 @@ public class AddFriendActivity extends Activity {
         setContentView(R.layout.activity_add_friend);
 
         final EditText friendEmail = (EditText)findViewById(R.id.chat_room_search);
-        final Button addBtn = (Button)findViewById(R.id.friend_add_btn);
-        Button searchBtn = (Button)findViewById(R.id.friend_search_btn);
         Button scanBtn = (Button)findViewById(R.id.friend_scan_btn);
         ImageView backBtn = (ImageView)findViewById(R.id.chatRoom_backBtn);
         final LinearLayout top1 = (LinearLayout)findViewById(R.id.top1);
@@ -94,15 +92,6 @@ public class AddFriendActivity extends Activity {
                 return false;
             }
         });
-/*
-        //이메일 검색
-        searchBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String inEmail = friendEmail.getText().toString(); //이메일 입력받기
-                UsersInfo(inEmail);
-            }
-        });*/
 
         //QR코드 스캔
         scanBtn.setOnClickListener(new View.OnClickListener() {
@@ -154,6 +143,8 @@ public class AddFriendActivity extends Activity {
                     if(user.getRange().equals("all")){
                         Glide.with(friend_profile.getContext()).load(user.getProfile()).apply(new RequestOptions().circleCrop()).into(friend_profile);
                     }
+                    else
+                        Glide.with(friend_profile.getContext()).load("https://firebasestorage.googleapis.com/v0/b/graduation-project-ebb3e.appspot.com/o/Users%2FKakaoTalk_Photo_2020-10-31-18-19-11.png?alt=media&token=3b1cb276-6a10-47ee-a84a-126d85bf2469").apply(new RequestOptions().circleCrop()).into(friend_profile);
                     friend_name.setText(user.getName());
                     add_btn.setVisibility(View.VISIBLE);
                     add_btn.setOnClickListener(new View.OnClickListener(){

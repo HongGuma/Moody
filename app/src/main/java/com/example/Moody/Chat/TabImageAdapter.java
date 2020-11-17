@@ -100,7 +100,6 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
         });
 
-
     }
     public void UploadFiles(Bitmap bitmap, final String path) {
 
@@ -136,7 +135,6 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
         });
 
-
     }
 
     public void sendMsg(String sendMsg,String sendType){
@@ -158,7 +156,6 @@ public class TabImageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         database.getReference("ChatRoom").child(ChatActivity.roomid).updateChildren(last);
 
         ChatActivity.autoSendCheck = true;
-
     }
 
     @Override

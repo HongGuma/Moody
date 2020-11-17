@@ -67,7 +67,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
             } else if (!LoginActivity.dbHelper.searchItem(feedDataArrayList.get(position).getUrl())) {
                 myViewHolder.star.setBackgroundResource(R.drawable.yj_full_heart);
             } else {
-                myViewHolder.star.setBackgroundResource(R.drawable.yj_heart);
+                myViewHolder.star.setBackgroundResource(R.drawable.yj_heart2);
             }
         }
         else{
@@ -86,7 +86,7 @@ public class FeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                     }
                 }
                 else{
-                    myViewHolder.star.setBackgroundResource(R.drawable.yj_heart);
+                    myViewHolder.star.setBackgroundResource(R.drawable.yj_heart2);
                     if(feedDataArrayList.get(position).getUrl()==null) {
                         LoginActivity.dbHelper.setStar(0,feedDataArrayList.get(position).getId());
                     } else {

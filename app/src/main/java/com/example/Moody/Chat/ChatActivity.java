@@ -451,16 +451,6 @@ public class ChatActivity extends Activity {
     }
 
 
-    //메시지 예약 스레드
-    public void MsgTimer(){
-        Thread timerThraed = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        });
-    }
-
     //갤러리 함수
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -469,9 +459,7 @@ public class ChatActivity extends Activity {
             System.out.println("이미지:"+selectedImageUri);
             String imagePath = "Chat/"+roomid+"/"+datetime; //사진파일 경로 및 이름
             UploadFiles(selectedImageUri,imagePath); //사진 업로드
-
         }
-
     }
 
     //파이어베이스에 사진 업로드
@@ -695,18 +683,6 @@ public class ChatActivity extends Activity {
 
             System.out.println("감정: " + emotion);
             sendText.setText(null);
-
-            /*
-
-            Intent intent = new Intent(ChatActivity.this, AutoChatActivity.class);
-            intent.putExtra("name", chatRoomName);
-            intent.putExtra("receiver", receiver);
-            intent.putExtra("roomid", roomid);
-            intent.putExtra("check", groupCheck);
-
-            startActivity(intent);
-
-             */
         }
 
         return emotion;

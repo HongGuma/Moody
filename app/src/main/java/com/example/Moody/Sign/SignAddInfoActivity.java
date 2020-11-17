@@ -69,7 +69,7 @@ public class SignAddInfoActivity extends Activity {
                 users.put("password",password);
                 users.put("name",name);
                 users.put("birth",birth);
-                users.put("profile","");
+                users.put("profile","https://firebasestorage.googleapis.com/v0/b/graduation-project-ebb3e.appspot.com/o/Users%2FKakaoTalk_Photo_2020-10-31-18-19-11.png?alt=media&token=3b1cb276-6a10-47ee-a84a-126d85bf2469");
                 users.put("range","all");
                 users.put("ostate",true);
                 users.put("lstate",true);

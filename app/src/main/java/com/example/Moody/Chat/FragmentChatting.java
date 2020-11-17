@@ -119,7 +119,7 @@ public class FragmentChatting extends Fragment {
         newBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(),UserSelectActivity.class);
+                 Intent intent = new Intent(v.getContext(),UserSelectActivity.class);
                 v.getContext().startActivity(intent);
             }
         });
@@ -254,11 +254,11 @@ public class FragmentChatting extends Fragment {
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                userImage = (ImageView) itemView.findViewById(R.id.chat_image);
-                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image1);
-                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image2);
-                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image3);
-                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image4);
+                userImage = (ImageView) itemView.findViewById(R.id.chat_image1);
+                userImage1 = (ImageView) itemView.findViewById(R.id.chat_image2);
+                userImage2 = (ImageView) itemView.findViewById(R.id.chat_image3);
+                userImage3 = (ImageView) itemView.findViewById(R.id.chat_image4);
+                userImage4 = (ImageView) itemView.findViewById(R.id.chat_image5);
                 roomName = (TextView) itemView.findViewById(R.id.chat_room_name);
                 lastMsg = (TextView) itemView.findViewById(R.id.chat_lastMsg);
                 time = (TextView) itemView.findViewById(R.id.chat_time);
@@ -270,7 +270,7 @@ public class FragmentChatting extends Fragment {
 
         @Override
         public int getItemViewType(int position) {
-            if(filterList.get(position).getUsers().size()>2){ //그룹채팅
+            if(filterList.get(position).getGroup().equals(true)){ //그룹채팅
                 return 2;
             }
             return 1; //아니면 1:1 채팅
@@ -302,11 +302,14 @@ public class FragmentChatting extends Fragment {
                     user.add(id);
             }
 
+
             //유저 수 대로 정보 출력
             final int[] count = {0};
-            //Log.d(TAG, "onBindViewHolder: size="+filterList.get(position).getUsers().size());
 
+            System.out.println("size: "+filterList.get(position).getUsers().size());
             for(int i=0; i<filterList.get(position).getUsers().size()-1; i++){
+
+
                 database.getReference("userInfo").child(user.get(i)).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -314,9 +317,11 @@ public class FragmentChatting extends Fragment {
                         //Log.d(TAG, "onDataChange: position="+um.getName());
                         recID.put(position,um.getUID());
                         profiles.put(position,um.getProfile());
+
                         try {
-                            //System.out.println("count: " + count[0]);
-                            if (filterList.get(position).getUsers().size() <= 2 && !filterList.get(position).getGroup()) { //개인 채팅방
+
+                            System.out.println("count: " + count[0]);
+                            if (filterList.get(position).getGroup().equals(false)) { //개인 채팅방
                                 if (um.getRange().equals("all")) {
                                     if (um.getProfile() != null && !um.getProfile().equals(""))
                                         Glide.with(holder.userImage.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage);
@@ -332,82 +337,8 @@ public class FragmentChatting extends Fragment {
                                     }
                                 }
                             }
-                            else{
-                                if (count[0] == 0) {
-                                    //Log.d("group","a");
-                                    if (um.getRange().equals("all")) {
-                                        if (um.getProfile() != null && !um.getProfile().equals(""))
-                                            Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
-                                    } else if (um.getRange().equals("friend")) {
-                                        if (um.getLiked() != null) {
-                                            for (String key : um.getLiked().keySet()) {
-                                                if (key.equals(uid)) {
-                                                    holder.userImage1.setBackgroundResource(R.drawable.yj_profile_border);
-                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
-                                                        Glide.with(holder.userImage1.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage1);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if(count[0] == 1){
-                                    //Log.d("group","b");
 
-                                    if (um.getRange().equals("all")) {
-                                        if (um.getProfile() != null && !um.getProfile().equals(""))
-                                            Glide.with(holder.userImage2.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage2);
-                                    } else if (um.getRange().equals("friend")) {
-                                        if (um.getLiked() != null) {
-                                            for (String key : um.getLiked().keySet()) {
-                                                if (key.equals(uid)) {
-                                                    holder.userImage2.setBackgroundResource(R.drawable.yj_profile_border);
-                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
-                                                        Glide.with(holder.userImage2.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage2);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if(count[0] == 3){
-                                    //Log.d("group","c");
-
-                                    if (um.getRange().equals("all")) {
-                                        if (um.getProfile() != null && !um.getProfile().equals(""))
-                                            Glide.with(holder.userImage3.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage3);
-                                    } else if (um.getRange().equals("friend")) {
-                                        if (um.getLiked() != null) {
-                                            for (String key : um.getLiked().keySet()) {
-                                                if (key.equals(uid)) {
-                                                    holder.userImage3.setBackgroundResource(R.drawable.yj_profile_border);
-                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
-                                                        Glide.with(holder.userImage3.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage3);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if(count[0] == 4){
-                                    //Log.d("group","d");
-
-                                    if (um.getRange().equals("all")) {
-                                        if (um.getProfile() != null && !um.getProfile().equals(""))
-                                            Glide.with(holder.userImage4.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage4);
-                                    } else if (um.getRange().equals("friend")) {
-                                        if (um.getLiked() != null) {
-                                            for (String key : um.getLiked().keySet()) {
-                                                if (key.equals(uid)) {
-                                                    holder.userImage4.setBackgroundResource(R.drawable.yj_profile_border);
-                                                    if (um.getProfile() != null && !um.getProfile().equals(""))
-                                                        Glide.with(holder.userImage4.getContext()).load(um.getProfile()).apply(new RequestOptions().circleCrop()).into(holder.userImage4);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            count[0]++;
-
-                        }catch (IndexOutOfBoundsException e){e.printStackTrace();}
+                        }catch (IndexOutOfBoundsException | NullPointerException e){ }
 
                     }
                     @Override
@@ -475,7 +406,7 @@ public class FragmentChatting extends Fragment {
                 public void onClick(View v) {
                     Intent intent = new Intent(getContext(), ChatActivity.class);
                     intent.putExtra("roomid", roomID.get(position));
-                    if(filterList.get(position).getUsers().size()>2) {
+                    if(filterList.get(position).getGroup().equals(true)) {
                         //단체 채팅방
                         intent.putExtra("name",names.get(position)); //채팅방 이름 전달
                         intent.putExtra("check", "2");
@@ -506,7 +437,7 @@ public class FragmentChatting extends Fragment {
 
                     System.out.println(crm.getRoomID());
 
-                    if(key.equals(crm.getRoomID())&&crm.getUsers().size()==1 && crm.getGroup()==false)
+                    if(key.equals(crm.getRoomID())&&crm.getUsers().size()==1 && crm.getGroup().equals(false))
                         database.getReference("ChatRoom").child(crm.getRoomID()).removeValue();
                 }
 

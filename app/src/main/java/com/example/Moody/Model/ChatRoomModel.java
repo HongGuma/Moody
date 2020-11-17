@@ -12,7 +12,7 @@ public class ChatRoomModel {
     private String roomName; //채팅방 이름
     private String msgCount; //안읽은 메시지 수
     private Boolean check = false; //채팅방 선택 여부 DB에 저장 x
-    private Boolean group = false; //true: 단체, false: 개인
+    private Object group = false; //true: 단체, false: 개인
 
     public void setUsers(HashMap<String, Object> users) {
         this.users = users;
@@ -70,8 +70,8 @@ public class ChatRoomModel {
         return check;
     }
 
-    public void setGroup(Boolean group) { this.group = group; }
+    public void setGroup(Object group) { this.group = group; }
 
-    public Boolean getGroup() { return group; }
+    public Object getGroup() { return group; }
 
 }

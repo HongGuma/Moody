@@ -128,19 +128,6 @@ public class FragmentFriend extends Fragment {
         final TextView myName = (TextView) view.findViewById(R.id.my_name);//상단의 내 이름
         ImageView myImage = (ImageView) view.findViewById(R.id.my_image); //상단의 내 프로필
 
-        myHandler = new Handler(Looper.myLooper()){
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what){
-                    case 0:
-
-                    case 1:
-                    case 2:
-                }
-            }
-        };
-
         final EditText friendSearch = (EditText)view.findViewById(R.id.chat_room_search); //친구 검색 바
 
         Button onlineBtn = (Button)view.findViewById(R.id.online_toggle_btn);
@@ -289,32 +276,6 @@ public class FragmentFriend extends Fragment {
      * @param image
      */
     public void MyInfo(final TextView name, final ImageView image){
-        /*
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                database.getReference("userInfo").child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        userModel = snapshot.getValue(UserModel.class);
-                        Message message = new Message();
-                        message.what = 0; //정상 데이터
-                        myHandler.sendMessage(message);
-                        if(userModel == null)
-                            message.what = 2; //데이터는 불러왔으나 값이 없음
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error){
-                        Message message = new Message();
-                        message.what = 1; //데이터 업로드 실패
-                        myHandler.sendMessage(message);
-                    }
-                });
-            }
-        });
-
-         */
         database.getReference("userInfo").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -468,7 +429,7 @@ public class FragmentFriend extends Fragment {
                                 return;
                             if (!filterList.get(position).getProfile().equals(""))
                                 mGlideRequestManager.load(getContext()).load(filterList.get(position).getProfile()).apply(new RequestOptions().circleCrop()).into(holder.photo);
-                       }
+                        }
                     }
                 }
             }
@@ -503,7 +464,7 @@ public class FragmentFriend extends Fragment {
                         String friend = filterList.get(position).getUID();
 
                         if (key.equals(friend))
-                            holder.heartBtn.setBackgroundResource(R.drawable.yj_heart);
+                            holder.heartBtn.setBackgroundResource(R.drawable.yj_heart2);
 
                     }catch (IndexOutOfBoundsException e){
                         System.out.println(e);
@@ -546,7 +507,7 @@ public class FragmentFriend extends Fragment {
 
                     }
                     else{
-                        holder.heartBtn.setBackgroundResource(R.drawable.yj_heart);
+                        holder.heartBtn.setBackgroundResource(R.drawable.yj_heart2);
 
                         String friend = filterList.get(position).getUID();
 
@@ -603,7 +564,7 @@ public class FragmentFriend extends Fragment {
 
                     for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                         croom = dataSnapshot1.getValue(ChatRoomModel.class); // 사용자가 속한 채팅방 정보만 담김
-                        if(croom.getUsers().size() == 2){ //1:1 채팅방인 경우만 찾는다.
+                        if(croom.getGroup().equals(false)){ //1:1 채팅방인 경우만 찾는다.
                             Iterator<String> iter = croom.getUsers().keySet().iterator();
                             //users에서 상대방 id 찾는다.
                             ArrayList<String> user_id = new ArrayList<String>();
@@ -665,7 +626,7 @@ public class FragmentFriend extends Fragment {
                                 intent.putExtra("roomid", roomkey);
                                 intent.putExtra("receiver", rec);
                                 intent.putExtra("recName", name);
-                                intent.putExtra("check",1);
+                                intent.putExtra("check","1");
                                 intent.putExtra("name", name);
                                 startActivity(intent);
 

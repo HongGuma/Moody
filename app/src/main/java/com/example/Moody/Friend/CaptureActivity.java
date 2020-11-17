@@ -21,19 +21,6 @@ public class CaptureActivity extends AppCompatActivity {
         CaptureFragment captureFragment = new CaptureFragment();
         captureFragment.setAnalyzeCallback(analyzeCallback);
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_zxing_container, captureFragment).commit();
-        /*
-        captureFragment.setCameraInitCallBack(new CaptureFragment.CameraInitCallBack() {
-            @Override
-            public void callBack(Exception e) {
-                if (e == null) {
-
-                } else {
-                    Log.e("TAG", "callBack: ", e);
-                }
-            }
-        });
-
-         */
 
 
     }

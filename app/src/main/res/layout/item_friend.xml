@@ -56,7 +56,7 @@
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_marginLeft="10dp"
-            android:background="@drawable/yj_heart"
+            android:background="@drawable/yj_heart2"
             android:text="ToggleButton"
             android:layout_marginRight="10dp"
             android:textOff=" "
